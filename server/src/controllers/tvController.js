@@ -1,4 +1,4 @@
-import * as movieService from "../models/moviesService.js";
+import * as tvService from "../models/tvService.js";
 
 export const categoryRequest = (method, errorMessage) => async (req,res) => {
     try {
@@ -12,24 +12,24 @@ export const categoryRequest = (method, errorMessage) => async (req,res) => {
     }
 }
 
-export const getNowPlaying = categoryRequest(
-    movieService.getNowPlayingMovies,
-    "Error fetching now playing movies:"
-);
-
 export const getPopular = categoryRequest(
-    movieService.getPopularMovies,
-    "Error fetching popular movies:"
+    tvService.getPopularTvSeries,
+    "Error fetching popular tv series:"
 );
 
 export const getTopRated = categoryRequest(
-    movieService.getTopRatedMovies,
-    "Error fetching top rated movies:"
+    tvService.getTopRatedTvSeries,
+    "Error fetching top rated tv series:"
 );
 
-export const getUpcoming = categoryRequest(
-    movieService.getUpcomingMovies,
-    "Error fetching upcoming movies:"
+export const getAiringToday = categoryRequest(
+    tvService.getAiringTodayTvSeries,
+    "Error fetching airing today tv series:"
+);
+
+export const getOnTheAir = categoryRequest(
+    tvService.getOnTheAirTvSeries,
+    "Error fetching on the air tv series:"
 );
 
 export const search = async (req, res) => {
@@ -38,12 +38,11 @@ export const search = async (req, res) => {
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
-        const data = await movieService.searchMovies(query, page);
+        const data = await tvService.searchTvSeries(query, page);
         res.json(data);
     }
     catch (error) {
-        console.error("Error searching movies:", error)
+        console.error("Error searching series:", error)
         res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }
-

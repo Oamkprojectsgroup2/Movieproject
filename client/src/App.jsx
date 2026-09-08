@@ -1,25 +1,30 @@
 import { useState, useEffect } from 'react';
 
+const BASE_URL = "http://localhost:3001/api";
+
 function App() {
-  const [movies, setMovies] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // State for search input and result context label
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMovieQuery, setSearchMovieQuery] = useState('');
+  const [searchTvQuery, setSearchTvQuery] = useState('');
   const [currentSource, setCurrentSource] = useState('');
 
-  // Fetch Now Playing Movies
-  const fetchNowPlaying = async () => {
+  // 1. Generic Fetch Helper to eliminate duplicate try/catch code
+  const fetchData = async (endpoint, sourceLabel) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:3001/api/movies/nowplaying');
-      if (!response.ok) throw new Error('Failed to fetch now playingmovies');
-      
+      const response = await fetch(`${BASE_URL}${endpoint}`);
       const data = await response.json();
-      setMovies(data.results || []);
-      setCurrentSource('Now Playing Movies');
+      
+      if (!response.ok) {
+        throw new Error(data.message || data.status_message || `Server error: ${response.status}`);
+      }
+      
+      setItems(data.results || []);
+      setCurrentSource(sourceLabel);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -27,162 +32,112 @@ function App() {
     }
   };
 
-  // Search Movies Handler
-  const handleSearch = async (e) => {
+  // Movie Actions
+  const fetchNowPlayingMovies = () => fetchData('/movies/nowplaying', 'Now Playing Movies');
+  const fetchPopularMovies = () => fetchData('/movies/popular', 'Popular Movies');
+  const fetchTopRatedMovies = () => fetchData('/movies/top_rated', 'Top Rated Movies');
+  const fetchUpcomingMovies = () => fetchData('/movies/upcoming', 'Upcoming Movies');
+
+  const handleMovieSearch = (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`http://localhost:3001/api/movies/search?query=${encodeURIComponent(searchQuery)}`);
-      if (!response.ok) throw new Error('Search failed');
-      
-      const data = await response.json();
-      setMovies(data.results || []);
-      setCurrentSource(`Search Results for "${searchQuery}"`);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    if (!searchMovieQuery.trim()) return;
+    fetchData(`/movies/search?query=${encodeURIComponent(searchMovieQuery)}`, `Movie Search: "${searchMovieQuery}"`);
   };
 
-  //Fetch Popular Movies
-  const fetchPopular = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('http://localhost:3001/api/movies/popular');
-      if (!response.ok) throw new Error('Failed to fetch popular movies');
+  // TV Series Actions
+  const fetchOnTheAirSeries = () => fetchData('/tv/on_the_air', 'On The Air Series');
+  const fetchPopularSeries = () => fetchData('/tv/popular', 'Popular Series');
+  const fetchTopRatedSeries = () => fetchData('/tv/top_rated', 'Top Rated Series');
+  const fetchAiringTodaySeries = () => fetchData('/tv/airing_today', 'Airing Today Series');
 
-      const data = await response.json();
-      setMovies(data.results || []);
-      setCurrentSource('Popular Movies');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleTvSearch = (e) => {
+    e.preventDefault();
+    if (!searchTvQuery.trim()) return;
+    fetchData(`/tv/search?query=${encodeURIComponent(searchTvQuery)}`, `TV Search: "${searchTvQuery}"`);
   };
 
-  //Fetch Top Rated Movies
-  const fetchTopRated = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('http://localhost:3001/api/movies/top_rated');
-      if (!response.ok) throw new Error('Failed to top rated movies');
-
-      const data = await response.json();
-      setMovies(data.results || []);
-      setCurrentSource('Top Rated Movies');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  //Fetch Upcoming Movies
-  const fetchUpcoming = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('http://localhost:3001/api/movies/upcoming');
-      if (!response.ok) throw new Error('Failed to upcoming movies');
-
-      const data = await response.json();
-      setMovies(data.results || []);
-      setCurrentSource('Upcoming Movies');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch default movies on initial load
   useEffect(() => {
-    fetchNowPlaying();
+    fetchNowPlayingMovies();
   }, []);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Movie Explorer</h1>
+      <h1>Movie & Series Explorer</h1>
 
-      {/* Search Bar & Controls */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', flexGrow: 1 }}>
+      {/* Movie Controls */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+        <form onSubmit={handleMovieSearch} style={{ display: 'flex', gap: '8px', flexGrow: 1 }}>
           <input
             type="text"
             placeholder="Search for a movie..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchMovieQuery}
+            onChange={(e) => setSearchMovieQuery(e.target.value)}
             style={{ padding: '8px 12px', fontSize: '1rem', flexGrow: 1 }}
           />
-          <button type="submit" style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}>
-            Search
-          </button>
+          <button type="submit" style={{ padding: '8px 16px', cursor: 'pointer' }}>Search</button>
         </form>
 
-        <button 
-          onClick={() => { setSearchQuery(''); fetchNowPlaying(); }} 
-          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
-        >
-          Reset to Now Playing
-        </button>
-        <button
-          onClick={() => { setSearchQuery(''); fetchPopular(); }}
-          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
-        >
-          Popular
-        </button>
-        <button
-          onClick={() => { setSearchQuery(''); fetchTopRated(); }}
-          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
-        >
-          Top Rated
-        </button>
-        <button
-          onClick={() => { setSearchQuery(''); fetchUpcoming(); }}
-          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
-        >
-          Upcoming
-        </button>
+        <button onClick={() => { setSearchMovieQuery(''); fetchNowPlayingMovies(); }}>Now Playing</button>
+        <button onClick={() => { setSearchMovieQuery(''); fetchPopularMovies(); }}>Popular</button>
+        <button onClick={() => { setSearchMovieQuery(''); fetchTopRatedMovies(); }}>Top Rated</button>
+        <button onClick={() => { setSearchMovieQuery(''); fetchUpcomingMovies(); }}>Upcoming</button>
       </div>
 
-      {/* Dynamic API Context Indicator */}
+      {/* TV Series Controls */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <form onSubmit={handleTvSearch} style={{ display: 'flex', gap: '8px', flexGrow: 1 }}>
+          <input
+            type="text"
+            placeholder="Search for a series..."
+            value={searchTvQuery}
+            onChange={(e) => setSearchTvQuery(e.target.value)}
+            style={{ padding: '8px 12px', fontSize: '1rem', flexGrow: 1 }}
+          />
+          <button type="submit" style={{ padding: '8px 16px', cursor: 'pointer' }}>Search</button>
+        </form>
+
+        <button onClick={() => { setSearchTvQuery(''); fetchOnTheAirSeries(); }}>On The Air</button>
+        <button onClick={() => { setSearchTvQuery(''); fetchPopularSeries(); }}>Popular</button>
+        <button onClick={() => { setSearchTvQuery(''); fetchTopRatedSeries(); }}>Top Rated</button>
+        <button onClick={() => { setSearchTvQuery(''); fetchAiringTodaySeries(); }}>Airing Today</button>
+      </div>
+
+      {/* Status Header */}
       {currentSource && !loading && !error && (
         <h2 style={{ color: '#555', fontSize: '1.2rem', marginBottom: '16px' }}>
-          Showing: <strong>{currentSource}</strong> ({movies.length} results)
+          Showing: <strong>{currentSource}</strong> ({items.length} results)
         </h2>
       )}
 
-      {/* UI State Feedback */}
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-      {/* Movie Results List */}
+      {/* Results List - Handles both Movie (title, release_date) and TV (name, first_air_date) */}
       {!loading && !error && (
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {movies.length > 0 ? (
-            movies.map((movie) => (
-              <li 
-                key={movie.id} 
-                style={{ 
-                  padding: '10px 0', 
-                  borderBottom: '1px solid #eee',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <span><strong>{movie.title}</strong></span>
-                <span style={{ color: '#888' }}>{movie.release_date?.slice(0, 4) || 'N/A'}</span>
-              </li>
-            ))
+          {items.length > 0 ? (
+            items.map((item) => {
+              const displayTitle = item.title || item.name || 'Untitled';
+              const displayDate = item.release_date || item.first_air_date || '';
+              const year = displayDate ? displayDate.slice(0, 4) : 'N/A';
+
+              return (
+                <li 
+                  key={item.id} 
+                  style={{ 
+                    padding: '10px 0', 
+                    borderBottom: '1px solid #eee',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span><strong>{displayTitle}</strong></span>
+                  <span style={{ color: '#888' }}>{year}</span>
+                </li>
+              );
+            })
           ) : (
-            <p>No movies found.</p>
+            <p>No results found.</p>
           )}
         </ul>
       )}
