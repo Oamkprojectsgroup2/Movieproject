@@ -6,17 +6,24 @@ function App() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState("fi-FI");
   
   const [searchMovieQuery, setSearchMovieQuery] = useState('');
   const [searchTvQuery, setSearchTvQuery] = useState('');
   const [currentSource, setCurrentSource] = useState('');
+  const [activeRequest, setActiveRequest] = useState({
+    endpoint: '/movies/nowplaying',
+    label: 'Now Playing Movies'
+  });
 
   // 1. Generic Fetch Helper to eliminate duplicate try/catch code
   const fetchData = async (endpoint, sourceLabel) => {
     setLoading(true);
     setError(null);
+    setActiveRequest({ endpoint, label: sourceLabel });
     try {
-      const response = await fetch(`${BASE_URL}${endpoint}`);
+      const separator = endpoint.includes('?') ? '&' : '?';
+      const response = await fetch(`${BASE_URL}${endpoint}${separator}language=${language}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -57,12 +64,33 @@ function App() {
   };
 
   useEffect(() => {
-    fetchNowPlayingMovies();
-  }, []);
+    if (activeRequest.endpoint) {
+      fetchData(activeRequest.endpoint, activeRequest.label);
+    }
+  }, [language]);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Movie & Series Explorer</h1>
+      
+      {/* Header & Language Chooser */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Movie & Series Explorer</h1>
+        
+        <label style={{ fontSize: '1rem', fontWeight: 'bold' }}>
+          Language: {' '}
+          <select 
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value)}
+            style={{ padding: '6px 12px', fontSize: '1rem', cursor: 'pointer' }}
+          >
+            <option value="fi-FI">Finnish (Suomi)</option>
+            <option value="en-US">English (US)</option>
+            <option value="sv-SE">Swedish (Svenska)</option>
+            <option value="de-DE">German (Deutsch)</option>
+            <option value="es-ES">Spanish (Español)</option>
+          </select>
+        </label>
+      </div>
 
       {/* Movie Controls */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>

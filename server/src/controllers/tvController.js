@@ -3,7 +3,8 @@ import * as tvService from "../models/tvService.js";
 export const categoryRequest = (method, errorMessage) => async (req,res) => {
     try {
         const page = req.query.page || 1;
-        const data = await method(page);
+        const language = req.query.language || "fi-FI";
+        const data = await method(page, language);
         res.json(data);
     }
     catch (error) {
@@ -34,11 +35,11 @@ export const getOnTheAir = categoryRequest(
 
 export const search = async (req, res) => {
     try {
-        const { query, page } = req.query;
+        const { query, page, language } = req.query;
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
-        const data = await tvService.searchTvSeries(query, page);
+        const data = await tvService.searchTvSeries(query, page || 1, language || "fi-FI");
         res.json(data);
     }
     catch (error) {

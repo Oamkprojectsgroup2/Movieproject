@@ -1,7 +1,7 @@
 import { tmdbFetch } from '../helper/tmdb.js';
 
-export const searchTvSeries = (query, page = 1) => {
-    return tmdbFetch("/search/tv", {query, page});
+export const searchTvSeries = (query, page = 1, language = "fi-FI") => {
+    return tmdbFetch("/search/tv", {query, page, language});
 }
 
 export const getPopularTvSeries = (page = 1, language = "fi-FI") => {
