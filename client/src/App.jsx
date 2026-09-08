@@ -1,122 +1,193 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // State for search input and result context label
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentSource, setCurrentSource] = useState('');
+
+  // Fetch Now Playing Movies
+  const fetchNowPlaying = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:3001/api/movies/nowplaying');
+      if (!response.ok) throw new Error('Failed to fetch now playingmovies');
+      
+      const data = await response.json();
+      setMovies(data.results || []);
+      setCurrentSource('Now Playing Movies');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Search Movies Handler
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:3001/api/movies/search?query=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      setMovies(data.results || []);
+      setCurrentSource(`Search Results for "${searchQuery}"`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Fetch Popular Movies
+  const fetchPopular = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:3001/api/movies/popular');
+      if (!response.ok) throw new Error('Failed to fetch popular movies');
+
+      const data = await response.json();
+      setMovies(data.results || []);
+      setCurrentSource('Popular Movies');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Fetch Top Rated Movies
+  const fetchTopRated = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:3001/api/movies/top_rated');
+      if (!response.ok) throw new Error('Failed to top rated movies');
+
+      const data = await response.json();
+      setMovies(data.results || []);
+      setCurrentSource('Top Rated Movies');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Fetch Upcoming Movies
+  const fetchUpcoming = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:3001/api/movies/upcoming');
+      if (!response.ok) throw new Error('Failed to upcoming movies');
+
+      const data = await response.json();
+      setMovies(data.results || []);
+      setCurrentSource('Upcoming Movies');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch default movies on initial load
+  useEffect(() => {
+    fetchNowPlaying();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>Movie Explorer</h1>
+
+      {/* Search Bar & Controls */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', flexGrow: 1 }}>
+          <input
+            type="text"
+            placeholder="Search for a movie..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ padding: '8px 12px', fontSize: '1rem', flexGrow: 1 }}
+          />
+          <button type="submit" style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}>
+            Search
+          </button>
+        </form>
+
+        <button 
+          onClick={() => { setSearchQuery(''); fetchNowPlaying(); }} 
+          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
         >
-          Count is {count}
+          Reset to Now Playing
         </button>
-      </section>
+        <button
+          onClick={() => { setSearchQuery(''); fetchPopular(); }}
+          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
+        >
+          Popular
+        </button>
+        <button
+          onClick={() => { setSearchQuery(''); fetchTopRated(); }}
+          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
+        >
+          Top Rated
+        </button>
+        <button
+          onClick={() => { setSearchQuery(''); fetchUpcoming(); }}
+          style={{ padding: '8px 16px', fontSize: '1rem', cursor: 'pointer' }}
+        >
+          Upcoming
+        </button>
+      </div>
 
-      <div className="ticks"></div>
+      {/* Dynamic API Context Indicator */}
+      {currentSource && !loading && !error && (
+        <h2 style={{ color: '#555', fontSize: '1.2rem', marginBottom: '16px' }}>
+          Showing: <strong>{currentSource}</strong> ({movies.length} results)
+        </h2>
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* UI State Feedback */}
+      {loading && <p>Loading...</p>}
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Movie Results List */}
+      {!loading && !error && (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {movies.length > 0 ? (
+            movies.map((movie) => (
+              <li 
+                key={movie.id} 
+                style={{ 
+                  padding: '10px 0', 
+                  borderBottom: '1px solid #eee',
+                  display: 'flex',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span><strong>{movie.title}</strong></span>
+                <span style={{ color: '#888' }}>{movie.release_date?.slice(0, 4) || 'N/A'}</span>
+              </li>
+            ))
+          ) : (
+            <p>No movies found.</p>
+          )}
+        </ul>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
