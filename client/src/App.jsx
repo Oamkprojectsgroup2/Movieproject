@@ -210,33 +210,56 @@ function App() {
 
       {/* Results List - Handles both Movie (title, release_date) and TV (name, first_air_date) */}
       {!loading && !error && (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {items.length > 0 ? (
-            items.map((item) => {
-              const displayTitle = item.title || item.name || 'Untitled';
-              const displayDate = item.release_date || item.first_air_date || '';
-              const year = displayDate ? displayDate.slice(0, 4) : 'N/A';
+  <ul style={{ listStyle: 'none', padding: 0 }}>
+    {items.length > 0 ? (
+      items.map((item) => {
+        const displayTitle = item.title || item.name || 'Untitled';
+        const displayDate = item.release_date || item.first_air_date || '';
+        const year = displayDate ? displayDate.slice(0, 4) : 'N/A';
+        
+        // Format rating score to 1 decimal place
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
 
-              return (
-                <li 
-                  key={item.id} 
-                  style={{ 
-                    padding: '10px 0', 
-                    borderBottom: '1px solid #eee',
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span><strong>{displayTitle}</strong></span>
-                  <span style={{ color: '#888' }}>{year}</span>
-                </li>
-              );
-            })
-          ) : (
-            <p>No results found.</p>
-          )}
-        </ul>
-      )}
+        return (
+          <li 
+            key={item.id} 
+            style={{ 
+              padding: '12px 0', 
+              borderBottom: '1px solid #eee',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            {/* Title on the Left */}
+            <div>
+              <strong>{displayTitle}</strong>
+            </div>
+
+            {/* Metadata (Year & Rating) on the Right */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ color: '#666', fontSize: '0.9rem' }}>
+                {year}
+              </span>
+
+              <div style={{ 
+                backgroundColor: '#f0f0f0', 
+                padding: '4px 8px', 
+                borderRadius: '4px', 
+                fontSize: '0.85rem',
+                fontWeight: 'bold'
+              }}>
+                ⭐ {rating} / 10
+              </div>
+            </div>
+          </li>
+        );
+      })
+    ) : (
+      <p>No results found.</p>
+    )}
+  </ul>
+)}
     </div>
   );
 }
