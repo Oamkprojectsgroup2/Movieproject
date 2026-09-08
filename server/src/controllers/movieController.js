@@ -4,7 +4,8 @@ export const categoryRequest = (method, errorMessage) => async (req,res) => {
     try {
         const page = req.query.page || 1;
         const language = req.query.language || "fi-FI";
-        const data = await method(page, language);
+        const region= req.query.region || "FI";
+        const data = await method(page, language, region);
         res.json(data);
     }
     catch (error) {
@@ -35,11 +36,16 @@ export const getUpcoming = categoryRequest(
 
 export const search = async (req, res) => {
     try {
-        const { query, page, language } = req.query;
+        const { query, page, language, region } = req.query;
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
-        const data = await movieService.searchMovies(query, page || 1, language || "fi-FI");
+        const data = await movieService.searchMovies(
+            query,
+            page || 1,
+            language || "fi-FI",
+            region || "FI"
+            );
         res.json(data);
     }
     catch (error) {

@@ -2,11 +2,49 @@ import { useState, useEffect } from 'react';
 
 const BASE_URL = "http://localhost:3001/api";
 
+const LANGUAGES = [
+  { code: 'fi-FI', label: 'Suomi 🇫🇮' },
+  { code: 'en-US', label: 'English (US) 🇺🇸' },
+  { code: 'sv-SE', label: 'Svenska 🇸🇪' },
+  { code: 'de-DE', label: 'Deutsch 🇩🇪' },
+  { code: 'fr-FR', label: 'Français 🇫🇷' },
+  { code: 'es-ES', label: 'Español 🇪🇸' },
+  { code: 'ja-JP', label: '日本語 🇯🇵' },
+  { code: 'ko-KR', label: '한국어 🇰🇷' },
+  { code: 'hi-IN', label: 'हिन्दी 🇮🇳' },
+  { code: 'pt-BR', label: 'Português (BR) 🇧🇷' }
+];
+
+const REGIONS = [
+  { code: 'FI', label: 'Finland 🇫🇮' },
+  { code: 'US', label: 'United States 🇺🇸' },
+  { code: 'GB', label: 'United Kingdom 🇬🇧' },
+  { code: 'FR', label: 'France 🇫🇷' },
+  { code: 'DE', label: 'Germany 🇩🇪' },
+  { code: 'JP', label: 'Japan 🇯🇵' },
+  { code: 'KR', label: 'South Korea 🇰🇷' },
+  { code: 'IN', label: 'India 🇮🇳' },
+  { code: 'BR', label: 'Brazil 🇧🇷' },
+];
+
+const REGION_TO_LANGUAGE = {
+  FI: 'fi-FI',
+  US: 'en-US',
+  GB: 'en-US',
+  FR: 'fr-FR',
+  DE: 'de-DE',
+  JP: 'ja-JP',
+  KR: 'ko-KR',
+  IN: 'hi-IN',
+  BR: 'pt-BR',
+};
+
 function App() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [language, setLanguage] = useState("fi-FI");
+  const [region, setRegion] = useState("FI");
   
   const [searchMovieQuery, setSearchMovieQuery] = useState('');
   const [searchTvQuery, setSearchTvQuery] = useState('');
@@ -16,6 +54,17 @@ function App() {
     label: 'Now Playing Movies'
   });
 
+  const handleRegionChange = (e) => {
+  const newRegion = e.target.value;
+  setRegion(newRegion);
+
+  // Automatically update language if a mapping exists
+  const autoLanguage = REGION_TO_LANGUAGE[newRegion];
+  if (autoLanguage) {
+    setLanguage(autoLanguage);
+  }
+};
+
   // 1. Generic Fetch Helper to eliminate duplicate try/catch code
   const fetchData = async (endpoint, sourceLabel) => {
     setLoading(true);
@@ -23,7 +72,7 @@ function App() {
     setActiveRequest({ endpoint, label: sourceLabel });
     try {
       const separator = endpoint.includes('?') ? '&' : '?';
-      const response = await fetch(`${BASE_URL}${endpoint}${separator}language=${language}`);
+      const response = await fetch(`${BASE_URL}${endpoint}${separator}language=${language}&region=${region}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -67,29 +116,48 @@ function App() {
     if (activeRequest.endpoint) {
       fetchData(activeRequest.endpoint, activeRequest.label);
     }
-  }, [language]);
+  }, [language, region]);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
       
-      {/* Header & Language Chooser */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Movie & Series Explorer</h1>
+      {/* Header, Language & Region Controls */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+        <h1 style={{ margin: 0 }}>Movie & Series Explorer</h1>
         
-        <label style={{ fontSize: '1rem', fontWeight: 'bold' }}>
-          Language: {' '}
-          <select 
-            value={language} 
-            onChange={(e) => setLanguage(e.target.value)}
-            style={{ padding: '6px 12px', fontSize: '1rem', cursor: 'pointer' }}
-          >
-            <option value="fi-FI">Finnish (Suomi)</option>
-            <option value="en-US">English (US)</option>
-            <option value="sv-SE">Swedish (Svenska)</option>
-            <option value="de-DE">German (Deutsch)</option>
-            <option value="es-ES">Spanish (Español)</option>
-          </select>
-        </label>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          {/* Region Dropdown */}
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+            Region:{' '}
+            <select 
+              value={region} 
+              onChange={handleRegionChange}
+              style={{ padding: '6px 10px', fontSize: '0.9rem', cursor: 'pointer', borderRadius: '4px' }}
+            >
+              {REGIONS.map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Language Dropdown */}
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+            Language:{' '}
+            <select 
+              value={language} 
+              onChange={(e) => setLanguage(e.target.value)}
+              style={{ padding: '6px 10px', fontSize: '0.9rem', cursor: 'pointer', borderRadius: '4px' }}
+            >
+              {LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       {/* Movie Controls */}
