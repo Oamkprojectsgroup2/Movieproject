@@ -1,3 +1,4 @@
+
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS favorite_movies;
 DROP TABLE IF EXISTS members;
@@ -50,5 +51,4 @@ CREATE TABLE group_favorites (
 	UNIQUE(group_id, movies_tmdb_id)
 );
 
----index for searching which groups user belongs
 CREATE INDEX idx_members_users      ON members(user_id);
