@@ -48,7 +48,9 @@ function Navbar({
         />
 
 
-        <button>
+        <button
+          onClick={() => setCurrentPage("theaters")}
+          >
           In Theaters
         </button>
 
