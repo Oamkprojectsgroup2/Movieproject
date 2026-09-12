@@ -1,0 +1,495 @@
+.search-page {
+  position: relative;
+
+  width: 100%;
+  min-height: calc(100vh - 80px);
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(100, 100, 120, 0.35),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 40%,
+      rgba(70, 70, 90, 0.3),
+      transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #111111 0%,
+      #1b1b1f 45%,
+      #101014 100%
+    );
+
+  overflow: hidden;
+}
+
+
+.search-page::before {
+  content: "";
+
+  position: absolute;
+  inset: -100px;
+
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(180, 180, 200, 0.16),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 75% 65%,
+      rgba(100, 100, 130, 0.18),
+      transparent 30%
+    );
+
+  filter: blur(80px);
+
+  pointer-events: none;
+}
+
+
+/*CONTENT*/
+
+.search-content {
+  position: relative;
+
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+
+  gap: clamp(30px, 5vw, 70px);
+
+  padding: clamp(30px, 5vw, 60px) 5vw 60px;
+
+  box-sizing: border-box;
+}
+
+/* CONTENT TYPE */
+
+/* CONTENT TYPE */
+
+.search-type {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.search-type button {
+  padding: 9px 18px;
+
+  border: 1px solid #555;
+  border-radius: 5px;
+
+  background: #eeeeee;
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.search-type button:hover {
+  background: #dddddd;
+}
+
+.search-type button.active {
+  background: #4caf50;
+  color: #ffffff;
+  border-color: #4caf50;
+}
+
+
+/*SEARCH AREA*/
+
+.search-results-area {
+  min-width: 0;
+}
+
+
+.search-page-search {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.search-input-wrapper {
+  position: relative;
+
+  flex: 1;
+}
+
+
+.search-icon {
+  position: absolute;
+
+  left: 16px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #555;
+
+  font-size: 17px;
+
+  pointer-events: none;
+}
+
+
+.search-input-wrapper input {
+  width: 100%;
+  height: clamp(44px, 4vw, 58px);
+
+  padding: 0 20px 0 46px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #232323;
+  border-radius: 40px;
+
+  background: #ffffff;
+
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(15px, 1.2vw, 19px);
+
+  outline: none;
+}
+
+
+.search-input-wrapper input:focus {
+  border-color: #666;
+}
+
+
+.search-page-search button {
+  height: clamp(40px, 3.5vw, 54px);
+
+  padding: 0 clamp(18px, 1.5vw, 30px);
+
+  border: 1px solid #232323;
+  border-radius: 7px;
+
+  background: #eeeeee;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(14px, 1vw, 18px);
+
+  cursor: pointer;
+}
+
+
+.search-page-search button:hover {
+  background: #dddddd;
+}
+
+
+/*RESULTS*/
+
+.search-results {
+  margin-top: 35px;
+}
+
+
+.search-result {
+  display: flex;
+  align-items: flex-start;
+
+  gap: clamp(20px, 3vw, 35px);
+
+  padding: 20px 0;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+
+.search-result-poster {
+  width: clamp(110px, 11vw, 155px);
+  height: clamp(150px, 15vw, 220px);
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #232323;
+
+  background: #e6e6e6;
+
+  color: #777;
+
+  font-size: clamp(13px, 1vw, 17px);
+}
+.search-result-poster img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+
+.search-result-info {
+  flex: 1;
+
+  min-width: 0;
+
+  padding-top: 5px;
+}
+
+
+.search-result-info h2 {
+  margin: 0 0 8px;
+
+  font-size: clamp(22px, 2.3vw, 36px);
+
+  font-weight: 400;
+}
+
+
+.search-result-rating {
+  margin-bottom: 14px;
+
+  font-size: clamp(17px, 1.4vw, 23px);
+
+  letter-spacing: 2px;
+}
+
+
+.search-result-rating .rating-empty {
+  color: #cccccc;
+}
+
+
+.search-result-info p {
+  margin: 7px 0;
+
+  font-size: clamp(14px, 1vw, 17px);
+}
+
+
+.search-result-info strong {
+  font-weight: 400;
+}
+
+
+/*FILTERS*/
+
+.search-filters {
+  padding-top: 52px;
+}
+
+
+.search-filters h2 {
+  margin: 0 0 18px;
+
+  font-size: clamp(18px, 1.3vw, 22px);
+
+  font-weight: 400;
+}
+
+
+.search-filter {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  margin-bottom: 18px;
+}
+
+
+.search-filter label {
+  font-size: clamp(14px, 1vw, 17px);
+}
+
+
+.search-filter select {
+  width: 100%;
+  height: clamp(34px, 2.8vw, 44px);
+
+  padding: 0 10px;
+
+  border: 1px solid #555;
+  border-radius: 5px;
+
+  background: #eeeeee;
+
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(13px, 1vw, 16px);
+
+  cursor: pointer;
+}
+
+
+.clear-filters {
+  width: 100%;
+
+  height: 38px;
+
+  margin-top: 8px;
+
+  border: 1px solid #555;
+  border-radius: 5px;
+
+  background: #eeeeee;
+
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+
+.clear-filters:hover {
+  background: #ffffff;
+}
+
+
+/*NO RESULTS */
+
+.no-results {
+  padding: 70px 20px;
+
+  text-align: center;
+}
+
+
+.no-results h2 {
+  margin: 0 0 10px;
+
+  font-size: 25px;
+
+  font-weight: 400;
+}
+
+
+.no-results p {
+  margin: 0;
+
+  color: #bbbbbb;
+
+  font-size: 15px;
+}
+
+
+/*RESPONSIVE*/
+
+@media (max-width: 700px) {
+
+  .search-content {
+    grid-template-columns: 1fr;
+
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+
+  .search-filters {
+    padding-top: 10px;
+
+    order: -1;
+  }
+
+
+  .search-filter {
+    margin-bottom: 12px;
+  }
+
+
+  .search-result {
+    gap: 15px;
+  }
+
+
+  .search-result-poster {
+    width: 100px;
+    height: 145px;
+  }
+
+
+  .search-result-info h2 {
+    font-size: 22px;
+  }
+
+
+  .search-result-info p {
+    font-size: 13px;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .search-page-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+
+  .search-page-search button {
+    width: 100%;
+  }
+
+
+  .search-result-poster {
+    width: 85px;
+    height: 125px;
+  }
+
+}
+/* LOAD MORE */
+
+.load-more-container {
+ display: flex;
+  justify-content: center;
+
+  margin-top: 35px;
+  padding-bottom: 40px;
+}
+
+.load-more {
+ min-width: 150px;
+
+  height: 42px;
+
+  padding: 0 25px;
+
+  border: 1px solid #555;
+  border-radius: 6px;
+
+  background: #eeeeee;
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 15px;
+
+  cursor: pointer;
+
+}
+
+.load-more:hover {
+  background: #ffffff;
+}
+
+.load-more:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

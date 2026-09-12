@@ -1,0 +1,78 @@
+.navbar {
+  width: 100%;
+  height: 80px;
+
+  background: #7a7a7a;
+  border: 1px solid #606060;
+
+  padding: 8px 32px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Logo placeholder */
+.logo {
+  width: 150px;
+  height: 50px;
+
+  background: #e6e6e6;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Everything on the right */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 38px;
+}
+
+/* Small search in navbar */
+.nav-search {
+  width: 180px;
+  height: 32px;
+
+  padding: 0 12px;
+
+  background: white;
+  border: 1px solid #232323;
+  border-radius: 32px;
+
+  box-sizing: border-box;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+/* Navbar buttons */
+.navbar button {
+  width: 120px;
+  height: 32px;
+
+  padding: 0 10px;
+
+  background: #ebebeb;
+  border: 1px solid #232323;
+  border-radius: 3px;
+
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background: #ffffff;
+}
