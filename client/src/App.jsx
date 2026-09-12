@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
+import Theaters from "./views/Theaters";
 
 import "./App.css";
 
@@ -66,6 +67,10 @@ function App() {
           setLanguage={setLanguage}
           searchTrigger={searchTrigger}
         />
+      )}
+
+      {currentPage === "theaters" && (
+        <Theaters />
       )}
 
     </div>
