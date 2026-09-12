@@ -455,3 +455,41 @@
   }
 
 }
+/* LOAD MORE */
+
+.load-more-container {
+ display: flex;
+  justify-content: center;
+
+  margin-top: 35px;
+  padding-bottom: 40px;
+}
+
+.load-more {
+ min-width: 150px;
+
+  height: 42px;
+
+  padding: 0 25px;
+
+  border: 1px solid #555;
+  border-radius: 6px;
+
+  background: #eeeeee;
+  color: #232323;
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 15px;
+
+  cursor: pointer;
+
+}
+
+.load-more:hover {
+  background: #ffffff;
+}
+
+.load-more:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

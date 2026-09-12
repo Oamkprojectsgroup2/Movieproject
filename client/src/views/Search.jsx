@@ -24,6 +24,10 @@ function Search({
 
   const [error, setError] = useState(null);
 
+  const [page, setPage] =useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   useEffect(() => {
   if (search.trim()) {
     handleSearch();
@@ -43,7 +47,7 @@ useEffect(() => {
 }, [searchTrigger]);
 
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e, pageNumber = 1) => {
     if (e) {
     e.preventDefault();
     }
@@ -54,8 +58,13 @@ useEffect(() => {
       setError(null);
       return;
     }
-
+    if (pageNumber === 1){
     setLoading(true);
+    }
+    else {
+      setLoadingMore(true);
+    }
+
     setError(null);
     setHasSearched(true);
 
@@ -82,6 +91,11 @@ useEffect(() => {
         "FI"
       );
 
+      params.append (
+        "page",
+        pageNumber
+      );
+
       const response = await fetch(
         `${BASE_URL}${endpoint}?${params.toString()}`
       );
@@ -96,13 +110,47 @@ useEffect(() => {
         );
       }
 
-      setResults(data.results || []);
+      const newResults = data.results || [];
 
+        if (pageNumber === 1)
+        {
+          setResults(newResults);
+        }
+        else {
+          setResults((currentResults) => {
+            const combined = [
+              ...currentResults,
+              ...newResults
+            ];
+
+            const uniqueResults = Array.from(
+              new Map(
+                combined.map((item) => [item.id, item])
+              ) .values()
+            );
+            return uniqueResults;
+        });
+        }
+        setPage(pageNumber);
+        setTotalPages(data.total_pages || 1);
+      
     } catch (err) {
       setError(err.message);
-      setResults([]);
+
+      if (pageNumber === 1) {
+        setResults([]);
+      }
+      
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  }; 
+
+  const handleLoadMore = () => {
+    if (page < totalPages &&!loadingMore)
+    {
+      handleSearch(null, page + 1);
     }
   };
 
@@ -351,6 +399,24 @@ useEffect(() => {
               )}
 
           </div>
+          {!loading &&
+          !error &&
+          results.length > 0 && 
+          page < totalPages && (
+            <div className="load-more-container">
+
+              <button
+              className="load-more"
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+
+              >
+                {loadingMore
+                ? "Loading..."
+                : "Load More"}
+              </button>
+            </div>
+          )}
 
         </section>
 
