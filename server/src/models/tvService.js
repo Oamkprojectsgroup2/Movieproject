@@ -19,3 +19,7 @@ export const getAiringTodayTvSeries = (page = 1, language = "fi-FI", region = "F
 export const getOnTheAirTvSeries  = (page = 1, language = "fi-FI", region = "FI") => {
     return tmdbFetch("/tv/on_the_air", {page, language, region});
 }
+
+export const getTvGenres = (language = "fi-FI") => {
+    return tmdbFetch("/genre/tv/list", {language});
+}

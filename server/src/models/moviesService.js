@@ -19,3 +19,7 @@ export const getTopRatedMovies = (page = 1, language = "fi-FI", region = "FI") =
 export const getUpcomingMovies = (page = 1, language = "fi-FI", region = "FI") => {
     return tmdbFetch("/movie/upcoming", {page, language, region});
 }
+
+export const getMovieGenres = (language = "fi-FI") => {
+    return tmdbFetch("/genre/movie/list", {language});
+}

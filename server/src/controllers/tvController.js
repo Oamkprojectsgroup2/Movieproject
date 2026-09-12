@@ -52,3 +52,15 @@ export const search = async (req, res) => {
         res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }
+
+export const getGenres = async (req, res) => {
+    try{
+        const language = req.query.language || "fi-FI";
+        const data = await tvService.getTvGenres(language);
+        res.json(data);
+    }
+    catch (error) {
+        console.error("Error fetching tv genres:", error)
+        res.status(500).json({message: error.message || "Internal Server Error"});
+    }
+}

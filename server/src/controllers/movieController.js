@@ -54,3 +54,16 @@ export const search = async (req, res) => {
     }
 }
 
+export const getGenres = async (req, res) => {
+    try{
+        const language = req.query.language || "fi-FI";
+        const data = await movieService.getMovieGenres(language);
+        res.json(data);
+    }
+    catch (error) {
+        console.error("Error fetching movie genres:", error)
+        res.status(500).json({message: error.message || "Internal Server Error"});
+    }
+}
+
+

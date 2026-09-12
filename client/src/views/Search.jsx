@@ -28,6 +28,31 @@ function Search({
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [genres, setGenres] = useState([]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const endpoint =
+          contentType === "movie"
+            ? "/movies/genres"
+            : "/tv/genres";
+
+        const response = await fetch(
+          `${BASE_URL}${endpoint}?language=en-US`
+        );
+
+        const data = await response.json();
+
+        setGenres(data.genres || []);
+      } catch (err) {
+        setGenres([]);
+      }
+    };
+
+    fetchGenres();
+  }, [contentType]);
+
   useEffect(() => {
   if (search.trim()) {
     handleSearch();
@@ -448,18 +473,11 @@ useEffect(() => {
                 Any
               </option>
 
-              <option value="Action">
-                Action
-              </option>
-
-              <option value="Drama">
-                Drama
-              </option>
-
-              <option value="Comedy">
-                Comedy
-              </option>
-
+              {genres.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
             </select>
 
           </div>

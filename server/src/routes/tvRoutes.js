@@ -8,5 +8,6 @@ router.get("/top_rated", tvController.getTopRated);
 router.get("/popular", tvController.getPopular);
 router.get("/airing_today", tvController.getAiringToday);
 router.get("/on_the_air", tvController.getOnTheAir);
+router.get("/genres", tvController.getGenres);
 
 export default router;
