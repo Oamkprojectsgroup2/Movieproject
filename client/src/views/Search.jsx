@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "../styles/Search.css";
 
 const BASE_URL = "http://localhost:3001/api";
@@ -13,6 +13,7 @@ function Search({
   language,
   setLanguage,
   searchTrigger,
+  siteLanguage,
 }) {
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -39,7 +40,7 @@ function Search({
             : "/tv/genres";
 
         const response = await fetch(
-          `${BASE_URL}${endpoint}?language=en-US`
+          `${BASE_URL}${endpoint}?language=${siteLanguage}`
         );
 
         const data = await response.json();
@@ -51,7 +52,23 @@ function Search({
     };
 
     fetchGenres();
-  }, [contentType]);
+  }, [contentType, siteLanguage]);
+
+  const [languages, setLanguages] = useState([]);
+
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/config/languages`);
+        const data = await response.json();
+        setLanguages(data || []);
+      } catch (err) {
+        setLanguages([]);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
 
   useEffect(() => {
   if (search.trim()) {
@@ -183,9 +200,89 @@ useEffect(() => {
   const clearFilters = () => {
     setGenre("");
     setYear("");
+    setYearInput("");
+    setYearError(null);
     setLanguage("");
+    setLanguageInput("");
   };
 
+  const [yearInput, setYearInput] =useState("");
+  const [yearError, setYearError] = useState(null);
+
+  const handleYearInput = (value) => {
+    setYearInput(value);
+
+    if (!value) {
+      setYearError(null);
+      setYear("");
+      return;
+    }
+
+    const currentMax = new Date().getFullYear() + 10;
+    const numericValue = Number(value);
+
+    if (!/^\d{4}$/.test(value) || numericValue < 1900 || numericValue > currentMax) {
+      setYearError(`Enter a year between 1900 and ${currentMax}`);
+      setYear("");
+      return;
+    }
+
+    setYearError(null);
+    setYear(value);
+  };
+
+  const [languageInput, setLanguageInput] = useState("");
+
+  const handleLanguageInput = (e) => {
+    setLanguageInput(e);
+    const match = languages.find(
+      (l) => l.english_name.toLowerCase() === e.toLowerCase()
+    );
+    setLanguage(match ? match.iso_639_1 : "");
+  };
+
+  const filteredResults = useMemo(() => {
+    return results.filter((item) => {
+      if(genre && !(item.genre_ids || []).includes(Number(genre))) {
+        return false;
+      }
+      if(year) {
+        const releaseDate = item.release_date || item.first_air_date || "";
+        if(releaseDate.slice(0, 4) !== year) {
+          return false;
+        }
+      }
+      if (language && item.original_language !== language) {
+        return false;
+      }
+      return true;
+    });
+  }, [results, genre, year, language]);
+
+  const MIN_VISIBLE_RESULTS = 20;
+  const MAX_AUTO_PAGES = 5;
+
+  const autoPageCount = useRef(0);
+
+  useEffect(() => {
+    autoPageCount.current = 0;
+  }, [search, contentType, searchTrigger, genre, year, language]);
+
+  useEffect(() => {
+    if (
+      (genre || year || language) &&
+      !loading &&
+      !loadingMore &&
+      !error &&
+      hasSearched &&
+      filteredResults.length < MIN_VISIBLE_RESULTS &&
+      page < totalPages &&
+      autoPageCount.current < MAX_AUTO_PAGES
+    ) {
+      autoPageCount.current += 1;
+      handleSearch(null, page + 1);
+    }
+  }, [filteredResults.length, page, totalPages, loading, loadingMore, error, hasSearched, genre, year, language]);
 
   return (
     <main className="search-page">
@@ -275,6 +372,7 @@ useEffect(() => {
             )}
 
 
+
             {!loading && error && (
               <div className="no-results">
 
@@ -293,7 +391,7 @@ useEffect(() => {
             {!loading &&
               !error &&
               hasSearched &&
-              results.length === 0 && (
+              filteredResults.length === 0 && (
 
                 <div className="no-results">
 
@@ -312,14 +410,22 @@ useEffect(() => {
 
             {!loading &&
               !error &&
-              results.length > 0 && (
+              filteredResults.length > 0 && (
 
-                results.map((item) => {
+                filteredResults.map((item) => {
 
                   const title =
                     item.title ||
                     item.name ||
                     "Untitled";
+
+                  const genreName =
+                    (item.genre_ids || [])
+                      .map((id) =>
+                        genres.find((g) => g.id === id)?.name
+                    )
+                    .filter(Boolean)
+                    .join(", ");
 
                   const releaseDate =
                     item.release_date ||
@@ -400,7 +506,7 @@ useEffect(() => {
 
                         <p>
                           <strong>Genre:</strong>{" "}
-                          Not provided by search endpoint
+                          {genreName || "N/A"}
                         </p>
 
 
@@ -426,7 +532,7 @@ useEffect(() => {
           </div>
           {!loading &&
           !error &&
-          results.length > 0 && 
+          filteredResults.length > 0 && 
           page < totalPages && (
             <div className="load-more-container">
 
@@ -488,35 +594,22 @@ useEffect(() => {
             <label htmlFor="search-year">
               Year
             </label>
-
-            <select
+            
+            <input
               id="search-year"
-              value={year}
+              type="number"
+              placeholder="any"
+              min="1900"
+              max={new Date().getFullYear() + 10}
+              value={yearInput}
               onChange={(e) =>
-                setYear(e.target.value)
+                handleYearInput(e.target.value)
               }
-            >
-
-              <option value="">
-                Any
-              </option>
-
-              <option value="2024">
-                2024
-              </option>
-
-              <option value="2023">
-                2023
-              </option>
-
-              <option value="2022">
-                2022
-              </option>
-
-            </select>
-
+            />
+            {yearError && (
+              <p className="field-error">{yearError}</p>
+            )}
           </div>
-
 
           <div className="search-filter">
 
@@ -524,31 +617,21 @@ useEffect(() => {
               Language
             </label>
 
-            <select
-              id="search-language"
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-            >
+          <input
+            id="search-language"
+            list="language-options"
+            type="text"
+            placeholder="Any"
+            value={languageInput}
+            onChange={(e) => handleLanguageInput(e.target.value)}
+          />
 
-              <option value="">
-                Any
-              </option>
+          <datalist id="language-options">
+            {languages.map((lang) => (
+              <option key={lang.iso_639_1} value={lang.english_name} />
+            ))}
+          </datalist>
 
-              <option value="English">
-                English
-              </option>
-
-              <option value="Finnish">
-                Finnish
-              </option>
-
-              <option value="Swedish">
-                Swedish
-              </option>
-
-            </select>
 
           </div>
 

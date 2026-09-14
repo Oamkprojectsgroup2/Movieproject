@@ -4,6 +4,7 @@ import cors from 'cors';
 import movieRoutes from './routes/movieRoutes.js';
 import tvRoutes from './routes/tvRoutes.js'
 import express from 'express';
+import configRoutes from './routes/configRoutes.js';
 
 //Fetch .env from root folder
 dotenv.config({path: path.resolve(process.cwd(), '../.env')});
@@ -16,10 +17,11 @@ app.use(express.json());
 
 app.use('/api/movies', movieRoutes);
 app.use('/api/tv', tvRoutes);
-
+app.use('/api/config', configRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
 
 //Clean errorcode if apiroute not found for some reason
 app.use((req, res) => {
