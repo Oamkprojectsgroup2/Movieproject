@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "../styles/Home.css";
+import SearchFilters from "../components/SearchFilters";
 
 const BASE_URL = "http://localhost:3001/api";
 
@@ -124,93 +125,15 @@ function Home({
 
         {/* FILTERS */}
 
-        <div className="home-filters">
+      <SearchFilters
+        genre={genre} setGenre={setGenre}
+        year={year} setYear={setYear}
+        language={language} setLanguage={setLanguage}
+        siteLanguage="en-US"
+        className="home-filters"
+        showExtra={false}
+      />
 
-          <div className="home-filter">
-            <label htmlFor="genre">
-              Genre
-            </label>
-
-            <select
-              id="genre"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-            >
-              <option value="">
-                Any
-              </option>
-
-              <option value="Action">
-                Action
-              </option>
-
-              <option value="Drama">
-                Drama
-              </option>
-
-              <option value="Comedy">
-                Comedy
-              </option>
-            </select>
-          </div>
-
-          <div className="home-filter">
-            <label htmlFor="year">
-              Year
-            </label>
-
-            <select
-              id="year"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            >
-              <option value="">
-                Any
-              </option>
-
-              <option value="2024">
-                2024
-              </option>
-
-              <option value="2023">
-                2023
-              </option>
-
-              <option value="2022">
-                2022
-              </option>
-            </select>
-          </div>
-
-          <div className="home-filter">
-            <label htmlFor="language">
-              Language
-            </label>
-
-            <select
-              id="language"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-            >
-              <option value="">
-                Any
-              </option>
-
-              <option value="English">
-                English
-              </option>
-
-              <option value="Finnish">
-                Finnish
-              </option>
-
-              <option value="Swedish">
-                Swedish
-              </option>
-            </select>
-          </div>
-
-        </div>
 
       </section>
 
