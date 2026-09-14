@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-
-const BASE_URL = "http://localhost:3001/api";
+import { BASE_URL } from "../config";
 
 const LANGUAGES = [
   { code: 'fi-FI', label: 'Suomi 🇫🇮' },

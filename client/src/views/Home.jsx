@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
-
-const BASE_URL = "http://localhost:3001/api";
+import { BASE_URL } from "../config";
 
 function Home({
   search,

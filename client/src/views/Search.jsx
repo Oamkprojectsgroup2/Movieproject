@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import "../styles/Search.css";
 import SearchFilters from "../components/SearchFilters";
-
-const BASE_URL = "http://localhost:3001/api";
+import { BASE_URL } from "../config";
 
 function Search({
   search,
@@ -93,6 +92,9 @@ useEffect(() => {
         "page",
         pageNumber
       );
+      if (year) {
+        params.append("year", year);
+      }
 
       const response = await fetch(
         `${BASE_URL}${endpoint}?${params.toString()}`
@@ -157,18 +159,12 @@ useEffect(() => {
       if(genre && !(item.genre_ids || []).includes(Number(genre))) {
         return false;
       }
-      if(year) {
-        const releaseDate = item.release_date || item.first_air_date || "";
-        if(releaseDate.slice(0, 4) !== year) {
-          return false;
-        }
-      }
       if (language && item.original_language !== language) {
         return false;
       }
       return true;
     });
-  }, [results, genre, year, language]);
+  }, [results, genre, language]);
 
   const MIN_VISIBLE_RESULTS = 20;
   const MAX_AUTO_PAGES = 5;
@@ -177,11 +173,11 @@ useEffect(() => {
 
   useEffect(() => {
     autoPageCount.current = 0;
-  }, [search, contentType, searchTrigger, genre, year, language]);
+  }, [search, contentType, searchTrigger, genre, language]);
 
   useEffect(() => {
     if (
-      (genre || year || language) &&
+      (genre || language) &&
       !loading &&
       !loadingMore &&
       !error &&

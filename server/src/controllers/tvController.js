@@ -36,14 +36,15 @@ export const getOnTheAir = categoryRequest(
 
 export const search = async (req, res) => {
     try {
-        const { query, page, language, region } = req.query;
+        const { query, page, language, region, year } = req.query;
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
         const data = await tvService.searchTvSeries(query,
             page || 1,
             language || "fi-FI",
-            region || "FI"
+            region || "FI",
+            year
             );
         res.json(data);
     }

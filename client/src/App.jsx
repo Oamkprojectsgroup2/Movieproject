@@ -6,8 +6,6 @@ import Search from "./views/Search";
 
 import "./App.css";
 
-const BASE_URL = "http://localhost:3001/api";
-
 
 function App() {
 
