@@ -14,6 +14,7 @@ function SearchFilters({
   onGenresLoaded,
   className,
   showExtra = true,
+  showYear = true,
 }) {
   const clearFilters = () => {
     setGenre("");
@@ -112,7 +113,7 @@ function SearchFilters({
     );
 
     if(!match) {
-      setLanguageError(`"${e}" ei ole tunnistettu kieli`);
+      setLanguageError(`"${e}" is not a recognized language`);
       setLanguage("");
       return;
     }
@@ -142,7 +143,7 @@ function SearchFilters({
           ))}
         </select>
       </div>
-
+    {showYear && (
       <div className="search-filter">
         <label htmlFor="search-year">Year</label>
 
@@ -157,7 +158,7 @@ function SearchFilters({
         />
         {yearError && <p className="field-error">{yearError}</p>}
       </div>
-
+    )}
       <div className="search-filter">
         <label htmlFor="search-language">Language</label>
 

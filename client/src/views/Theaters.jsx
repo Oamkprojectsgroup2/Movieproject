@@ -1,28 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "../styles/Theaters.css";
+import { BASE_URL } from "../config";
+import SearchFilters from "../components/SearchFilters";
 
-const BASE_URL = "http://localhost:3001/api";
 
-const GENRES = {
-  28: "Action",
-  12: "Adventure",
-  16: "Animation",
-  35: "Comedy",
-  80: "Crime",
-  99: "Documentary",
-  18: "Drama",
-  10751: "Family",
-  14: "Fantasy",
-  36: "History",
-  27: "Horror",
-  10402: "Music",
-  9648: "Mystery",
-  10749: "Romance",
-  878: "Science Fiction",
-  53: "Thriller",
-  10752: "War",
-  37: "Western",
-};
+
 
 const LANGUAGES = {
   en: "English",
@@ -32,9 +14,9 @@ const LANGUAGES = {
 
 function Theaters() {
   const [results, setResults] = useState([]);
-
-  const [genre, setGenre] = useState("");
-  const [year, setYear] = useState("");
+  
+  const [genre, setGenre] = useState("")
+  const [genres, setGenres] = useState([]);
   const [language, setLanguage] = useState("");
 
   const [page, setPage] = useState(1);
@@ -43,6 +25,7 @@ function Theaters() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+
 
   /*
    * Automatically load currently playing movies
@@ -156,7 +139,7 @@ function Theaters() {
     }
 
     return movie.genre_ids
-      .map((id) => GENRES[id])
+      .map((id) => genres.find((g) => g.id === id)?.name)
       .filter(Boolean)
       .join(", ") || "N/A";
   };
@@ -180,8 +163,6 @@ function Theaters() {
    */
   const filteredResults = results.filter(
     (movie) => {
-      const movieYear = getYear(movie);
-
       const movieGenres =
         movie.genre_ids || [];
 
@@ -190,13 +171,9 @@ function Theaters() {
 
       const matchesGenre =
         !genre ||
-        movieGenres.some(
-          (id) => GENRES[id] === genre
+        movieGenres.includes(
+          Number(genre)
         );
-
-      const matchesYear =
-        !year ||
-        movieYear === year;
 
       const matchesLanguage =
         !language ||
@@ -204,11 +181,34 @@ function Theaters() {
 
       return (
         matchesGenre &&
-        matchesYear &&
         matchesLanguage
       );
     }
   );
+
+  const MIN_VISIBLE_RESULTS = 20;
+  const MAX_AUTO_PAGES = 5;
+
+  const autoPageCount = useRef(0);
+
+  useEffect(() => {
+    autoPageCount.current = 0;
+  }, [genre, language]);
+
+  useEffect(() => {
+    if (
+      (genre || language) &&
+      !loading &&
+      !loadingMore &&
+      !error &&
+      filteredResults.length < MIN_VISIBLE_RESULTS &&
+      page < totalPages &&
+      autoPageCount.current < MAX_AUTO_PAGES
+    ) {
+      autoPageCount.current += 1;
+      handleSearch(page + 1);
+    }
+  }, [filteredResults.length, page, totalPages, loading, loadingMore, error, genre, language]);
 
   return (
     <main className="theaters-page">
@@ -228,127 +228,16 @@ function Theaters() {
 
           <div className="theaters-filter">
 
-            <label htmlFor="theaters-genre">
-              Genre
-            </label>
-
-            <select
-              id="theaters-genre"
-              value={genre}
-              onChange={(e) =>
-                setGenre(e.target.value)
-              }
-            >
-              <option value="">
-                Any
-              </option>
-
-              <option value="Action">
-                Action
-              </option>
-
-              <option value="Adventure">
-                Adventure
-              </option>
-
-              <option value="Animation">
-                Animation
-              </option>
-
-              <option value="Comedy">
-                Comedy
-              </option>
-
-              <option value="Crime">
-                Crime
-              </option>
-
-              <option value="Documentary">
-                Documentary
-              </option>
-
-              <option value="Drama">
-                Drama
-              </option>
-
-              <option value="Family">
-                Family
-              </option>
-
-              <option value="Fantasy">
-                Fantasy
-              </option>
-
-              <option value="Horror">
-                Horror
-              </option>
-
-              <option value="Music">
-                Music
-              </option>
-
-              <option value="Mystery">
-                Mystery
-              </option>
-
-              <option value="Romance">
-                Romance
-              </option>
-
-              <option value="Science Fiction">
-                Science Fiction
-              </option>
-
-              <option value="Thriller">
-                Thriller
-              </option>
-
-              <option value="War">
-                War
-              </option>
-
-              <option value="Western">
-                Western
-              </option>
-
-            </select>
-
-          </div>
-
-
-          
-
-
-          <div className="theaters-filter">
-
-            <label htmlFor="theaters-language">
-              Language
-            </label>
-
-            <select
-              id="theaters-language"
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-            >
-              <option value="">
-                Any
-              </option>
-
-              <option value="en">
-                English
-              </option>
-
-              <option value="fi">
-                Finnish
-              </option>
-
-              <option value="sv">
-                Swedish
-              </option>
-
-            </select>
+            <SearchFilters
+              genre={genre} setGenre={setGenre}
+              language={language} setLanguage={setLanguage}
+              contentType="movie"
+              siteLanguage="en-US"
+              showYear={false}
+              onGenresLoaded={setGenres}
+              className="theaters-filter-fields"
+              showExtra={false}
+            />
 
           </div>
 
@@ -537,6 +426,12 @@ function Theaters() {
                   ? "Loading..."
                   : "Load More"}
               </button>
+
+              {(genre || language) && (
+                <p className="theaters-load-more-hint">
+                  With filters active, it can take a few extra pages to find matching movies.
+                </p>
+              )}
 
             </div>
 
