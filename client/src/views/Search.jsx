@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "../styles/Search.css";
-
-const BASE_URL = "http://localhost:3001/api";
+import SearchFilters from "../components/SearchFilters";
+import { BASE_URL } from "../config";
 
 function Search({
   search,
@@ -13,10 +13,13 @@ function Search({
   language,
   setLanguage,
   searchTrigger,
+  siteLanguage,
 }) {
   const [hasSearched, setHasSearched] = useState(false);
 
   const [contentType, setContentType] = useState("movie");
+
+  const [genres, setGenres] = useState([]);
 
   const [results, setResults] = useState([]);
 
@@ -27,12 +30,6 @@ function Search({
   const [page, setPage] =useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
-
-  useEffect(() => {
-  if (search.trim()) {
-    handleSearch();
-  }
-}, []);
 
 useEffect(() => {
   if (search.trim()) {
@@ -95,6 +92,9 @@ useEffect(() => {
         "page",
         pageNumber
       );
+      if (year) {
+        params.append("year", year);
+      }
 
       const response = await fetch(
         `${BASE_URL}${endpoint}?${params.toString()}`
@@ -154,13 +154,42 @@ useEffect(() => {
     }
   };
 
+  const filteredResults = useMemo(() => {
+    return results.filter((item) => {
+      if(genre && !(item.genre_ids || []).includes(Number(genre))) {
+        return false;
+      }
+      if (language && item.original_language !== language) {
+        return false;
+      }
+      return true;
+    });
+  }, [results, genre, language]);
 
-  const clearFilters = () => {
-    setGenre("");
-    setYear("");
-    setLanguage("");
-  };
+  const MIN_VISIBLE_RESULTS = 20;
+  const MAX_AUTO_PAGES = 5;
 
+  const autoPageCount = useRef(0);
+
+  useEffect(() => {
+    autoPageCount.current = 0;
+  }, [search, contentType, searchTrigger, genre, language]);
+
+  useEffect(() => {
+    if (
+      (genre || language) &&
+      !loading &&
+      !loadingMore &&
+      !error &&
+      hasSearched &&
+      filteredResults.length < MIN_VISIBLE_RESULTS &&
+      page < totalPages &&
+      autoPageCount.current < MAX_AUTO_PAGES
+    ) {
+      autoPageCount.current += 1;
+      handleSearch(null, page + 1);
+    }
+  }, [filteredResults.length, page, totalPages, loading, loadingMore, error, hasSearched, genre, year, language]);
 
   return (
     <main className="search-page">
@@ -250,6 +279,7 @@ useEffect(() => {
             )}
 
 
+
             {!loading && error && (
               <div className="no-results">
 
@@ -268,7 +298,7 @@ useEffect(() => {
             {!loading &&
               !error &&
               hasSearched &&
-              results.length === 0 && (
+              filteredResults.length === 0 && (
 
                 <div className="no-results">
 
@@ -287,14 +317,22 @@ useEffect(() => {
 
             {!loading &&
               !error &&
-              results.length > 0 && (
+              filteredResults.length > 0 && (
 
-                results.map((item) => {
+                filteredResults.map((item) => {
 
                   const title =
                     item.title ||
                     item.name ||
                     "Untitled";
+
+                  const genreName =
+                    (item.genre_ids || [])
+                      .map((id) =>
+                        genres.find((g) => g.id === id)?.name
+                    )
+                    .filter(Boolean)
+                    .join(", ");
 
                   const releaseDate =
                     item.release_date ||
@@ -375,7 +413,7 @@ useEffect(() => {
 
                         <p>
                           <strong>Genre:</strong>{" "}
-                          Not provided by search endpoint
+                          {genreName || "N/A"}
                         </p>
 
 
@@ -401,7 +439,7 @@ useEffect(() => {
           </div>
           {!loading &&
           !error &&
-          results.length > 0 && 
+          filteredResults.length > 0 && 
           page < totalPages && (
             <div className="load-more-container">
 
@@ -423,126 +461,14 @@ useEffect(() => {
 
         {/* RIGHT FILTER PANEL */}
 
-        <aside className="search-filters">
-
-          <h2>
-            Filters
-          </h2>
-
-
-          <div className="search-filter">
-
-            <label htmlFor="search-genre">
-              Genre
-            </label>
-
-            <select
-              id="search-genre"
-              value={genre}
-              onChange={(e) =>
-                setGenre(e.target.value)
-              }
-            >
-
-              <option value="">
-                Any
-              </option>
-
-              <option value="Action">
-                Action
-              </option>
-
-              <option value="Drama">
-                Drama
-              </option>
-
-              <option value="Comedy">
-                Comedy
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div className="search-filter">
-
-            <label htmlFor="search-year">
-              Year
-            </label>
-
-            <select
-              id="search-year"
-              value={year}
-              onChange={(e) =>
-                setYear(e.target.value)
-              }
-            >
-
-              <option value="">
-                Any
-              </option>
-
-              <option value="2024">
-                2024
-              </option>
-
-              <option value="2023">
-                2023
-              </option>
-
-              <option value="2022">
-                2022
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div className="search-filter">
-
-            <label htmlFor="search-language">
-              Language
-            </label>
-
-            <select
-              id="search-language"
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-            >
-
-              <option value="">
-                Any
-              </option>
-
-              <option value="English">
-                English
-              </option>
-
-              <option value="Finnish">
-                Finnish
-              </option>
-
-              <option value="Swedish">
-                Swedish
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <button
-            className="clear-filters"
-            onClick={clearFilters}
-          >
-            Clear Filters
-          </button>
-
-        </aside>
+      <SearchFilters
+        genre={genre} setGenre={setGenre}
+        year={year} setYear={setYear}
+        language={language} setLanguage={setLanguage}
+        contentType={contentType}
+        siteLanguage={siteLanguage} 
+        onGenresLoaded={setGenres}
+/>
 
       </div>
 

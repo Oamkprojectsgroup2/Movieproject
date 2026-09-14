@@ -1,7 +1,9 @@
 import { tmdbFetch } from '../helper/tmdb.js';
 
-export const searchMovies = (query, page = 1, language = "fi-FI", region = "FI") => {
-    return tmdbFetch("/search/movie", {query, page, language, region});
+export const searchMovies = (query, page = 1, language = "fi-FI", region = "FI", year) => {
+    const params = { query, page, language, region};
+    if (year) params.primary_release_year = year;
+    return tmdbFetch("/search/movie", params);
 }
 
 export const getNowPlayingMovies = (page = 1, language = "fi-FI", region = "FI") => {
@@ -18,4 +20,8 @@ export const getTopRatedMovies = (page = 1, language = "fi-FI", region = "FI") =
 
 export const getUpcomingMovies = (page = 1, language = "fi-FI", region = "FI") => {
     return tmdbFetch("/movie/upcoming", {page, language, region});
+}
+
+export const getMovieGenres = (language = "fi-FI") => {
+    return tmdbFetch("/genre/movie/list", {language});
 }

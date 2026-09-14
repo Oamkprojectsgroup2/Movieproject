@@ -36,7 +36,7 @@ export const getUpcoming = categoryRequest(
 
 export const search = async (req, res) => {
     try {
-        const { query, page, language, region } = req.query;
+        const { query, page, language, region, year } = req.query;
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
@@ -44,7 +44,8 @@ export const search = async (req, res) => {
             query,
             page || 1,
             language || "fi-FI",
-            region || "FI"
+            region || "FI",
+            year
             );
         res.json(data);
     }
@@ -53,4 +54,17 @@ export const search = async (req, res) => {
         res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }
+
+export const getGenres = async (req, res) => {
+    try{
+        const language = req.query.language || "fi-FI";
+        const data = await movieService.getMovieGenres(language);
+        res.json(data);
+    }
+    catch (error) {
+        console.error("Error fetching movie genres:", error)
+        res.status(500).json({message: error.message || "Internal Server Error"});
+    }
+}
+
 

@@ -6,6 +6,8 @@ function Navbar({
   search,
   setSearch,
   setSearchTrigger,
+  siteLanguage,
+  setSiteLanguage,
 }) {
 
   const handleSearch = (e) => {
@@ -65,6 +67,11 @@ function Navbar({
         <button>
           Login
         </button>
+
+        <select value={siteLanguage} onChange={(e) => setSiteLanguage(e.target.value)}>
+          <option value="en-US">English</option>
+          <option value="fi-FI">Suomi</option>
+        </select>
 
       </div>
 

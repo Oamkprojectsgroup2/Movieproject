@@ -36,19 +36,32 @@ export const getOnTheAir = categoryRequest(
 
 export const search = async (req, res) => {
     try {
-        const { query, page, language, region } = req.query;
+        const { query, page, language, region, year } = req.query;
         if (!query) {
             return res.status(400).json({message: "Search query is required" });
         }
         const data = await tvService.searchTvSeries(query,
             page || 1,
             language || "fi-FI",
-            region || "FI"
+            region || "FI",
+            year
             );
         res.json(data);
     }
     catch (error) {
         console.error("Error searching series:", error)
+        res.status(500).json({message: error.message || "Internal Server Error"});
+    }
+}
+
+export const getGenres = async (req, res) => {
+    try{
+        const language = req.query.language || "fi-FI";
+        const data = await tvService.getTvGenres(language);
+        res.json(data);
+    }
+    catch (error) {
+        console.error("Error fetching tv genres:", error)
         res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }

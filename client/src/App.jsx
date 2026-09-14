@@ -7,7 +7,6 @@ import Theaters from "./views/Theaters";
 
 import "./App.css";
 
-const BASE_URL = "http://localhost:3001/api";
 
 function App() {
 
@@ -18,7 +17,7 @@ function App() {
   const [year, setYear] = useState("");
   const [language, setLanguage] = useState("");
   const [searchTrigger, setSearchTrigger] = useState(0);
-  
+  const [siteLanguage, setSiteLanguage] = useState("en-US");
 
 
   return (
@@ -30,6 +29,8 @@ function App() {
         search={search}
         setSearch={setSearch}
         setSearchTrigger={setSearchTrigger}
+        siteLanguage={siteLanguage}
+        setSiteLanguage={setSiteLanguage}
       />
 
 
@@ -66,6 +67,8 @@ function App() {
           language={language}
           setLanguage={setLanguage}
           searchTrigger={searchTrigger}
+
+          siteLanguage={siteLanguage}
         />
       )}
 
