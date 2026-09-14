@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
 import Theaters from "./views/Theaters";
-
+import Modal from "./views/Login";
 import "./App.css";
 
 
@@ -19,6 +19,7 @@ function App() {
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [siteLanguage, setSiteLanguage] = useState("en-US");
 
+  const [showLogin, setShowLogin] = useState(false);
 
   return (
     <div className="app">
@@ -31,6 +32,7 @@ function App() {
         setSearchTrigger={setSearchTrigger}
         siteLanguage={siteLanguage}
         setSiteLanguage={setSiteLanguage}
+        onLoginClick={() => setShowLogin(true)}
       />
 
 
@@ -76,6 +78,8 @@ function App() {
         <Theaters />
       )}
 
+      <Modal isOpen={showLogin} onClose={() => setShowLogin(false)}>
+      </Modal>
     </div>
   );
 }

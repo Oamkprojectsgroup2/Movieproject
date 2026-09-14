@@ -8,6 +8,7 @@ function Navbar({
   setSearchTrigger,
   siteLanguage,
   setSiteLanguage,
+  onLoginClick,
 }) {
 
   const handleSearch = (e) => {
@@ -64,7 +65,9 @@ function Navbar({
           Groups
         </button>
 
-        <button>
+        <button
+          onClick={onLoginClick}
+          >
           Login
         </button>
 
