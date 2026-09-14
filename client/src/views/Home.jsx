@@ -17,6 +17,7 @@ function Home({
   const [activeRecommendation, setActiveRecommendation] = useState(0);
 
   const [recommendedMovies, setRecommendedMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [recommendationError, setRecommendationError] = useState(null);
 
@@ -131,6 +132,7 @@ function Home({
         siteLanguage="en-US"
         className="home-filters"
         showExtra={false}
+        onGenresLoaded={setGenres}
       />
 
 
@@ -258,10 +260,13 @@ function Home({
                     </span>
 
                   </div>
-
+                  
                   <p>
                     <strong>Genre:</strong>{" "}
-                    TMDB data
+                    {(currentMovie.genre_ids || [])
+                    .map((id) => genres.find((g) => g.id === id)?.name)
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
                   </p>
 
                   <p>
