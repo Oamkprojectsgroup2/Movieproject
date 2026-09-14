@@ -453,6 +453,12 @@ useEffect(() => {
                 ? "Loading..."
                 : "Load More"}
               </button>
+
+              {(genre || language) && (
+                <p className="load-more-hint">
+                  With filters active, it can take a few extra pages to find matching results.
+                </p>
+              )}
             </div>
           )}
 
