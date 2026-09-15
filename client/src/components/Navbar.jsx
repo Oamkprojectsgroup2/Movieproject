@@ -1,8 +1,7 @@
 import "../styles/Navbar.css";
+import { useNavigate } from "react-router";
 
 function Navbar({
-  currentPage,
-  setCurrentPage,
   search,
   setSearch,
   setSearchTrigger,
@@ -12,10 +11,11 @@ function Navbar({
   user,
   onLogout,
 }) {
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
-      setCurrentPage("search");
+      navigate("/search");
       setSearchTrigger((current) => current + 1);
     }
   };
@@ -30,7 +30,7 @@ function Navbar({
         className="logo"
           onClick={() => {
           setSearch("");
-          setCurrentPage("home")
+          navigate("/");
         }}
       >
         <h2 className="logo">
@@ -56,7 +56,7 @@ function Navbar({
 
 
         <button
-          onClick={() => setCurrentPage("theaters")}
+          onClick={() => navigate("/theaters")}
           >
           In Theaters
         </button>

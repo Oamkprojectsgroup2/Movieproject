@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Routes, Route } from "react-router";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
@@ -12,7 +12,7 @@ import "./App.css";
 
 function App() {
 
-  const [currentPage, setCurrentPage] = useState("home");
+  
 
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
@@ -45,8 +45,6 @@ function App() {
     <div className="app">
 
       <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
         search={search}
         setSearch={setSearch}
         setSearchTrigger={setSearchTrigger}
@@ -56,47 +54,24 @@ function App() {
       />
 
 
-      {currentPage === "home" && (
-        <Home
-          search={search}
-          setSearch={setSearch}
+      <Routes>
+        <Route path="/" element={
+          <Home search={search} setSearch={setSearch}
+                genre={genre} setGenre={setGenre}
+                year={year} setYear={setYear}
+                language={language} setLanguage={setLanguage} />
+        } />
+        <Route path="/search" element={
+          <Search search={search} setSearch={setSearch}
+                  genre={genre} setGenre={setGenre}
+                  year={year} setYear={setYear}
+                  language={language} setLanguage={setLanguage}
+                  searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
+        } />
+        <Route path="/theaters" element={<Theaters />} />
+        <Route path="*" element={<h2>Page not found</h2>} />
+      </Routes>
 
-          genre={genre}
-          setGenre={setGenre}
-
-          year={year}
-          setYear={setYear}
-
-          language={language}
-          setLanguage={setLanguage}
-
-          setCurrentPage={setCurrentPage}
-        />
-      )}
-
-
-      {currentPage === "search" && (
-        <Search
-          search={search}
-          setSearch={setSearch}
-
-          genre={genre}
-          setGenre={setGenre}
-
-          year={year}
-          setYear={setYear}
-
-          language={language}
-          setLanguage={setLanguage}
-          searchTrigger={searchTrigger}
-
-          siteLanguage={siteLanguage}
-        />
-      )}
-
-      {currentPage === "theaters" && (
-        <Theaters />
-      )}
 
       <Modal isOpen={authView !== null} onClose={closeAuth}>
 

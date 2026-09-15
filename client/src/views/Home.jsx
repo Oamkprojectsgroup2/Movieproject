@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "../styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
+import { useNavigate } from "react-router";
 
 function Home({
   search,
@@ -12,8 +13,8 @@ function Home({
   setYear,
   language,
   setLanguage,
-  setCurrentPage,
 }) {
+  const navigate = useNavigate();
   const [activeRecommendation, setActiveRecommendation] = useState(0);
 
   const [recommendedMovies, setRecommendedMovies] = useState([]);
@@ -93,7 +94,7 @@ function Home({
   const handleSearch = (e) => {
     e.preventDefault();
 
-    setCurrentPage("search");
+    navigate("/search");
   };
 
   return (

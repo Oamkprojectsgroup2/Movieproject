@@ -38,6 +38,29 @@ Movieproject/
 - does not directly interact with the database
 - does not store secret API keys
 
+## Frontend routing
+
+The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) to switch between pages. Each page has its own URL.
+
+- `client/src/main.jsx` wraps the app in `<BrowserRouter>`.
+- `client/src/App.jsx` lists all routes inside `<Routes>`.
+- The navbar and the login/register popup are outside `<Routes>`, so they appear on every page.
+
+| Path        | View                   |
+|-------------|------------------------|
+| `/`         | `views/Home.jsx`       |
+| `/search`   | `views/Search.jsx`     |
+| `/theaters` | `views/Theaters.jsx`   |
+| `*`         | "Page not found"       |
+
+### Adding a new page
+
+1. Create the component in `client/src/views/`.
+2. Add a route to `App.jsx`:
+   `<Route path="/favourites" element={<Favourites />} />`
+3. Navigate to it with `useNavigate()` or `<Link to="/favourites">`.
+
+Import everything from `react-router
 ### Backend / Node (`server/`)
 
 - provides a REST API to the frontend
