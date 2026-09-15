@@ -20,6 +20,15 @@ function validate({ username, email, password, confirmPassword }) {
     return "Password must be at least 8 characters.";
   }
 
+      //Should test all unicode characters
+  if (!/\p{Lu}/u.test(password)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+
+  if (!/\d/.test(password)) {
+    return "Password must contain at least one number.";
+  }
+
   if (password !== confirmPassword) {
     return "Passwords do not match.";
   }
