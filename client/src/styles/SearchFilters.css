@@ -11,6 +11,8 @@
   font-size: clamp(18px, 1.3vw, 22px);
 
   font-weight: 400;
+
+  color: var(--color-text);
 }
 
 
@@ -26,6 +28,8 @@
 
 .search-filter label {
   font-size: clamp(14px, 1vw, 17px);
+
+  color: var(--color-text-secondary);
 }
 
 
@@ -36,17 +40,41 @@
 
   padding: 0 10px;
 
-  border: 1px solid #555;
+  border: 1px solid var(--color-line);
   border-radius: 5px;
 
-  background: #eeeeee;
+  background: var(--color-surface-input);
 
-  color: #232323;
+  color: var(--color-text);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(13px, 1vw, 16px);
 
+  outline: none;
+
   cursor: pointer;
+}
+
+
+.search-filter input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+
+.search-filter select:focus,
+.search-filter input:focus {
+  background: var(--color-surface-input-focus);
+  border-color: var(--color-accent);
+}
+
+
+.field-error {
+  margin: 0;
+
+  color: var(--color-error);
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 13px;
 }
 
 
@@ -57,12 +85,12 @@
 
   margin-top: 8px;
 
-  border: 1px solid #555;
+  border: 1px solid var(--color-line);
   border-radius: 5px;
 
-  background: #eeeeee;
+  background: transparent;
 
-  color: #232323;
+  color: var(--color-text-secondary);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -72,7 +100,8 @@
 
 
 .clear-filters:hover {
-  background: #ffffff;
+  border-color: var(--color-accent);
+  color: var(--color-text);
 }
 
 @media (max-width: 700px) {

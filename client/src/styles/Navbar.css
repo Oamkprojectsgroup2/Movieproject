@@ -2,8 +2,8 @@
   width: 100%;
   height: 80px;
 
-  background: #7a7a7a;
-  border: 1px solid #606060;
+  background: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-gold);
 
   padding: 8px 32px;
   box-sizing: border-box;
@@ -17,17 +17,28 @@
   z-index: 1000;
 }
 
-/* Logo placeholder */
+/* Logo placeholder */ 
 .logo {
-  width: 150px;
+  /*
+ width: 150px;
   height: 50px;
 
-  background: #e6e6e6;
+  background: var(--color-ground-raised);
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
 
+  color: var(--color-gold);
+  */
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  font-size: clamp(10px, 7vw, 40px);
+  font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: center;
-}
+  
+  cursor: pointer;
+} 
 
 /* Everything on the right */
 .navbar-right {
@@ -43,14 +54,27 @@
 
   padding: 0 12px;
 
-  background: white;
-  border: 1px solid #232323;
+  background: var(--color-surface-input);
+  border: 1px solid var(--color-line);
   border-radius: 32px;
+
+  color: var(--color-text);
 
   box-sizing: border-box;
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
+
+  outline: none;
+}
+
+.nav-search::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.nav-search:focus {
+  background: var(--color-surface-input-focus);
+  border-color: var(--color-accent);
 }
 
 /* Navbar buttons */
@@ -60,11 +84,11 @@
 
   padding: 0 10px;
 
-  background: #ebebeb;
-  border: 1px solid #232323;
+  background: transparent;
+  border: 1px solid var(--color-line);
   border-radius: 3px;
 
-  color: #232323;
+  color: var(--color-text-secondary);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -74,5 +98,37 @@
 }
 
 .navbar button:hover {
-  background: #ffffff;
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* Login is the primary action, so it carries the accent */
+.navbar button.nav-login {
+  
+  background: var(--color-button-bg);
+  border-color: transparent;
+  color: var(--color-button-text);
+}
+
+.navbar button.nav-login:hover {
+  background: var(--color-button-hover);
+  border-color: transparent;
+}
+
+/* Site language */
+.navbar select {
+  height: 32px;
+
+  padding: 0 8px;
+
+  background: var(--color-surface-input);
+  border: 1px solid var(--color-line);
+  border-radius: 3px;
+
+  color: var(--color-text);
+
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+
+  cursor: pointer;
 }

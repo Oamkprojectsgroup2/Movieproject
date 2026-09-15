@@ -26,12 +26,14 @@ function Navbar({
 
       <div
         className="logo"
-        onClick={() => {
+          onClick={() => {
           setSearch("");
           setCurrentPage("home")
         }}
       >
-        <span>🖼️</span>
+        <h2 className="logo">
+          <span className="title-cine">Cine</span><span className="title-circle">Circle</span>
+        </h2>
       </div>
 
 

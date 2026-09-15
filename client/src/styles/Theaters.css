@@ -5,24 +5,24 @@
   width: 100%;
   min-height: calc(100vh - 80px);
 
-  color: #ffffff;
+  color: var(--color-text);
 
   background:
     radial-gradient(
       circle at 20% 20%,
-      rgba(100, 100, 120, 0.35),
+      rgba(193, 18, 31, 0.22),
       transparent 35%
     ),
     radial-gradient(
       circle at 80% 40%,
-      rgba(70, 70, 90, 0.3),
+      rgba(212, 163, 115, 0.12),
       transparent 40%
     ),
     linear-gradient(
       135deg,
-      #111 0%,
-      #1b1b1f 45%,
-      #101014 100%
+      rgb(26, 23, 23) 0%,
+      rgb(38, 32, 32) 45%,
+      rgb(22, 20, 20) 100%
     );
 
   overflow: hidden;
@@ -109,6 +109,8 @@
   margin-top: 4px;
 
   white-space: nowrap;
+
+  color: var(--color-error);
 }
 
 .theaters-filter-fields select,
@@ -118,16 +120,28 @@
 
   padding: 0 8px;
 
-  border: 1px solid #555;
+  border: 1px solid var(--color-line);
   border-radius: 5px;
 
-  background: #eeeeee;
-  color: #232323;
+  background: var(--color-surface-input);
+  color: var(--color-text);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
 
+  outline: none;
+
   cursor: pointer;
+}
+
+.theaters-filter-fields input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.theaters-filter-fields select:focus,
+.theaters-filter-fields input:focus {
+  background: var(--color-surface-input-focus);
+  border-color: var(--color-accent);
 }
 
 .theaters-filter label {
@@ -137,6 +151,8 @@
     sans-serif;
 
   font-size: 14px;
+
+  color: var(--color-text-secondary);
 }
 
 /*RESULTS GRID*/
@@ -175,7 +191,7 @@
 
   border-bottom:
     1px solid
-    rgba(255, 255, 255, 0.12);
+    var(--color-line);
 }
 
 
@@ -192,12 +208,12 @@
   align-items: center;
   justify-content: center;
 
-  background: #e6e6e6;
+  background: var(--color-surface-input);
 
   border:
-    1px solid #232323;
+    1px solid var(--color-line);
 
-  color: #777;
+  color: var(--color-text-muted);
 
   font-size: 14px;
 
@@ -258,14 +274,16 @@
   margin-bottom: 12px;
 
   font-size: 14px;
+
+  color: var(--color-text-secondary);
 }
 
 .theaters-rating > span:first-child {
-  color: #ffffff;
+  color: var(--color-gold);
 }
 
 .rating-empty {
-  color: #555555;
+  color: var(--color-text-muted);
 }
 
 
@@ -275,7 +293,7 @@
   margin:
     6px 0;
 
-  color: #d0d0d0;
+  color: var(--color-text-secondary);
 
   font-family:
     Helvetica,
@@ -288,7 +306,7 @@
 }
 
 .theaters-info strong {
-  color: #ffffff;
+  color: var(--color-text);
 }
 
 
@@ -308,7 +326,7 @@
 }
 
 .theaters-message p {
-  color: #bbbbbb;
+  color: var(--color-text-secondary);
 }
 
 
@@ -328,7 +346,7 @@
 }
 
 .theaters-load-more-hint {
-  color: #bbbbbb;
+  color: var(--color-text-muted);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
@@ -344,13 +362,13 @@
   padding: 0 25px;
 
   border:
-    1px solid #555;
+    1px solid var(--color-line);
 
   border-radius: 6px;
 
-  background: #eeeeee;
+  background: var(--color-surface-input);
 
-  color: #232323;
+  color: var(--color-text);
 
   font-family:
     Helvetica,
@@ -363,7 +381,7 @@
 }
 
 .theaters-load-more:hover {
-  background: #ffffff;
+  background: var(--color-button-hover);
 }
 
 .theaters-load-more:disabled {

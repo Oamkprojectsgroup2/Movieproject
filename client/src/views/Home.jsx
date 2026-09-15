@@ -104,7 +104,7 @@ function Home({
       <section className="home-hero">
 
         <h1 className="home-title">
-          Movie Explorer
+          <span className="title-cine">Cine</span><span className="title-circle">Circle</span>
         </h1>
 
         <form
