@@ -4,7 +4,8 @@ import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
 import Theaters from "./views/Theaters";
-import Modal from "./views/Login";
+import Modal from "./components/Modal"
+import LoginForm from "./components/LoginForm";
 import "./App.css";
 
 
@@ -79,6 +80,7 @@ function App() {
       )}
 
       <Modal isOpen={showLogin} onClose={() => setShowLogin(false)}>
+        <LoginForm />
       </Modal>
     </div>
   );

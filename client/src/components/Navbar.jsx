@@ -66,6 +66,7 @@ function Navbar({
         </button>
 
         <button
+          className="nav-login"
           onClick={onLoginClick}
           >
           Login
