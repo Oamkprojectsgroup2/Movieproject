@@ -1,0 +1,42 @@
+/*
+ * Colour tokens for the whole app.
+ * Every stylesheet reads colours from here — don't hardcode hex values elsewhere.
+ */
+
+:root {
+  /* ACCENTS */
+  --color-accent: rgb(230, 57, 70);
+  --color-accent-deep: rgb(193, 18, 31);
+  --color-gold: rgb(212, 163, 115);
+
+  /* BUTTON */
+  --color-button-bg: rgb(230, 57, 70);
+  --color-button-text: rgb(245, 241, 238);
+  --color-button-hover: rgb(90, 26, 38);
+
+  /* TEXT */
+  --color-text: rgb(245, 241, 238);
+  --color-text-secondary: rgb(168, 159, 155);
+  --color-text-muted: rgb(107, 97, 94);
+
+  /* SURFACES */
+  --color-surface-card: rgb(43, 38, 38);
+  --color-surface-input: rgb(58, 49, 49);
+  --color-surface-input-focus: rgb(70, 56, 56);
+
+  /* The palette defines no page background, so this is one step below the card */
+  --color-ground: rgb(26, 23, 23);
+  --color-ground-raised: rgb(33, 29, 29);
+
+  /* BORDERS AND DIVIDERS */
+  --color-line: rgba(255, 255, 255, 0.08);
+
+  /* EFFECTS */
+  --color-clow-red: rgba(230, 57, 70, 0.45);
+  
+  /* STATES */
+  --color-error: rgb(255, 107, 107);
+  --color-success: rgb(127, 176, 105);
+  --color-warning: rgb(244, 162, 97);
+  
+}
