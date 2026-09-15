@@ -29,7 +29,7 @@
 .search-filter label {
   font-size: clamp(14px, 1vw, 17px);
 
-  color: var(--color-text-secondary);
+  color: var(--color-text);
 }
 
 
@@ -40,7 +40,7 @@
 
   padding: 0 10px;
 
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: 5px;
 
   background: var(--color-surface-input);
@@ -58,6 +58,12 @@
 
 .search-filter input::placeholder {
   color: var(--color-text-secondary);
+}
+
+
+.search-filter select:hover,
+.search-filter input:hover {
+  border-color: var(--color-text-secondary);
 }
 
 
@@ -85,7 +91,7 @@
 
   margin-top: 8px;
 
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: 5px;
 
   background: transparent;

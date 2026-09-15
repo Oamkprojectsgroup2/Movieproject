@@ -1,5 +1,5 @@
 import "../styles/Navbar.css";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
 function Navbar({
   search,
@@ -46,7 +46,7 @@ function Navbar({
         {/* Small search */}
 
         <input
-          className="nav-search"
+          className="navbar-search"
           type="text"
           placeholder="Search"
           value={search}
@@ -55,23 +55,16 @@ function Navbar({
         />
 
 
-        <button
-          onClick={() => navigate("/theaters")}
-          >
-          In Theaters
-        </button>
 
-        <button>
-          Favourites
-        </button>
-
-        <button>
-          Groups
-        </button>
+        <div className="navbar-links">
+          <NavLink to="/theaters">In Theaters</NavLink>
+          <NavLink to="/favourites">Favourites</NavLink>
+          <NavLink to="/groups">Groups</NavLink>
+        </div>
 
         {user ? (
           <>
-            <span className="nav-user">{user.username}</span>
+            <span className="navbar-user">{user.username}</span>
 
             <button onClick={onLogout}>
               Logout
@@ -79,7 +72,7 @@ function Navbar({
           </>
         ) : (
           <button
-            className="nav-login"
+            className="navbar-login btn-primary"
             onClick={onLoginClick}
           >
             Login

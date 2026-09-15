@@ -30,6 +30,7 @@
 
   /* BORDERS AND DIVIDERS */
   --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.35);
 
   /* EFFECTS */
   --color-clow-red: rgba(230, 57, 70, 0.45);

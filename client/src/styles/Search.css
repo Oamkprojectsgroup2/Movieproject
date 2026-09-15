@@ -78,7 +78,7 @@
 }
 
 .search-type button {
-  padding: 9px 18px;
+  padding: 6px 16px;
 
   border: 1px solid var(--color-line);
   border-radius: 5px;
@@ -86,10 +86,12 @@
   background: transparent;
   color: var(--color-text-secondary);
 
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.06em;
 
   cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
 }
 
 .search-type button:hover {
@@ -98,9 +100,8 @@
 }
 
 .search-type button.active {
-  background: var(--color-button-bg);
-  color: var(--color-button-text);
-  border-color: transparent;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
 }
 
 
@@ -179,25 +180,11 @@
 
 .search-page-search button {
   height: clamp(40px, 3.5vw, 54px);
-
   padding: 0 clamp(18px, 1.5vw, 30px);
 
-  border: none;
   border-radius: 7px;
 
-  background: var(--color-button-bg);
-
-  color: var(--color-button-text);
-
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: clamp(14px, 1vw, 18px);
-
-  cursor: pointer;
-}
-
-
-.search-page-search button:hover {
-  background: var(--color-button-hover);
+  font-size: clamp(18px, 1.4vw, 22px);
 }
 
 
