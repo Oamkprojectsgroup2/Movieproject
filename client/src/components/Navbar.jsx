@@ -9,6 +9,8 @@ function Navbar({
   siteLanguage,
   setSiteLanguage,
   onLoginClick,
+  user,
+  onLogout,
 }) {
 
   const handleSearch = (e) => {
@@ -67,12 +69,22 @@ function Navbar({
           Groups
         </button>
 
-        <button
-          className="nav-login"
-          onClick={onLoginClick}
+        {user ? (
+          <>
+            <span className="nav-user">{user.username}</span>
+
+            <button onClick={onLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <button
+            className="nav-login"
+            onClick={onLoginClick}
           >
-          Login
-        </button>
+            Login
+          </button>
+        )}
 
         <select value={siteLanguage} onChange={(e) => setSiteLanguage(e.target.value)}>
           <option value="en-US">English</option>
