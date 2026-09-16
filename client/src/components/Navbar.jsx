@@ -28,14 +28,12 @@ function Navbar({
 
       <div
         className="logo"
-          onClick={() => {
+        onClick={() => {
           setSearch("");
           navigate("/");
         }}
       >
-        <h2 className="logo">
-          <span className="title-cine">Cine</span><span className="title-circle">Circle</span>
-        </h2>
+        <span className="title-cine">Cine</span><span className="title-circle">Circle</span>
       </div>
 
 

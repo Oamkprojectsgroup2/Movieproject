@@ -9,6 +9,7 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import "./App.css";
 import { BASE_URL } from "./config";
+import Placeholder from "./components/Placeholder";
 
 
 function App() {
@@ -36,7 +37,6 @@ function App() {
   };
   
   const handleRegister = async (values) => {
-    // TODO (#13): send values to the registration API
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: { 
@@ -87,7 +87,11 @@ function App() {
                   searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
         } />
         <Route path="/theaters" element={<Theaters />} />
-        <Route path="*" element={<h2>Page not found</h2>} />
+        <Route path="/favourites" element={<Placeholder title="Favourites" />} />
+        <Route path="/groups" element={<Placeholder title="Groups" />} />
+        <Route path="*" element={
+          <Placeholder title="404" message="That page doesn't exist." />
+        } />
       </Routes>
 
 
