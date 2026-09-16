@@ -51,7 +51,7 @@ function App() {
     console.log("Server Response Data:", data);
 
     if (!response.ok) {
-      throw new Error(data.message || "Resgistration failed");
+      throw new Error(data.message || "Registration failed");
     }
 
     console.log("Register", values);
