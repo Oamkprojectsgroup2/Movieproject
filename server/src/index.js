@@ -1,13 +1,14 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import cors from 'cors';
+import express from 'express';
 import movieRoutes from './routes/movieRoutes.js';
 import tvRoutes from './routes/tvRoutes.js'
-import express from 'express';
 import configRoutes from './routes/configRoutes.js';
+import authRoutes from './routes/authRoutes.js'
 
 //Fetch .env from root folder
-dotenv.config({path: path.resolve(process.cwd(), '../.env')});
+dotenv.config({path: path.resolve(import.meta.dirname, '../../.env')});
 
 const app = express();
 const PORT = 3001;
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/movies', movieRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/auth', authRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
