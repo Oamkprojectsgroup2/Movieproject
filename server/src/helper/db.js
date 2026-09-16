@@ -1,4 +1,8 @@
 import pg from "pg";
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../../.env') });
 
 const { Pool } = pg;
 
@@ -6,7 +10,7 @@ const pool = new Pool({
     host: process.env.POSTGRES_HOST || "localhost",
     port: parseInt(process.env.POSTGRES_PORT) || 5432,
     user: process.env.POSTGRES_USER || "postgres",
-    password: process.env.POSTGRES_PASSWORD || "postgres",
+    password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB || "postgres",
     max: 10,    //MAximum number of Clients
     idleTimeoutMillis: 30000,   //Close idle clients after 30s
