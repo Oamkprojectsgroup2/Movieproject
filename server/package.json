@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "db:init": "node --env-file=../.env db/initDb.js",
+    "db:reset": "node --env-file=../.env db/initDb.js --reset",
     "postinstall": "npm run db:init",
-    "predev": "npm run db:init",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },

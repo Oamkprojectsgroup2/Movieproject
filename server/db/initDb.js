@@ -1,10 +1,10 @@
-import dotenv from 'dotenv';
 import fs from "node:fs";
 import path from "node:path";
 import pool from "../src/helper/db.js";
 
-//Fetch .env from root folder
-dotenv.config({path: path.resolve(process.cwd(), '../../.env')});
+//package.json fetches .env variables
+
+const manualReset = process.argv.includes("--reset");
 
 /*      //For debugging connection
 console.log("Connecting with DB Config:", {
@@ -19,10 +19,14 @@ console.log("Connecting with DB Config:", {
 async function initilizeDatabase() {
     const client = await pool.connect();     //Opens a connection
     try {
+        if (manualReset) {
+            console.log("Manual reset, dropping tables");
+            await client.query("DROP TABLE IF EXISTS users CASCADE");
+        }
         const sqlFilePath = path.join(import.meta.dirname, "schema.sql");
         const sqlQuery = fs.readFileSync(sqlFilePath, "utf8");
 
-        console.log("initilizing and resetting db schema");
+        console.log("initilizing db schema");
 
         await client.query("BEGIN");    //Start one block in PostgreSQL
         await client.query(sqlQuery);   //Send the schema

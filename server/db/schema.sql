@@ -1,12 +1,5 @@
 
-DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS favorite_movies;
-DROP TABLE IF EXISTS members;
-DROP TABLE IF EXISTS group_favorites;
-DROP TABLE IF EXISTS groups;
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
 	user_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_name VARCHAR(25) UNIQUE NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
@@ -14,7 +7,7 @@ CREATE TABLE users (
 	shared_token UUID UNIQUE
 );
 
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
 	review_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	movies_tmdb_id INT NOT NULL,
 	user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -24,26 +17,26 @@ CREATE TABLE reviews (
 	UNIQUE (movies_tmdb_id, user_id)
 );
 
-CREATE TABLE favorite_movies (
+CREATE TABLE IF NOT EXISTS favorite_movies (
 	user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 	movies_tmdb_id INT NOT NULL,
 	PRIMARY KEY (user_id, movies_tmdb_id)
 );
 
-CREATE TABLE groups (
+CREATE TABLE IF NOT EXISTS groups (
 	group_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	group_name VARCHAR(255) NOT NULL,
 	owner_id INT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT
 );
 
-CREATE TABLE members (
+CREATE TABLE IF NOT EXISTS members (
 	user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 	group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
 	status VARCHAR(25) NOT NULL CHECK (status IN ('pending', 'accepted', 'rejected')),
 	PRIMARY KEY (group_id, user_id)
 );
 
-CREATE TABLE group_favorites (
+CREATE TABLE IF NOT EXISTS group_favorites (
 	group_favorite_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	group_id INT NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
 	movies_tmdb_id INT NOT NULL,
@@ -51,4 +44,4 @@ CREATE TABLE group_favorites (
 	UNIQUE(group_id, movies_tmdb_id)
 );
 
-CREATE INDEX idx_members_users      ON members(user_id);
+CREATE INDEX IF NOT EXISTS idx_members_users      ON members(user_id);

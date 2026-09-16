@@ -25,6 +25,10 @@ export const register = async (req, res) => {
             return res.status(409).json({message: "Email already in use"});
         }
 
+        if (password.length < 8 || !/\p{Lu}/u.test(password) || !/\d/.test(password)) {
+            return res.status(409).json({message: "Password invalid"});
+        }
+
         const passwordHashed = await bcrypt.hash(password, SALT_ROUNDS);
         const newUser = await pool.query(
             "INSERT INTO users (user_name, email, password) VALUES ($1, $2, $3) RETURNING user_id, user_name, email",
