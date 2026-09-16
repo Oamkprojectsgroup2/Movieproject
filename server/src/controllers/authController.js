@@ -73,16 +73,13 @@ export const login = async (req, res) => {
         }
 
         const passwordMatches = await bcrypt.compare(password, user.password);
+        
         if (!passwordMatches) {
             return res.status(401).json({
                 message: "Invalid email or password"
             });
         }
-         if (!passwordMatches) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
-        }
+
 
         if (!process.env.JWT_SECRET) {
             console.error("JWT_SECRET is not configured");
