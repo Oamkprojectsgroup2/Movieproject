@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import pool from "../helper/db.js";
 
 const SALT_ROUNDS = 10;
@@ -45,3 +46,75 @@ export const register = async (req, res) => {
         return res.status(500).json({message: "Registration error"})
     }
 }
+
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Email and password are required"
+        });
+    }
+
+    try {
+        const result = await pool.query(
+            `SELECT user_id, user_name, email, password
+            FROM users
+            WHERE email = $1`,
+            [email.trim()]
+        );
+
+        const user = result.rows[0];
+
+        if(!user) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        const passwordMatches = await bcrypt.compare(password, user.password);
+        if (!passwordMatches) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+         if (!passwordMatches) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is not configured");
+            return res.status(500).json({
+                message: "Authentication is not configured"
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                user_id: user.user_id,
+                user_name: user.user_name,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        return res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                user_id: user.user_id,
+                user_name: user.user_name,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json ({
+            message: "Login error"
+        });
+    }
+};
