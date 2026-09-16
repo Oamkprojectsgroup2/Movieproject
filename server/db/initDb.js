@@ -16,7 +16,7 @@ console.log("Connecting with DB Config:", {
 });
 */
 
-async function initilizeDatabase() {
+async function initializeDatabase() {
     const client = await pool.connect();     //Opens a connection
     try {
         if (manualReset) {
@@ -45,4 +45,4 @@ async function initilizeDatabase() {
     }
 }
 
-initilizeDatabase();
+initializeDatabase();
