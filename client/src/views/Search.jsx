@@ -224,7 +224,7 @@ useEffect(() => {
 
             </div>
 
-            <button type="submit">
+            <button type="submit" className="btn-primary">
               Search
             </button>
 

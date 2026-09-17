@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Routes, Route } from "react-router";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
@@ -9,11 +9,10 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import "./App.css";
 import { BASE_URL } from "./config";
+import Placeholder from "./components/Placeholder";
 
 
 function App() {
-
-  const [currentPage, setCurrentPage] = useState("home");
 
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
@@ -36,7 +35,6 @@ function App() {
   };
   
   const handleRegister = async (values) => {
-    // TODO (#13): send values to the registration API
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: { 
@@ -63,8 +61,6 @@ function App() {
     <div className="app">
 
       <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
         search={search}
         setSearch={setSearch}
         setSearchTrigger={setSearchTrigger}
@@ -74,47 +70,28 @@ function App() {
       />
 
 
-      {currentPage === "home" && (
-        <Home
-          search={search}
-          setSearch={setSearch}
+      <Routes>
+        <Route path="/" element={
+          <Home search={search} setSearch={setSearch}
+                genre={genre} setGenre={setGenre}
+                year={year} setYear={setYear}
+                language={language} setLanguage={setLanguage} />
+        } />
+        <Route path="/search" element={
+          <Search search={search} setSearch={setSearch}
+                  genre={genre} setGenre={setGenre}
+                  year={year} setYear={setYear}
+                  language={language} setLanguage={setLanguage}
+                  searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
+        } />
+        <Route path="/theaters" element={<Theaters />} />
+        <Route path="/favourites" element={<Placeholder title="Favourites" />} />
+        <Route path="/groups" element={<Placeholder title="Groups" />} />
+        <Route path="*" element={
+          <Placeholder title="404" message="That page doesn't exist." />
+        } />
+      </Routes>
 
-          genre={genre}
-          setGenre={setGenre}
-
-          year={year}
-          setYear={setYear}
-
-          language={language}
-          setLanguage={setLanguage}
-
-          setCurrentPage={setCurrentPage}
-        />
-      )}
-
-
-      {currentPage === "search" && (
-        <Search
-          search={search}
-          setSearch={setSearch}
-
-          genre={genre}
-          setGenre={setGenre}
-
-          year={year}
-          setYear={setYear}
-
-          language={language}
-          setLanguage={setLanguage}
-          searchTrigger={searchTrigger}
-
-          siteLanguage={siteLanguage}
-        />
-      )}
-
-      {currentPage === "theaters" && (
-        <Theaters />
-      )}
 
       <Modal isOpen={authView !== null} onClose={closeAuth}>
 

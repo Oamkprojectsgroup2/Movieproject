@@ -1,8 +1,7 @@
 import "../styles/Navbar.css";
+import { NavLink, useNavigate } from "react-router";
 
 function Navbar({
-  currentPage,
-  setCurrentPage,
   search,
   setSearch,
   setSearchTrigger,
@@ -12,10 +11,11 @@ function Navbar({
   user,
   onLogout,
 }) {
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
-      setCurrentPage("search");
+      navigate("/search");
       setSearchTrigger((current) => current + 1);
     }
   };
@@ -30,10 +30,10 @@ function Navbar({
         className="logo"
         onClick={() => {
           setSearch("");
-          setCurrentPage("home")
+          navigate("/");
         }}
       >
-        <span>🖼️</span>
+        <span className="title-cine">Cine</span><span className="title-circle">Circle</span>
       </div>
 
 
@@ -44,7 +44,7 @@ function Navbar({
         {/* Small search */}
 
         <input
-          className="nav-search"
+          className="navbar-search"
           type="text"
           placeholder="Search"
           value={search}
@@ -53,23 +53,16 @@ function Navbar({
         />
 
 
-        <button
-          onClick={() => setCurrentPage("theaters")}
-          >
-          In Theaters
-        </button>
 
-        <button>
-          Favourites
-        </button>
-
-        <button>
-          Groups
-        </button>
+        <div className="navbar-links">
+          <NavLink to="/theaters">In Theaters</NavLink>
+          <NavLink to="/favourites">Favourites</NavLink>
+          <NavLink to="/groups">Groups</NavLink>
+        </div>
 
         {user ? (
           <>
-            <span className="nav-user">{user.username}</span>
+            <span className="navbar-user">{user.username}</span>
 
             <button onClick={onLogout}>
               Logout
@@ -77,7 +70,7 @@ function Navbar({
           </>
         ) : (
           <button
-            className="nav-login"
+            className="navbar-login btn-primary"
             onClick={onLoginClick}
           >
             Login
