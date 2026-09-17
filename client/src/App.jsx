@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Navigate,  useNavigate } from "react-router";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
@@ -11,6 +11,15 @@ import "./App.css";
 import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
 import Profile from './views/Profile'
+
+function getTokenExpiry(token) {
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(payload)).exp * 1000;
+  } catch {
+    return 0;
+  }
+}
 
 function App() {
 
@@ -35,6 +44,20 @@ function App() {
       return null;
     }
   });
+
+  useEffect(() => {
+    if (!user) return;
+
+    const expiresIn = getTokenExpiry(localStorage.getItem("token")) - Date.now();
+
+    const timer = setTimeout(() => {
+      setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    }, Math.max(expiresIn, 0));
+
+    return () => clearTimeout(timer);
+  }, [user]);
 
   const handleLogin = async (values) => {
     const response = await fetch(`${BASE_URL}/auth/login`, {
@@ -117,6 +140,7 @@ function App() {
         <Route path="/profile" element={
           user ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/" />
         } />
+        <Route path="/reviews" element={<Placeholder title="Reviews" />} />
         <Route path="*" element={
           <Placeholder title="404" message="That page doesn't exist." />
         } />

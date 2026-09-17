@@ -47,7 +47,7 @@ function Profile({ user, onLogout }) {
         <section className="profile-card">
           <div className="profile-card-head">
             <h2>Your reviews</h2>
-            <Link to="/reviews"> See all</Link>
+            <Link to="/reviews">See all</Link>
           </div>
           <ul className="profile-list">
             {reviews.map((r) => (

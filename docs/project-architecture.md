@@ -53,6 +53,8 @@ The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) t
 | `/theaters` | `views/Theaters.jsx`   |
 | `/favourites` | `components/Placeholder.jsx` (for now) |
 | `/groups`     | `components/Placeholder.jsx` (for now) |
+| `/profile`    | `views/Profile.jsx` (only when logged in) |
+| `/reviews`    | `components/Placeholder.jsx` (for now) |
 | `*`           | `components/Placeholder.jsx` (404)    |
 
 ### Adding a new page
