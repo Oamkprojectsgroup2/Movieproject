@@ -7,7 +7,7 @@
     "db:init": "node --env-file=../.env db/initDb.js",
     "db:reset": "node --env-file=../.env db/initDb.js --reset",
     "postinstall": "npm run db:init",
-    "test": "node --test",
+    "test": "node --env-file=../.env.test --test",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
