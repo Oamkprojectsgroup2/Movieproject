@@ -128,9 +128,11 @@
   cursor: pointer;
 }
 
-.navbar-user {
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
+.navbar-links a.navbar-username {
+  max-width: 160px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Page links */
