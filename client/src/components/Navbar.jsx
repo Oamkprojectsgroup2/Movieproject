@@ -9,7 +9,6 @@ function Navbar({
   setSiteLanguage,
   onLoginClick,
   user,
-  onLogout,
 }) {
   const navigate = useNavigate();
 
@@ -60,15 +59,7 @@ function Navbar({
           <NavLink to="/groups">Groups</NavLink>
         </div>
 
-        {user ? (
-          <>
-            <span className="navbar-user">{user.username}</span>
-
-            <button onClick={onLogout}>
-              Logout
-            </button>
-          </>
-        ) : (
+        {!user && (
           <button
             className="navbar-login btn-primary"
             onClick={onLoginClick}

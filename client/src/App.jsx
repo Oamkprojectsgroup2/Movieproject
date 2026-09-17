@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router";
+import { Routes, Route, Navigate,  useNavigate } from "react-router";
 import Navbar from "./components/Navbar";
 import Home from "./views/Home";
 import Search from "./views/Search";
@@ -10,11 +10,11 @@ import RegisterForm from "./components/RegisterForm";
 import "./App.css";
 import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
-
+import Profile from './views/Profile'
 
 function App() {
 
-  
+
 
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
@@ -24,22 +24,38 @@ function App() {
   const [siteLanguage, setSiteLanguage] = useState("en-US");
   const [authView, setAuthView] = useState(null);
   const [authNotice, setAuthNotice] = useState(null);
-
+  const navigate = useNavigate();
   const closeAuth = () => {
     setAuthView(null);
     setAuthNotice(null);
   };
 
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  });
+
   const handleLogin = async (values) => {
     // TODO (#17): send values to the login API
-    console.log("Login", values);
+    const loggedInUser = { user_id: 1, user_name: values.email.split("@")[0], email:values.email }
+    setUser (loggedInUser);
+    localStorage.setItem("user", JSON.stringify(loggedInUser));
     closeAuth();
   };
-  
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    navigate("/");
+  };
+
   const handleRegister = async (values) => {
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(values),
@@ -69,6 +85,7 @@ function App() {
         siteLanguage={siteLanguage}
         setSiteLanguage={setSiteLanguage}
         onLoginClick={() => setAuthView("login")}
+        user={user}
       />
 
 
@@ -89,6 +106,9 @@ function App() {
         <Route path="/theaters" element={<Theaters />} />
         <Route path="/favourites" element={<Placeholder title="Favourites" />} />
         <Route path="/groups" element={<Placeholder title="Groups" />} />
+        <Route path="/profile" element={
+          user ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/" />
+        } />
         <Route path="*" element={
           <Placeholder title="404" message="That page doesn't exist." />
         } />
@@ -113,8 +133,8 @@ function App() {
             onSubmit={handleRegister}
             onSwitchToLogin={() => setAuthView("login")}
           />
-        )}        
-        
+        )}
+
       </Modal>
     </div>
   );
