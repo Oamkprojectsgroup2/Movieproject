@@ -59,7 +59,13 @@ function Navbar({
           <NavLink to="/groups">Groups</NavLink>
         </div>
 
-        {!user && (
+        {user ? (
+          <div className="navbar-links">
+            <NavLink to="/profile" className="navbar-username" title={user.user_name}>
+              {user.user_name}
+            </NavLink>
+          </div>
+        ) : (
           <button
             className="navbar-login btn-primary"
             onClick={onLoginClick}

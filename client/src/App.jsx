@@ -37,16 +37,30 @@ function App() {
   });
 
   const handleLogin = async (values) => {
-    // TODO (#17): send values to the login API
-    const loggedInUser = { user_id: 1, user_name: values.email.split("@")[0], email:values.email }
-    setUser (loggedInUser);
-    localStorage.setItem("user", JSON.stringify(loggedInUser));
+    const response = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(values),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    setUser(data.user);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("token", data.token);
     closeAuth();
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/");
   };
 
@@ -61,14 +75,10 @@ function App() {
 
     const data = await response.json();
 
-    console.log("HTTP Status:", response.status);
-    console.log("Server Response Data:", data);
-
     if (!response.ok) {
       throw new Error(data.message || "Registration failed");
     }
 
-    console.log("Register", values);
     setAuthNotice("Account created. You can now log in.");
     setAuthView("login");
   };
