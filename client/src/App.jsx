@@ -14,8 +14,6 @@ import Placeholder from "./components/Placeholder";
 
 function App() {
 
-  
-
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
   const [year, setYear] = useState("");

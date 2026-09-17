@@ -13,4 +13,4 @@
 .btn-primary:hover {
   background: var(--color-accent-deep);
   box-shadow: 0 0 16px var(--color-glow-red);
-},
+}
