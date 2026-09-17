@@ -68,7 +68,7 @@ Health check:
 http://localhost:3001/api/health
 ```
 
-### 5. Run registration API tests
+### 5. Run authentication API tests
 
 Create a separate test environment file from the committed template:
 
@@ -82,14 +82,18 @@ Start the isolated PostgreSQL test database from the project root:
 docker compose --env-file .env.test -f docker-compose.test.yml up -d
 ```
 
-Run the registration REST API tests:
+Run the registration, login and logout REST API tests:
 
 ```powershell
 Set-Location server
 npm test
 ```
 
-The test database uses `movieproject_test` on port `5433` and is separate from the development database. Stop it when testing is complete:
+The test database uses `movieproject_test` on port `5433` and is separate from the development database. The suite tests `POST /api/auth/register`, `POST /api/auth/login`, and the authenticated `POST /api/auth/logout` endpoint.
+
+Logout is an authenticated acknowledgement. The current JWT setup is stateless, so the client removes the token locally and the server does not revoke an already-issued token before its expiry.
+
+Stop the test database when testing is complete:
 
 ```powershell
 Set-Location ..
