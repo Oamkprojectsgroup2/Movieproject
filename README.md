@@ -68,7 +68,35 @@ Health check:
 http://localhost:3001/api/health
 ```
 
-### 5. Start the frontend
+### 5. Run registration API tests
+
+Create a separate test environment file from the committed template:
+
+```powershell
+Copy-Item .env.test.example .env.test
+```
+
+Start the isolated PostgreSQL test database from the project root:
+
+```powershell
+docker compose --env-file .env.test -f docker-compose.test.yml up -d
+```
+
+Run the registration REST API tests:
+
+```powershell
+Set-Location server
+npm test
+```
+
+The test database uses `movieproject_test` on port `5433` and is separate from the development database. Stop it when testing is complete:
+
+```powershell
+Set-Location ..
+docker compose --env-file .env.test -f docker-compose.test.yml down
+```
+
+### 6. Start the frontend
 
 Open another terminal:
 
