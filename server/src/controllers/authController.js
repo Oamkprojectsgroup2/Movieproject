@@ -86,6 +86,7 @@ export const login = async (req, res) => {
             });
         }
 
+
         if (!process.env.JWT_SECRET) {
             console.error("JWT_SECRET is not configured");
             return res.status(500).json({
