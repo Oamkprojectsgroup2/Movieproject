@@ -51,7 +51,9 @@ The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) t
 | `/`         | `views/Home.jsx`       |
 | `/search`   | `views/Search.jsx`     |
 | `/theaters` | `views/Theaters.jsx`   |
-| `*`         | "Page not found"       |
+| `/favourites` | `components/Placeholder.jsx` (for now) |
+| `/groups`     | `components/Placeholder.jsx` (for now) |
+| `*`           | `components/Placeholder.jsx` (404)    |
 
 ### Adding a new page
 
@@ -60,7 +62,8 @@ The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) t
    `<Route path="/favourites" element={<Favourites />} />`
 3. Navigate to it with `useNavigate()` or `<Link to="/favourites">`.
 
-Import everything from `react-router
+Import everything from `react-router` (not `react-router-dom`).
+
 ### Backend / Node (`server/`)
 
 - provides a REST API to the frontend
