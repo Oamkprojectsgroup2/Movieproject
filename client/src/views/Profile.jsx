@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router";
+import Modal from "../components/Modal";
+import DeleteForm from "../components/DeleteForm";
 import "../styles/Profile.css";
 
 //todo: replace with API data
+
 const reviews = [
   { id: 1, title: "First movie", stars: 4, createdAt: "2026-09-15" },
   { id: 2, title: "Second movie", stars: 3, createdAt: "2026-09-10" },
@@ -31,7 +35,8 @@ function Stars({ count }) {
   );
 }
 
-function Profile({ user, onLogout }) {
+function Profile({ user, onLogout, onDeleteAccount }) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   return (
     <main className="profile-page">
       <header className="profile-header">
@@ -100,9 +105,17 @@ function Profile({ user, onLogout }) {
       </div>
 
       <div className="profile-danger">
-        {/* TODO (#23): open confirm dialog */}
-        <button className="btn-outline muted">🗑 Delete account</button>
+        <button className="btn-outline muted" onClick={() => setDeleteOpen(true)}>
+          🗑 Delete account
+        </button>
       </div>
+
+      <Modal isOpen={deleteOpen} onClose={() => setDeleteOpen(false)}>
+        <DeleteForm
+          onSubmit={onDeleteAccount}
+          onCancel={() => setDeleteOpen(false)}
+        />
+      </Modal>
     </main>
   );
 }
