@@ -127,3 +127,91 @@ export const logout = (req, res) => {
         message: "Logout successful"
     });
 };
+
+export const deleteAccount = async (req, res) => {
+    const { password } = req.body ?? {};
+
+    if (typeof password !== "string" || password.length === 0) {
+        return res.status(400).json({
+            message: "Password is required"
+        });
+    }
+
+    let client;
+    let transactionStarted = false;
+
+    try {
+        client = await pool.connect();
+        await client.query("BEGIN");
+        transactionStarted = true;
+
+        const userResult = await client.query(
+            "SELECT password FROM users WHERE user_id = $1 FOR UPDATE",
+            [req.user.user_id]
+        );
+
+        if (userResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            transactionStarted = false;
+            return res.status(404).json({
+                message: "User account not found"
+            });
+        }
+
+        const passwordMatches = await bcrypt.compare(password, userResult.rows[0].password);
+
+        if (!passwordMatches) {
+            await client.query("ROLLBACK");
+            transactionStarted = false;
+            return res.status(401).json({
+                message: "Incorrect password"
+            });
+        }
+
+        const ownedGroupsResult = await client.query(
+            "SELECT 1 FROM groups WHERE owner_id = $1 LIMIT 1",
+            [req.user.user_id]
+        );
+
+        if (ownedGroupsResult.rows.length > 0) {
+            await client.query("ROLLBACK");
+            transactionStarted = false;
+            return res.status(409).json({
+                message: "Transfer group ownership before deleting your account"
+            });
+        }
+
+        await client.query(
+            "DELETE FROM users WHERE user_id = $1",
+            [req.user.user_id]
+        );
+
+        await client.query("COMMIT");
+        transactionStarted = false;
+
+        return res.status(200).json({
+            message: "Account deleted successfully"
+        });
+    } catch (error) {
+        if (transactionStarted) {
+            try {
+                await client.query("ROLLBACK");
+            } catch (rollbackError) {
+                console.error("Account deletion rollback error:", rollbackError);
+            }
+        }
+
+        if (error.code === "23503") {
+            return res.status(409).json({
+                message: "Transfer group ownership before deleting your account"
+            });
+        }
+
+        console.error("Account deletion error:", error);
+        return res.status(500).json({
+            message: "Account deletion error"
+        });
+    } finally {
+        client?.release();
+    }
+};
