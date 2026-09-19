@@ -137,10 +137,11 @@ export const deleteAccount = async (req, res) => {
         });
     }
 
-    const client = await pool.connect();
+    let client;
     let transactionStarted = false;
 
     try {
+        client = await pool.connect();
         await client.query("BEGIN");
         transactionStarted = true;
 
@@ -193,7 +194,11 @@ export const deleteAccount = async (req, res) => {
         });
     } catch (error) {
         if (transactionStarted) {
-            await client.query("ROLLBACK");
+            try {
+                await client.query("ROLLBACK");
+            } catch (rollbackError) {
+                console.error("Account deletion rollback error:", rollbackError);
+            }
         }
 
         if (error.code === "23503") {
@@ -207,6 +212,6 @@ export const deleteAccount = async (req, res) => {
             message: "Account deletion error"
         });
     } finally {
-        client.release();
+        client?.release();
     }
 };
