@@ -68,6 +68,27 @@ Health check:
 http://localhost:3001/api/health
 ```
 
+### Account deletion API
+
+Delete the authenticated user's account:
+
+```http
+DELETE /api/auth/account
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{"password":"<current password>"}
+```
+
+The endpoint returns `200` after successful deletion. The current password is
+required and is verified against the stored password hash. Incorrect passwords
+return `401`; missing passwords return `400`; unauthenticated requests return
+`401`; and deletion is rejected with `409` while the user owns a group.
+
+Successful deletion cascades to the user's reviews, favorite movies, and group
+memberships. Favorite entries in surviving groups retain the movie but clear
+the deleted user's attribution.
+
 ### 5. Run authentication API tests
 
 Create a separate test environment file from the committed template:
