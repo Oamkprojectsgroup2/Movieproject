@@ -97,7 +97,7 @@ function App() {
       body: JSON.stringify({ password }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(data.message || "Delete failed");

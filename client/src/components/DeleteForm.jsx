@@ -12,7 +12,6 @@ function DeleteForm({ onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!canSubmit) return;
-    
     setLoading(true);
     setError(null);
     try {

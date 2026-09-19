@@ -145,10 +145,6 @@
   margin-top: 8px;
 }
 
-.auth-warning .auth-blocking {
-  color: var(--color-warning);
-}
-
 .auth-submit.danger:hover {
   background: var(--color-accent-deep);
 }
