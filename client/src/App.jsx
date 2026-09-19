@@ -87,6 +87,28 @@ function App() {
     navigate("/");
   };
 
+  const handleDeleteAccount = async ({ password }) => {
+    const response = await fetch(`${BASE_URL}/auth/account`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Delete failed");
+    }
+
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   const handleRegister = async (values) => {
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
@@ -138,7 +160,13 @@ function App() {
         <Route path="/favourites" element={<Placeholder title="Favourites" />} />
         <Route path="/groups" element={<Placeholder title="Groups" />} />
         <Route path="/profile" element={
-          user ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/" />
+          user ? (
+            <Profile
+              user={user}
+              onLogout={handleLogout}
+              onDeleteAccount={handleDeleteAccount}
+            />
+          ) : <Navigate to="/" />
         } />
         <Route path="/reviews" element={<Placeholder title="Reviews" />} />
         <Route path="*" element={

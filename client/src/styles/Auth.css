@@ -113,3 +113,38 @@
 .auth-switch button:hover {
   color: var(--color-text);
 }
+
+.auth-lead {
+  margin: 0 0 4px;
+
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.auth-warning {
+  margin: 4px 0 10px;
+  padding: 14px 18px;
+
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+
+  background: var(--color-ground-raised);
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-warning p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.auth-warning p + p {
+  margin-top: 8px;
+}
+
+.auth-submit.danger:hover {
+  background: var(--color-accent-deep);
+}
