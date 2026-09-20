@@ -33,8 +33,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        volumes:
-          - ${{ github.workspace }}/server/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
 
     steps:
       - name: Checkout repository
@@ -47,9 +45,16 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
 
-      # Skip postinstall (db:init) here; the test DB schema is seeded by the Postgres service container instead.
+      # Skip postinstall (db:init) here; the test DB schema is loaded explicitly below instead.
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
+      # Service containers start before checkout, so the schema can't be bind-mounted; load it explicitly once the file exists on the runner.
+      - name: Load database schema
+        working-directory: ${{ github.workspace }}
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: psql -h localhost -p ${{ env.POSTGRES_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f server/db/schema.sql
 
       # Values must match the postgres service above; JWT_SECRET is a repo secret, never committed.
       - name: Create test environment file
