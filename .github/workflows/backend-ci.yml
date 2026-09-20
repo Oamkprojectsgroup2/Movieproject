@@ -6,12 +6,35 @@ on:
   push:
     branches: [main]
 
+env:
+  POSTGRES_DB: movieproject_test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres_test_password
+  POSTGRES_PORT: 5432
+
 jobs:
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        volumes:
+          - ${{ github.workspace }}/server/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
 
     steps:
       - name: Checkout repository
