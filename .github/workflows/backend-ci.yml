@@ -1,0 +1,74 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  POSTGRES_DB: movieproject_test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres_test_password
+  POSTGRES_PORT: 5432
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      # Skip postinstall (db:init) here; the test DB schema is loaded explicitly below instead.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      # Service containers start before checkout, so the schema can't be bind-mounted; load it explicitly once the file exists on the runner.
+      - name: Load database schema
+        working-directory: ${{ github.workspace }}
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: psql -h localhost -p ${{ env.POSTGRES_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f server/db/schema.sql
+
+      # Values must match the postgres service above; JWT_SECRET is a repo secret, never committed.
+      - name: Create test environment file
+        working-directory: ${{ github.workspace }}
+        run: |
+          cat <<EOF > .env.test
+          POSTGRES_HOST=localhost
+          POSTGRES_PORT=${{ env.POSTGRES_PORT }}
+          POSTGRES_DB=${{ env.POSTGRES_DB }}
+          POSTGRES_USER=${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          TMDB_API_TOKEN=not_required_for_ci
+          EOF
+
+      - name: Run backend test suite
+        run: npm test
