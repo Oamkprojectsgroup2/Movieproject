@@ -50,3 +50,17 @@ jobs:
       # Skip postinstall (db:init) here; the test DB schema is seeded by the Postgres service container instead.
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
+      # Values must match the postgres service above; JWT_SECRET is a repo secret, never committed.
+      - name: Create test environment file
+        working-directory: ${{ github.workspace }}
+        run: |
+          cat <<EOF > .env.test
+          POSTGRES_HOST=localhost
+          POSTGRES_PORT=${{ env.POSTGRES_PORT }}
+          POSTGRES_DB=${{ env.POSTGRES_DB }}
+          POSTGRES_USER=${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          TMDB_API_TOKEN=not_required_for_ci
+          EOF
