@@ -68,7 +68,26 @@ Health check:
 http://localhost:3001/api/health
 ```
 
-### 5. Run authentication API tests
+### 5. Load the test data (optional)
+
+`npm install` in the previous step already created the tables. To also load the
+shared test data — 20 users, reviews, favorites and groups:
+
+```bash
+cd server
+npm run db:seed
+```
+
+Login credentials and the test scenarios each account covers are in
+[server/db/TEST_USERS.md](server/db/TEST_USERS.md).
+
+To wipe the database and reload it from scratch:
+
+```bash
+npm run db:reset
+```
+
+### 6. Run authentication API tests
 
 Create a separate test environment file from the committed template:
 
@@ -100,7 +119,7 @@ Set-Location ..
 docker compose --env-file .env.test -f docker-compose.test.yml down
 ```
 
-### 6. Start the frontend
+### 7. Start the frontend
 
 Open another terminal:
 

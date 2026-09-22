@@ -5,6 +5,7 @@ import pool from "../src/helper/db.js";
 //package.json fetches .env variables
 
 const manualReset = process.argv.includes("--reset");
+const loadSeed = process.argv.includes("--seed");
 
 /*      //For debugging connection
 console.log("Connecting with DB Config:", {
@@ -19,24 +20,34 @@ console.log("Connecting with DB Config:", {
 async function initializeDatabase() {
     const client = await pool.connect();     //Opens a connection
     try {
-        if (manualReset) {
-            console.log("Manual reset, dropping tables");
-            await client.query("DROP TABLE IF EXISTS users CASCADE");
-        }
         const sqlFilePath = path.join(import.meta.dirname, "schema.sql");
         const sqlQuery = fs.readFileSync(sqlFilePath, "utf8");
 
+        await client.query("BEGIN");    //Start one block in PostgreSQL
+
+        if (manualReset) {
+            console.log("Manual reset, dropping all tables");
+            await client.query("DROP SCHEMA public CASCADE");    //Drops every table, index and constraint
+            await client.query("CREATE SCHEMA public");
+        }
+
         console.log("initilizing db schema");
 
-        await client.query("BEGIN");    //Start one block in PostgreSQL
         await client.query(sqlQuery);   //Send the schema
         await client.query("COMMIT");   //Apply if everything went ok
+
+        //seed.sql has its own BEGIN/COMMIT, so it runs outside the block above
+        if (loadSeed) {
+            console.log("loading test data from seed.sql");
+            const seedFilePath = path.join(import.meta.dirname, "seed.sql");
+            await client.query(fs.readFileSync(seedFilePath, "utf8"));
+        }
 
         console.log("Initialization successful");
     }
     catch (error) {
         await client.query("ROLLBACK"); //If anything fails, cancel everything
-        console.log("Initialization error");
+        console.error("Initialization error:", error.message);
         process.exit(1);    //Stops node with exit error code
     }
     finally {

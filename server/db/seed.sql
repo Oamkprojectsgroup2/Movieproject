@@ -1,7 +1,8 @@
 -- CineCircle test data. Run schema.sql FIRST, then this file.
 -- FOR LOCAL DEVELOPMENT/TEST DATABASES ONLY. Never run against a production database.
--- Generated with generate_seed.py. Passwords are hashed with bcrypt (cost 10).
+-- Passwords are hashed with bcrypt (cost 10).
 -- Login credentials: TEST_USERS.md
+-- To add a user, hash the password with bcrypt cost 10 and update TEST_USERS.md to match.
 
 BEGIN;
 

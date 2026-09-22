@@ -4,12 +4,21 @@
 
 ## Setup
 
+From the `server` folder:
+
 ```bash
-psql -U postgres -d <database> -f schema.sql
-psql -U postgres -d <database> -f seed.sql
+npm run db:seed
 ```
 
-Passwords are stored as bcrypt hashes (cost 10), so `bcrypt.compare()` works with them directly. All passwords meet the requirement: at least 8 characters, one uppercase letter and one digit. Pattern: `<FirstName>Test<no>` (ä/ö replaced with a/o).
+To wipe the database and reload it from scratch:
+
+```bash
+npm run db:reset
+```
+
+Both read the connection settings from `.env` in the project root.
+
+Passwords are stored as bcrypt hashes (cost 10), so `bcrypt.compare()` works with them directly. All passwords meet the requirement: at least 8 characters, one uppercase letter and one digit. Pattern: `<Name>Test<no>` (ä/ö replaced with a/o), where `<Name>` is the first name for users 1–17 and the account's purpose for users 18–20.
 
 ## Users
 
