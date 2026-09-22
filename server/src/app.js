@@ -4,6 +4,7 @@ import movieRoutes from './routes/movieRoutes.js';
 import tvRoutes from './routes/tvRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
