@@ -60,6 +60,19 @@ async function removeFavorite(token, movieId) {
         .send();
 }
 
+async function createShareToken(token) {
+    return request(app)
+        .post('/api/favorites/share')
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+}
+
+async function sharedFavoritesRequest(sharedToken) {
+    return request(app)
+        .get(`/api/favorites/shared/${sharedToken}`)
+        .send();
+}
+
 async function favoriteRows(userId, movieId) {
     const result = await pool.query(
         'SELECT user_id, movies_tmdb_id FROM favorite_movies WHERE user_id = $1 AND movies_tmdb_id = $2',
@@ -201,4 +214,76 @@ test('isolates favorites between users', async () => {
 
     assert.deepEqual((await favoritesRequest(firstToken)).body, { favorites: [] });
     assert.deepEqual((await favoritesRequest(secondToken)).body, { favorites: [{ movie_id: 555 }] });
+});
+
+test('creates a stable share token for the current user', async () => {
+    const user = await createUser('share');
+    const token = await tokenFor(user);
+
+    const firstResponse = await createShareToken(token);
+    const secondResponse = await createShareToken(token);
+
+    assert.equal(firstResponse.statusCode, 200);
+    assert.match(firstResponse.body.shared_token, /^[0-9a-f-]{36}$/i);
+    assert.deepEqual(secondResponse.body, firstResponse.body);
+});
+
+test('allows public users to retrieve a shared favorite list', async () => {
+    const user = await createUser('public');
+    const token = await tokenFor(user);
+    await addFavorite(token, 556);
+    await addFavorite(token, 557);
+
+    const shareResponse = await createShareToken(token);
+    const response = await sharedFavoritesRequest(shareResponse.body.shared_token);
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.body, {
+        user_name: user.user_name,
+        favorites: [{ movie_id: 556 }, { movie_id: 557 }],
+    });
+    assert.equal(Object.hasOwn(response.body, 'user_id'), false);
+    assert.equal(Object.hasOwn(response.body, 'email'), false);
+});
+
+test('returns an empty public list when the owner has no favorites', async () => {
+    const user = await createUser('publicempty');
+    const token = await tokenFor(user);
+    const shareResponse = await createShareToken(token);
+
+    const response = await sharedFavoritesRequest(shareResponse.body.shared_token);
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.body, {
+        user_name: user.user_name,
+        favorites: [],
+    });
+});
+
+test('rejects unknown and malformed shared-list tokens', async () => {
+    const unknownResponse = await sharedFavoritesRequest('11111111-1111-4111-8111-111111111111');
+    const malformedResponse = await sharedFavoritesRequest('not-a-uuid');
+
+    assert.equal(unknownResponse.statusCode, 404);
+    assert.deepEqual(unknownResponse.body, { message: 'Favorite list not found' });
+    assert.equal(malformedResponse.statusCode, 404);
+    assert.deepEqual(malformedResponse.body, { message: 'Favorite list not found' });
+});
+
+test('keeps shared lists isolated between owners', async () => {
+    const firstUser = await createUser('sharedfirst');
+    const secondUser = await createUser('sharedsecond');
+    const firstToken = await tokenFor(firstUser);
+    const secondToken = await tokenFor(secondUser);
+
+    await addFavorite(firstToken, 558);
+    await addFavorite(secondToken, 559);
+
+    const firstShare = await createShareToken(firstToken);
+    const secondShare = await createShareToken(secondToken);
+    const firstList = await sharedFavoritesRequest(firstShare.body.shared_token);
+    const secondList = await sharedFavoritesRequest(secondShare.body.shared_token);
+
+    assert.deepEqual(firstList.body.favorites, [{ movie_id: 558 }]);
+    assert.deepEqual(secondList.body.favorites, [{ movie_id: 559 }]);
 });
