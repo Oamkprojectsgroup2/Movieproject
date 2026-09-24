@@ -49,6 +49,16 @@ function FavoriteMovieList({ movies, failedMovieIds, onRemove, removingMovieId }
           <div className="favourites-movie-info">
             <h2>Movie unavailable</h2>
             <p>TMDB details could not be loaded for movie {movieId}.</p>
+            {onRemove && (
+              <button
+                className="favourites-remove"
+                type="button"
+                disabled={removingMovieId === movieId}
+                onClick={() => onRemove(movieId)}
+              >
+                {removingMovieId === movieId ? "Removing..." : "Remove"}
+              </button>
+            )}
           </div>
         </article>
       ))}

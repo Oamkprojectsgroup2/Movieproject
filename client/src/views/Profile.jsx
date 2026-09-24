@@ -39,6 +39,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
   const [favorites, setFavorites] = useState({ total: 0, posters: [] });
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState(null);
+  const [favoritesPartial, setFavoritesPartial] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +69,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         );
 
         if (!cancelled) {
+          setFavoritesPartial(details.some((result) => result.status === "rejected"));
           setFavorites({
             total: movieIds.length,
             posters: details
@@ -138,6 +140,11 @@ function Profile({ user, onLogout, onDeleteAccount }) {
             {hiddenFavorites > 0 && <div className="profile-poster more">+{hiddenFavorites}</div>}
           </div>
           {favoritesError && <p className="profile-url error">{favoritesError}</p>}
+          {favoritesPartial && (
+            <p className="profile-url profile-details-warning">
+              Some movie details are temporarily unavailable.
+            </p>
+          )}
         </section>
 
         <section className="profile-card wide">

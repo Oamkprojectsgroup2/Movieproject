@@ -352,7 +352,7 @@ useEffect(() => {
 
           <div className="search-results">
 
-            {favoriteError && (
+            {user && favoriteError && (
               <p className="search-favorite-error">{favoriteError}</p>
             )}
 
@@ -439,6 +439,7 @@ useEffect(() => {
                     rating !== null
                       ? Math.round(rating / 2)
                       : 0;
+                  const isFavorite = Boolean(user && favoriteIds.has(item.id));
 
                   return (
                     <article
@@ -514,21 +515,23 @@ useEffect(() => {
                           {item.original_language || "N/A"}
                         </p>
 
-                        <button
-                          type="button"
-                          className={`search-favorite-button${favoriteIds.has(item.id) ? " saved" : ""}`}
-                          aria-pressed={favoriteIds.has(item.id)}
-                          disabled={favoriteActionId === item.id}
-                          onClick={() => toggleFavorite(item.id)}
-                        >
-                          {favoriteActionId === item.id
-                            ? "Updating..."
-                            : favoriteIds.has(item.id)
-                              ? "Remove favorite"
-                              : user
-                                ? "Add to favorites"
-                                : "Log in to save"}
-                        </button>
+                        {contentType === "movie" && (
+                          <button
+                            type="button"
+                            className={`search-favorite-button${isFavorite ? " saved" : ""}`}
+                            aria-pressed={isFavorite}
+                            disabled={favoriteActionId === item.id}
+                            onClick={() => toggleFavorite(item.id)}
+                          >
+                            {favoriteActionId === item.id
+                              ? "Updating..."
+                              : isFavorite
+                                ? "Remove favorite"
+                                : user
+                                  ? "Add to favorites"
+                                  : "Log in to save"}
+                          </button>
+                        )}
 
                       </div>
 

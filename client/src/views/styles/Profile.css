@@ -182,6 +182,10 @@
   color: var(--color-error);
 }
 
+.profile-details-warning {
+  color: var(--color-warning);
+}
+
 @media (max-width: 600px) {
   .profile-page { margin: 16px; padding: 16px; }
 
