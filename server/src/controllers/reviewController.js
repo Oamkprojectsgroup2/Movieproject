@@ -14,7 +14,8 @@ export const createReview = async (req,res) => {
         }
 
         const newReview = await pool.query(
-            "INSERT INTO reviews (user_id, movies_tmdb_id, star, review) VALUES ($1, $2, $3, $4) RETURNING user_id, movies_tmdb_id, star, review",
+            `INSERT INTO reviews (user_id, movies_tmdb_id, star, review) VALUES ($1, $2, $3, $4)
+            RETURNING user_id, movies_tmdb_id, star, review`,
             [userId, movieId, rating, reviewText]
         );
 
@@ -37,7 +38,7 @@ export const viewReview = async (req,res) => {
     try {
         const {movieId} = req.params;
 
-        if (!movieId) {
+        if (!/^\d+$/.test(movieId)) {
             return res.status(400).json({message: "Movie id required"});
         }
 
