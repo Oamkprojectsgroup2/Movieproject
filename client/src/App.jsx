@@ -155,7 +155,8 @@ function App() {
                   genre={genre} setGenre={setGenre}
                   year={year} setYear={setYear}
                   language={language} setLanguage={setLanguage}
-                  searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
+                  searchTrigger={searchTrigger} siteLanguage={siteLanguage}
+                  user={user} onLoginClick={() => setAuthView("login")} />
         } />
         <Route path="/theaters" element={<Theaters />} />
         <Route path="/favourites" element={
