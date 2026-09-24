@@ -6,8 +6,8 @@ export const createReview = async (req,res) => {
         const userId = req.user.user_id;     //Taken from authentication token
 
         //id or rating 0 would pass !rating, so null & undefined are checked instead
-        if (movieId === undefined || movieId === null|| rating === undefined || rating === null || !reviewText) {
-            return res.status(400).json({message: "MovieId, rating and review text required"});
+        if (movieId === undefined || movieId === null|| rating === undefined || rating === null) {
+            return res.status(400).json({message: "MovieId and rating required"});
         }
         if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
             return res.status(400).json({message: "Rating must be number between 1 and 5"});
@@ -19,7 +19,7 @@ export const createReview = async (req,res) => {
         );
 
         return res.status(201).json({
-            message: "Create review succesful",
+            message: "Create review successful",
             review: newReview.rows[0],
         })
     }
