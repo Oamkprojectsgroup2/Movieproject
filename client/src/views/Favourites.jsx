@@ -20,7 +20,12 @@ async function loadMovieDetails(movieIds) {
   return {
     movies: results
       .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value),
+      .map((result) => result.value)
+      .sort((firstMovie, secondMovie) =>
+        (firstMovie.title || "").localeCompare(secondMovie.title || "", undefined, {
+          sensitivity: "base",
+        }),
+      ),
     failedMovieIds: results
       .map((result, index) => (result.status === "rejected" ? movieIds[index] : null))
       .filter(Boolean),
