@@ -156,6 +156,51 @@ Successful deletion cascades to the user's reviews, favorite movies, and group
 memberships. Favorite entries in surviving groups retain the movie but clear
 the deleted user's attribution.
 
+### Favorite movies API
+
+All favorite movie endpoints require an authenticated user's JWT:
+
+```http
+Authorization: Bearer <token>
+```
+
+The API stores only TMDB movie IDs. The client does not provide a user ID; the
+user is taken from the verified JWT.
+
+List the current user's favorites:
+
+```http
+GET /api/favorites
+```
+
+The response is an ID-only list:
+
+```json
+{"favorites":[{"movie_id":550}]}
+```
+
+Add a favorite:
+
+```http
+POST /api/favorites
+Content-Type: application/json
+
+{"movie_id":550}
+```
+
+A new favorite returns `201`. Adding an existing favorite is idempotent and
+returns `200` without creating a duplicate row. Movie IDs must be positive
+integers.
+
+Remove a favorite:
+
+```http
+DELETE /api/favorites/550
+```
+
+Removal returns `204`. Removing an ID that is not currently saved is also
+idempotent and returns `204`.
+
 ## Stopping the development environment
 
 Stop the frontend and backend with:
