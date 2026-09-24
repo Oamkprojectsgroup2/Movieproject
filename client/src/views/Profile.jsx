@@ -36,10 +36,9 @@ function Stars({ count }) {
 
 function Profile({ user, onLogout, onDeleteAccount }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [favorites, setFavorites] = useState({ total: 0, posters: [], shareUrl: "" });
+  const [favorites, setFavorites] = useState({ total: 0, posters: [] });
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState(null);
-  const [shareMessage, setShareMessage] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +73,6 @@ function Profile({ user, onLogout, onDeleteAccount }) {
             posters: details
               .filter((result) => result.status === "fulfilled")
               .map((result) => result.value.poster_path),
-            shareUrl: "",
           });
         }
       } catch (error) {
@@ -93,36 +91,6 @@ function Profile({ user, onLogout, onDeleteAccount }) {
       cancelled = true;
     };
   }, []);
-
-  const handleShare = async () => {
-    setShareMessage(null);
-
-    try {
-      const response = await fetch(`${BASE_URL}/favorites/share`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(data.message || "Sharing could not be enabled");
-      }
-
-      const shareUrl = `${window.location.origin}/favourites/share/${data.shared_token}`;
-      setFavorites((current) => ({ ...current, shareUrl }));
-
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareMessage("Link copied to clipboard");
-      } else {
-        setShareMessage("Share link ready to copy");
-      }
-    } catch (error) {
-      setShareMessage(error.message);
-    }
-  };
 
   const hiddenFavorites = Math.max(favorites.total - favorites.posters.length, 0);
 
@@ -159,10 +127,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         <section className="profile-card">
           <div className="profile-card-head">
             <h2>Your favorites</h2>
-            <div className="profile-card-actions">
-              <Link to="/favourites" className="profile-favorites-link">Open list</Link>
-              <button className="btn-primary profile-share" onClick={handleShare}>Share list</button>
-            </div>
+            <Link to="/favourites" className="profile-favorites-link">Open list</Link>
           </div>
           <div className="profile-posters">
             {favorites.posters.map((poster, i) => (
@@ -172,10 +137,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
             ))}
             {hiddenFavorites > 0 && <div className="profile-poster more">+{hiddenFavorites}</div>}
           </div>
-          <p className={`profile-url${favoritesError ? " error" : ""}`}>
-            {favoritesError || favorites.shareUrl || "Sharing is off"}
-          </p>
-          {shareMessage && <p className="profile-share-message">{shareMessage}</p>}
+          {favoritesError && <p className="profile-url error">{favoritesError}</p>}
         </section>
 
         <section className="profile-card wide">

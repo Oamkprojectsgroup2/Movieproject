@@ -52,7 +52,6 @@ The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) t
 | `/search`   | `views/Search.jsx`     |
 | `/theaters` | `views/Theaters.jsx`   |
 | `/favourites` | `views/Favourites.jsx` (authenticated owner) |
-| `/favourites/share/:sharedToken` | `views/SharedFavourites.jsx` (public, read-only) |
 | `/groups`     | `components/Placeholder.jsx` (for now) |
 | `/profile`    | `views/Profile.jsx` (only when logged in) |
 | `/reviews`    | `components/Placeholder.jsx` (for now) |
@@ -82,10 +81,6 @@ Import everything from `react-router` (not `react-router-dom`).
 - `GET /api/favorites` returns the authenticated user's TMDB movie IDs.
 - `POST /api/favorites` and `DELETE /api/favorites/:movieId` manage the
    authenticated user's list.
-- `POST /api/favorites/share` creates or returns the user's stable opt-in share
-   token.
-- `GET /api/favorites/shared/:sharedToken` is public and returns only the
-   owner's username and favorite movie IDs.
 - `GET /api/movies/:movieId` retrieves TMDB details through the backend for
    rendering favorite movie cards; the TMDB token is never sent to the client.
 

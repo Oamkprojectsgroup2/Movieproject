@@ -77,12 +77,6 @@
 
 .profile-card-head a:hover { color: var(--color-text); }
 
-.profile-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .profile-favorites-link {
   color: var(--color-text-secondary);
   font-size: 14px;
@@ -115,8 +109,6 @@
 .star-on { color: var(--color-gold); }
 
 .star-off { color: var(--color-text-muted); }
-
-.profile-share { padding: 4px 12px; border-radius: 3px; font-size: 16px; }
 
 .profile-posters {
   display: grid;
@@ -186,14 +178,8 @@
   font-size: 12px;
 }
 
-.profile-url.error,
-.profile-share-message {
+.profile-url.error {
   color: var(--color-error);
-}
-
-.profile-share-message {
-  margin: 6px 0 0;
-  font-size: 13px;
 }
 
 @media (max-width: 600px) {

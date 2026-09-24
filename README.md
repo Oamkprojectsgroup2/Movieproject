@@ -201,30 +201,7 @@ DELETE /api/favorites/550
 Removal returns `204`. Removing an ID that is not currently saved is also
 idempotent and returns `204`.
 
-Enable sharing for the current user's list:
-
-```http
-POST /api/favorites/share
-Authorization: Bearer <token>
-```
-
-The operation is idempotent and returns a stable token:
-
-```json
-{"shared_token":"11111111-1111-4111-8111-111111111111"}
-```
-
-Anyone with the token can view the public list:
-
-```http
-GET /api/favorites/shared/<shared_token>
-```
-
-The public response contains the owner's username and movie IDs only. Unknown
-or malformed tokens return `404`.
-
-The application pages are `/favourites` for the authenticated owner and
-`/favourites/share/<shared_token>` for a read-only public list. Movie details
+The `/favourites` page is available to the authenticated owner. Movie details
 are loaded through `GET /api/movies/<movie_id>` so the TMDB token remains on
 the server.
 
