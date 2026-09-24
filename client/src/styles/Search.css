@@ -294,8 +294,13 @@
   cursor: pointer;
 }
 
-.search-favorite-button:hover,
-.search-favorite-button.saved {
+.search-favorite-button:not(.saved):hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.search-favorite-button.saved,
+.search-favorite-button.saved:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
