@@ -13,6 +13,43 @@ const handleError = (operation, error, res) => {
     return res.status(500).json({ message: "Favorite movies error" });
 };
 
+const isUuid = (value) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+export const createShareToken = async (req, res) => {
+    try {
+        const sharedToken = await favoritesService.createShareToken(req.user.user_id);
+
+        if (sharedToken === null) {
+            return res.status(404).json({ message: "User account not found" });
+        }
+
+        return res.status(200).json({ shared_token: sharedToken });
+    } catch (error) {
+        return handleError("share", error, res);
+    }
+};
+
+export const getSharedFavorites = async (req, res) => {
+    const { sharedToken } = req.params;
+
+    if (!isUuid(sharedToken)) {
+        return res.status(404).json({ message: "Favorite list not found" });
+    }
+
+    try {
+        const favorites = await favoritesService.getSharedFavorites(sharedToken);
+
+        if (favorites === null) {
+            return res.status(404).json({ message: "Favorite list not found" });
+        }
+
+        return res.status(200).json(favorites);
+    } catch (error) {
+        return handleError("shared list", error, res);
+    }
+};
+
 export const listFavorites = async (req, res) => {
     try {
         const favorites = await favoritesService.listFavorites(req.user.user_id);

@@ -4,6 +4,9 @@ import authenticate from "../middleware/authenticate.js";
 
 const router = express.Router();
 
+router.post("/share", authenticate, favoritesController.createShareToken);
+router.get("/shared/:sharedToken", favoritesController.getSharedFavorites);
+
 router.use(authenticate);
 router.get("/", favoritesController.listFavorites);
 router.post("/", favoritesController.addFavorite);
