@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import Modal from "../components/Modal";
 import DeleteForm from "../components/DeleteForm";
 import { BASE_URL } from "../config";
-import "../styles/Profile.css";
+import "./styles/Profile.css";
 
 //todo: replace with API data
 

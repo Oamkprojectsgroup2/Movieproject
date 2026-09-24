@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
-import "../styles/Favourites.css";
+import "./styles/Favourites.css";
 
 async function loadMovieDetails(movieIds) {
   const results = await Promise.allSettled(
