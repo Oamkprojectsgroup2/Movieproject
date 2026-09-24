@@ -11,6 +11,8 @@ import "./App.css";
 import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
 import Profile from './views/Profile'
+import Favourites from './views/Favourites';
+import SharedFavourites from './views/SharedFavourites';
 
 function getTokenExpiry(token) {
   try {
@@ -157,7 +159,10 @@ function App() {
                   searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
         } />
         <Route path="/theaters" element={<Theaters />} />
-        <Route path="/favourites" element={<Placeholder title="Favourites" />} />
+        <Route path="/favourites/share/:sharedToken" element={<SharedFavourites />} />
+        <Route path="/favourites" element={
+          user ? <Favourites /> : <Navigate to="/" />
+        } />
         <Route path="/groups" element={<Placeholder title="Groups" />} />
         <Route path="/profile" element={
           user ? (

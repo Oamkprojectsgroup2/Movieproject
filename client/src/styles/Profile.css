@@ -77,6 +77,20 @@
 
 .profile-card-head a:hover { color: var(--color-text); }
 
+.profile-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-favorites-link {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.profile-favorites-link:hover { color: var(--color-text); }
+
 .profile-list { list-style: none; margin: 0; padding: 0; }
 
 .profile-list li {
@@ -113,8 +127,16 @@
 
 .profile-poster {
   aspect-ratio: 2 / 3;
+  overflow: hidden;
   background: var(--color-surface-input);
   border-radius: 3px;
+}
+
+.profile-poster img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .profile-poster.more {
@@ -156,6 +178,23 @@
 .link-button.warning { color: var(--color-warning); }
 
 .profile-danger { display: flex; justify-content: flex-end; margin-top: 24px; }
+
+.profile-url {
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.profile-url.error,
+.profile-share-message {
+  color: var(--color-error);
+}
+
+.profile-share-message {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
 
 @media (max-width: 600px) {
   .profile-page { margin: 16px; padding: 16px; }
