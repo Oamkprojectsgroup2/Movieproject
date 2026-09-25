@@ -225,7 +225,7 @@
   margin-bottom: 14px;
 }
 
-.review-from-top h3 {
+.review-form-top h3 {
   margin: 0;
   font-size: 17px;
 }
@@ -357,13 +357,25 @@
 }
 
 .review-author {
-  font-size: 16;
+  font-size: 16px;
   font-weight: bold;
 }
 
 .review-date {
   color: var(--color-text-secondary);
   font-size: 13px;
+  white-space: nowrap;
+}
+
+.review-text {
+  margin: 8px 0 0;
+  max-width: 70ch;
+  line-height: 1.5;
+}
+
+.reviews-empty {
+  margin: 0;
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 720px) {

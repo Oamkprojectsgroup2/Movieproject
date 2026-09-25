@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { BASE_URL } from "../config";
 import Stars from "../components/Stars";
 import "./styles/MovieDetails.css";
-import router from "../../../server/src/routes/movieRoutes";
+
 
 function MovieDetails({ user, siteLanguage}) {
   const { id } = useParams();
@@ -21,7 +21,7 @@ function MovieDetails({ user, siteLanguage}) {
   
   const loadReviews = useCallback(async () => {
     try{
-      const response = await fetch(`${BASE_URL}/reviews/search/{id}`);
+      const response = await fetch(`${BASE_URL}/reviews/search/${id}`);
 
       if(!response.ok) return;
 
@@ -29,7 +29,7 @@ function MovieDetails({ user, siteLanguage}) {
       setReviews(data.reviews || []);
     }
     catch {
-
+      // Commented to prevent error
     }
   }, [id]);
 
@@ -48,13 +48,9 @@ function MovieDetails({ user, siteLanguage}) {
 
         const data = await response.json();
 
-        if (!Response.ok) {
+        if (!response.ok) {
           throw new Error(data.message || "Movie not found");
         }
-
-        const reviewData = await reviewResponse
-          .json()
-          .catch(() => ({ reviews: [] }));
 
         if (cancelled) return;
 
@@ -99,7 +95,7 @@ function MovieDetails({ user, siteLanguage}) {
     : null;
 
   const myReview = user
-    ? reviews.find((row) => router.user_id === user.user_id)
+    ? reviews.find((row) => row.user_id === user.user_id)
     : null;
 
   const sortedReviews = myReview
@@ -362,6 +358,7 @@ function MovieDetails({ user, siteLanguage}) {
               </div>
 
               <textarea
+                className="review-form-textarea"
                 value={formText}
                 onChange={(event) => setFormText(event.target.value)}
                 placeholder="What did you think?"
