@@ -497,7 +497,7 @@ function MovieDetails({ user, siteLanguage}) {
               No reviews yet.{" "}
               {user
                 ? "Be the first to write one."
-                : "log in to write the first one."}
+                : "Log in to write the first one."}
             </p>
             
           ) : (
