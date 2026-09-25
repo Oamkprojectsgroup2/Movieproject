@@ -354,7 +354,12 @@ useEffect(() => {
                     rating !== null
                       ? Math.round(rating / 2)
                       : 0;
-
+                                    
+                  const posterContent = item.poster_path ? (
+                    <img src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} alt={`${title} poster`} />
+                  ) : (
+                    <span>Poster</span>
+                  );
                   return (
                     <article
                       className="search-result"
@@ -363,24 +368,27 @@ useEffect(() => {
 
                       {/* POSTER */}
 
-                      <div className="search-result-poster">
+                      {contentType === "movie" ? (
 
-                        {item.poster_path ? (
+                        <Link
+                          className="search-result-poster"
+                          to={`/movie/${item.id}`}
+                          aria-label={`Open ${title}`}
+                        >
+                          {posterContent}
 
-                          <img
-                            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                            alt={`${title} poster`}
-                          />
+                        </Link>
+                      
+                      ) : (
 
-                        ) : (
+                      
 
-                          <span>
-                            Poster
-                          </span>
+                        <div className="search-result-poster">
+                          {posterContent}
+                        </div>
 
-                        )}
+                      )}
 
-                      </div>
 
 
                       {/* INFORMATION */}

@@ -7,6 +7,7 @@ import Theaters from "./views/Theaters";
 import Modal from "./components/Modal"
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
+import MovieDetails from "./views/MovieDetails";
 import "./App.css";
 import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
@@ -169,6 +170,9 @@ function App() {
           ) : <Navigate to="/" />
         } />
         <Route path="/reviews" element={<Placeholder title="Reviews" />} />
+        <Route path="/movie/:id" element={
+          <MovieDetails user={user} siteLanguage={siteLanguage} />
+        } />
         <Route path="*" element={
           <Placeholder title="404" message="That page doesn't exist." />
         } />

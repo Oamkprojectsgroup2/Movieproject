@@ -25,3 +25,7 @@ export const getUpcomingMovies = (page = 1, language = "fi-FI", region = "FI") =
 export const getMovieGenres = (language = "fi-FI") => {
     return tmdbFetch("/genre/movie/list", {language});
 }
+
+export const getMovieDetails = (id, language = "fi-FI") => {
+    return tmdbFetch(`/movie/${id}`, { language, append_to_response: "credits" });
+}
