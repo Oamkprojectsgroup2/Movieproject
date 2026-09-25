@@ -174,7 +174,7 @@ function App() {
           ) : <Navigate to="/" />
         } />
         <Route path="/reviews" element={<Placeholder title="Reviews" />} />
-        <Route path="/movie/:id" element={
+        <Route path="/movie/:movieId" element={
           <MovieDetails user={user} siteLanguage={siteLanguage} />
         } />
         <Route path="*" element={

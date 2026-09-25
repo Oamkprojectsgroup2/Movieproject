@@ -6,7 +6,7 @@ import "./styles/MovieDetails.css";
 
 
 function MovieDetails({ user, siteLanguage}) {
-  const { id } = useParams();
+  const { movieId } = useParams();
   const navigate = useNavigate();
 
   const [movie, setMovie] = useState(null);
@@ -22,7 +22,7 @@ function MovieDetails({ user, siteLanguage}) {
   
   const loadReviews = useCallback(async () => {
     try{
-      const response = await fetch(`${BASE_URL}/reviews/search/${id}`);
+      const response = await fetch(`${BASE_URL}/reviews/search/${movieId}`);
 
       if(!response.ok) return;
 
@@ -32,7 +32,7 @@ function MovieDetails({ user, siteLanguage}) {
     catch {
       // Commented to prevent error
     }
-  }, [id]);
+  }, [movieId]);
 
 
   useEffect(() => {
@@ -44,7 +44,7 @@ function MovieDetails({ user, siteLanguage}) {
 
       try {
         const response = await fetch(
-          `${BASE_URL}/movies/${id}?language=${siteLanguage}`         
+          `${BASE_URL}/movies/${movieId}?language=${siteLanguage}`         
         );
 
         const data = await response.json();
@@ -68,7 +68,7 @@ function MovieDetails({ user, siteLanguage}) {
     load();
 
     return () => { cancelled = true; };
-  }, [id, siteLanguage]);
+  }, [movieId, siteLanguage]);
 
   useEffect(() => {
     loadReviews();
@@ -143,7 +143,7 @@ function MovieDetails({ user, siteLanguage}) {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            movieId: Number(id),
+            movieId: Number(movieId),
             rating: formStar,
             reviewText: myReview ? text : text || null,
           }),
@@ -174,7 +174,7 @@ function MovieDetails({ user, siteLanguage}) {
     setFormError(null);
 
     try {
-      const response = await fetch(`${BASE_URL}/reviews/delete/${id}`, {
+      const response = await fetch(`${BASE_URL}/reviews/delete/${movieId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
