@@ -19,6 +19,9 @@ function MovieDetails({ user, siteLanguage}) {
   const [formError, setFormError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [hoverStar, setHoverStar] =useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteBusy,setFavoriteBusy] = useState(false);
+  const [favoriteError, setFavoriteError] = useState(null);
   
   const loadReviews = useCallback(async () => {
     try{
@@ -33,6 +36,42 @@ function MovieDetails({ user, siteLanguage}) {
       // Commented to prevent error
     }
   }, [movieId]);
+
+  useEffect(() => {
+    if (!user) {
+      setIsFavorite(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadFavorite = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/favorites`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (cancelled) return;
+
+        setIsFavorite(
+          (data.favorites || []).some(
+            (favorite) => favorite.movie_id === Number(movieId)
+          )
+        );
+      }
+      catch {
+        // Commented to prevent error
+      }
+    };
+
+    loadFavorite();
+
+    return() => { cancelled = true; };
+  }, [movieId, user]);
 
 
   useEffect(() => {
@@ -196,6 +235,37 @@ function MovieDetails({ user, siteLanguage}) {
       setSaving(false);
     }
   };
+  
+  const toggleFavorite = async () => {
+    setFavoriteBusy(true);
+    setFavoriteError(null);
+
+    try {
+      const response = await fetch(
+        isFavorite ? `${BASE_URL}/favorites/${movieId}` : `${BASE_URL}/favorites`,
+        {
+          method: isFavorite ? "DELETE" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: isFavorite ? undefined : JSON.stringify({ movie_id: Number(movieId) }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("updating favorites failed");
+      }
+
+      setIsFavorite(!isFavorite);
+    }
+    catch (err) {
+      setFavoriteError(err.message);
+    }
+    finally {
+      setFavoriteBusy(false);
+    }
+  };
 
   const tmdbAverage = movie.vote_average ? movie.vote_average / 2 : null;
 
@@ -305,12 +375,24 @@ function MovieDetails({ user, siteLanguage}) {
 
             {user && (
               <div className="movie-actions">
-                <button type="button" className="btn-outline">
-                  ♡ Add to favourites
+                <button 
+                  type="button" 
+                  className={isFavorite ? "btn-outline favorite-on" : "btn-outline"}
+                  onClick={toggleFavorite}
+                  disabled={favoriteBusy}
+                  aria-pressed={isFavorite}
+                >
+                  {isFavorite ? "♥ In favourites" : "♡ Add to favourites"}
                 </button>
+
                 <button type="button" className="btn-outline">
                   Add to group
                 </button>
+
+                {favoriteError && (
+                  <p className="movie-actions-error">{favoriteError}</p>
+                )}
+
               </div>
             )}
 
