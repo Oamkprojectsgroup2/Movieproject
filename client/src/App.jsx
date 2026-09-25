@@ -11,6 +11,7 @@ import "./App.css";
 import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
 import Profile from './views/Profile'
+import Favourites from './views/Favourites';
 
 function getTokenExpiry(token) {
   try {
@@ -154,10 +155,13 @@ function App() {
                   genre={genre} setGenre={setGenre}
                   year={year} setYear={setYear}
                   language={language} setLanguage={setLanguage}
-                  searchTrigger={searchTrigger} siteLanguage={siteLanguage} />
+                  searchTrigger={searchTrigger} siteLanguage={siteLanguage}
+                  user={user} onLoginClick={() => setAuthView("login")} />
         } />
         <Route path="/theaters" element={<Theaters />} />
-        <Route path="/favourites" element={<Placeholder title="Favourites" />} />
+        <Route path="/favourites" element={
+          user ? <Favourites /> : <Navigate to="/" />
+        } />
         <Route path="/groups" element={<Placeholder title="Groups" />} />
         <Route path="/profile" element={
           user ? (

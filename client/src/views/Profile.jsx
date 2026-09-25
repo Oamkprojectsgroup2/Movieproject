@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Modal from "../components/Modal";
 import DeleteForm from "../components/DeleteForm";
-import "../styles/Profile.css";
+import { BASE_URL } from "../config";
+import "./styles/Profile.css";
 
 //todo: replace with API data
 
@@ -11,13 +12,11 @@ const reviews = [
   { id: 2, title: "Second movie", stars: 3, createdAt: "2026-09-10" },
   { id: 3, title: "Third movie", stars: 5, createdAt: "2026-08-27" },
 ];
-const favorites = { total: 22, posters: [null, null, null], shareUrl: "dippadai.fin/kdsosmngv" };
 const groups = [
   { id: 1, name: "Men over 40", role: "owner", pendingRequests: 2 },
   { id: 2, name: "Murder mysteries for wife's", role: "member" },
   { id: 3, name: "Anime lovers", role: "pending" }
 ];
-const hiddenFavorites = favorites.total - favorites.posters.length;
 
 function timeAgo(date) {
   const days = Math.floor((Date.now() - new Date(date)) / 86400000);
@@ -37,13 +36,73 @@ function Stars({ count }) {
 
 function Profile({ user, onLogout, onDeleteAccount }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [favorites, setFavorites] = useState({ total: 0, posters: [] });
+  const [favoritesLoading, setFavoritesLoading] = useState(true);
+  const [favoritesError, setFavoritesError] = useState(null);
+  const [favoritesPartial, setFavoritesPartial] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFavorites() {
+      try {
+        const response = await fetch(`${BASE_URL}/favorites`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "Favorites could not be loaded");
+        }
+
+        const movieIds = (data.favorites || []).map((favorite) => favorite.movie_id);
+        const details = await Promise.allSettled(
+          movieIds.slice(0, 3).map(async (movieId) => {
+            const movieResponse = await fetch(`${BASE_URL}/movies/${movieId}?language=en-US`);
+            if (!movieResponse.ok) {
+              throw new Error("Movie details could not be loaded");
+            }
+            return movieResponse.json();
+          }),
+        );
+
+        if (!cancelled) {
+          setFavoritesPartial(details.some((result) => result.status === "rejected"));
+          setFavorites({
+            total: movieIds.length,
+            posters: details
+              .filter((result) => result.status === "fulfilled")
+              .map((result) => result.value.poster_path),
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setFavoritesError(error.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setFavoritesLoading(false);
+        }
+      }
+    }
+
+    loadFavorites();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hiddenFavorites = Math.max(favorites.total - favorites.posters.length, 0);
+
   return (
     <main className="profile-page">
       <header className="profile-header">
         <div className="profile-avatar">{user.user_name[0]}</div>
         <div className="profile-identity">
           <h1>{user.user_name}</h1>
-          <p>{reviews.length} reviews · {favorites.total} favorites · {groups.length} groups</p>
+          <p>{reviews.length} reviews · {favoritesLoading ? "..." : favorites.total} favorites · {groups.length} groups</p>
         </div>
         <button className="btn-outline" onClick={onLogout}>Log out</button>
       </header>
@@ -70,15 +129,22 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         <section className="profile-card">
           <div className="profile-card-head">
             <h2>Your favorites</h2>
-            <button className="btn-primary profile-share">Share list</button>
+            <Link to="/favourites" className="profile-favorites-link">Open list</Link>
           </div>
           <div className="profile-posters">
             {favorites.posters.map((poster, i) => (
-              <div key={i} className="profile-poster" />
+              <div key={i} className="profile-poster">
+                {poster && <img src={`https://image.tmdb.org/t/p/w342${poster}`} alt="" />}
+              </div>
             ))}
             {hiddenFavorites > 0 && <div className="profile-poster more">+{hiddenFavorites}</div>}
           </div>
-          <p className="profile-url">{favorites.shareUrl}</p>
+          {favoritesError && <p className="profile-url error">{favoritesError}</p>}
+          {favoritesPartial && (
+            <p className="profile-url profile-details-warning">
+              Some movie details are temporarily unavailable.
+            </p>
+          )}
         </section>
 
         <section className="profile-card wide">
