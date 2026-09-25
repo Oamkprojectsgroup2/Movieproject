@@ -18,6 +18,7 @@ function MovieDetails({ user, siteLanguage}) {
   const [formText, setFormText] = useState("");
   const [formError, setFormError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [hoverStar, setHoverStar] =useState(0);
   
   const loadReviews = useCallback(async () => {
     try{
@@ -113,6 +114,7 @@ function MovieDetails({ user, siteLanguage}) {
   
   const openForm = () => {
     setFormStar(myReview?.star || 0);
+    setHoverStar(0);
     setFormText(myReview?.review || "");
     setFormError(null);
     setFormOpen(true);
@@ -338,17 +340,20 @@ function MovieDetails({ user, siteLanguage}) {
                 <span className="review-form-hint">Tap to rate</span>
               </div>
               
-              <div className="star-picker">
+              <div className="star-picker" onMouseLeave={() => setHoverStar(0)}>
                 {[1, 2, 3, 4, 5].map((position) => (
                   <button
                     type="button"
                     key={position}
                     className={
-                      position <= formStar
-                        ? "star-button star-button-activate"
+                      position <= (hoverStar || formStar)
+                        ? "star-button star-button-active"
                         : "star-button"
                     }
                     onClick={() => setFormStar(position)}
+                    onMouseEnter={() => setHoverStar(position)}
+                    onFocus={() => setHoverStar(position)}
+                    onBlur={() => setHoverStar(0)}
                     aria-label={`${position} ${position === 1 ? "star" : "stars"}`}
                     aria-pressed={position === formStar}
                   >
