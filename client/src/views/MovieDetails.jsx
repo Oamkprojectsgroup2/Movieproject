@@ -402,7 +402,7 @@ function MovieDetails({ user, siteLanguage}) {
         
         <section className="movie-reviews">
           
-          <div>
+          <div className="reviews-heading">
             
             <h2>Reviews <span className="review-count">{reviewCount}</span></h2>
 
