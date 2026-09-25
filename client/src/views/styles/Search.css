@@ -416,3 +416,12 @@
   opacity: 0.6;
   cursor: default;
 }
+
+a.search-result-poster {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.search-result-poster:hover {
+  border-color: var(--color-gold);
+}

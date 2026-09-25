@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../styles/Home.css";
+import "./styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
 import { useNavigate } from "react-router";

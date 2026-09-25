@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import Modal from "../components/Modal";
 import DeleteForm from "../components/DeleteForm";
-import "../styles/Profile.css";
+import "./styles/Profile.css";
 
 //todo: replace with API data
 

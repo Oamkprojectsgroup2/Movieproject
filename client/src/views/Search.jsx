@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import "../styles/Search.css";
+import { Link } from "react-router";
+import "./styles/Search.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
 
