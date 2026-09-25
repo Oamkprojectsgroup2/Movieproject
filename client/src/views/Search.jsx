@@ -15,6 +15,8 @@ function Search({
   setLanguage,
   searchTrigger,
   siteLanguage,
+  user,
+  onLoginClick,
 }) {
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -31,6 +33,45 @@ function Search({
   const [page, setPage] =useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const [favoriteActionId, setFavoriteActionId] = useState(null);
+  const [favoriteError, setFavoriteError] = useState(null);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadFavorites() {
+      try {
+        const response = await fetch(`${BASE_URL}/favorites`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "Favorites could not be loaded");
+        }
+
+        if (!cancelled) {
+          setFavoriteIds(new Set((data.favorites || []).map((favorite) => favorite.movie_id)));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setFavoriteError(error.message);
+        }
+      }
+    }
+
+    loadFavorites();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
 useEffect(() => {
   if (search.trim()) {
@@ -155,6 +196,47 @@ useEffect(() => {
     }
   };
 
+  const toggleFavorite = async (movieId) => {
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+
+    const isFavorite = favoriteIds.has(movieId);
+    setFavoriteActionId(movieId);
+    setFavoriteError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/favorites${isFavorite ? `/${movieId}` : ""}`, {
+        method: isFavorite ? "DELETE" : "POST",
+        headers: {
+          ...(isFavorite ? {} : { "Content-Type": "application/json" }),
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        ...(!isFavorite && { body: JSON.stringify({ movie_id: movieId }) }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || "Favorite could not be updated");
+      }
+
+      setFavoriteIds((currentIds) => {
+        const nextIds = new Set(currentIds);
+        if (isFavorite) {
+          nextIds.delete(movieId);
+        } else {
+          nextIds.add(movieId);
+        }
+        return nextIds;
+      });
+    } catch (error) {
+      setFavoriteError(error.message);
+    } finally {
+      setFavoriteActionId(null);
+    }
+  };
+
   const filteredResults = useMemo(() => {
     return results.filter((item) => {
       if(genre && !(item.genre_ids || []).includes(Number(genre))) {
@@ -271,6 +353,10 @@ useEffect(() => {
 
           <div className="search-results">
 
+            {user && favoriteError && (
+              <p className="search-favorite-error">{favoriteError}</p>
+            )}
+
             {loading && (
               <div className="no-results">
                 <h2>
@@ -360,6 +446,8 @@ useEffect(() => {
                   ) : (
                     <span>Poster</span>
                   );
+                  const isFavorite = Boolean(user && favoriteIds.has(item.id));
+
                   return (
                     <article
                       className="search-result"
@@ -436,6 +524,24 @@ useEffect(() => {
                           <strong>Language:</strong>{" "}
                           {item.original_language || "N/A"}
                         </p>
+
+                        {contentType === "movie" && (
+                          <button
+                            type="button"
+                            className={`search-favorite-button${isFavorite ? " saved" : ""}`}
+                            aria-pressed={isFavorite}
+                            disabled={favoriteActionId === item.id}
+                            onClick={() => toggleFavorite(item.id)}
+                          >
+                            {favoriteActionId === item.id
+                              ? "Updating..."
+                              : isFavorite
+                                ? "Remove favorite"
+                                : user
+                                  ? "Add to favorites"
+                                  : "Log in to save"}
+                          </button>
+                        )}
 
                       </div>
 

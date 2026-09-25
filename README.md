@@ -68,7 +68,26 @@ Health check:
 http://localhost:3001/api/health
 ```
 
-### 5. Run authentication API tests
+### 5. Load the test data (optional)
+
+`npm install` in the previous step already created the tables. To also load the
+shared test data — 20 users, reviews, favorites and groups:
+
+```bash
+cd server
+npm run db:seed
+```
+
+Login credentials and the test scenarios each account covers are in
+[server/db/TEST_USERS.md](server/db/TEST_USERS.md).
+
+To wipe the database and reload it from scratch:
+
+```bash
+npm run db:reset
+```
+
+### 6. Run authentication API tests
 
 Create a separate test environment file from the committed template:
 
@@ -100,7 +119,7 @@ Set-Location ..
 docker compose --env-file .env.test -f docker-compose.test.yml down
 ```
 
-### 6. Start the frontend
+### 7. Start the frontend
 
 Open another terminal:
 
@@ -136,6 +155,55 @@ return `401`; missing passwords return `400`; unauthenticated requests return
 Successful deletion cascades to the user's reviews, favorite movies, and group
 memberships. Favorite entries in surviving groups retain the movie but clear
 the deleted user's attribution.
+
+### Favorite movies API
+
+Owner operations require an authenticated user's JWT:
+
+```http
+Authorization: Bearer <token>
+```
+
+The API stores only TMDB movie IDs. The client does not provide a user ID; the
+user is taken from the verified JWT.
+
+List the current user's favorites:
+
+```http
+GET /api/favorites
+```
+
+The response is an ID-only list:
+
+```json
+{"favorites":[{"movie_id":550}]}
+```
+
+Add a favorite:
+
+```http
+POST /api/favorites
+Content-Type: application/json
+
+{"movie_id":550}
+```
+
+A new favorite returns `201`. Adding an existing favorite is idempotent and
+returns `200` without creating a duplicate row. Movie IDs must be positive
+integers.
+
+Remove a favorite:
+
+```http
+DELETE /api/favorites/550
+```
+
+Removal returns `204`. Removing an ID that is not currently saved is also
+idempotent and returns `204`.
+
+The `/favourites` page is available to the authenticated owner. Movie details
+are loaded through `GET /api/movies/<movie_id>` so the TMDB token remains on
+the server.
 
 ## Stopping the development environment
 
