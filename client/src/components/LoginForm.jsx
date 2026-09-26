@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/Auth.css";
+import "./styles/Auth.css";
 
 
 function LoginForm({ notice, onSubmit, onSwitchToRegister }) {

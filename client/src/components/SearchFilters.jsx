@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../styles/SearchFilters.css";
+import "./styles/SearchFilters.css";
 import { BASE_URL } from "../config";
 
 function SearchFilters({

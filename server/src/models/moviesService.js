@@ -26,6 +26,6 @@ export const getMovieGenres = (language = "fi-FI") => {
     return tmdbFetch("/genre/movie/list", {language});
 }
 
-export const getMovieDetails = (movieId, language = "fi-FI") => {
-    return tmdbFetch(`/movie/${movieId}`, {language});
+export const getMovieDetails = (id, language = "fi-FI") => {
+    return tmdbFetch(`/movie/${id}`, { language, append_to_response: "credits" });
 }

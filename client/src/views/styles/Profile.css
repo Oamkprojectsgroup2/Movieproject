@@ -98,7 +98,13 @@
 
 .profile-list li:last-child { border-bottom: none; }
 
-.profile-item-title { display: block; }
+.profile-item-title { 
+  display: block; 
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+a.profile-item-title:hover { color: var(--color-gold); }
 
 .profile-list li > span .profile-item-title { display: inline; }
 
@@ -137,7 +143,7 @@
   color: var(--color-text-secondary);
 }
 
-.btn-outline {
+.profile-page .btn-outline {
   padding: 6px 14px;
   background: transparent;
   border: 1px solid var(--color-gold);
@@ -149,11 +155,11 @@
   cursor: pointer;
 }
 
-.btn-outline:hover { background: var(--color-surface-card); }
+.profile-page .btn-outline:hover { background: var(--color-surface-card); }
 
-.btn-outline.muted { border-color: var(--color-line-strong); color: var(--color-text-secondary); }
+.profile-page .btn-outline.muted { border-color: var(--color-line-strong); color: var(--color-text-secondary); }
 
-.btn-outline.muted:hover { border-color: var(--color-error); color: var(--color-error); }
+.profile-page .btn-outline.muted:hover { border-color: var(--color-error); color: var(--color-error); }
 
 .link-button {
   background: none;

@@ -123,3 +123,20 @@ export const deleteReview = async (req,res) => {
         return res.status(500).json({message: "Review delete error"});
     }
 };
+
+export const listMyReviews = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    
+    const reviews = await pool.query(
+      `SELECT review_id, movies_tmdb_id, created_at, star, review
+      FROM reviews WHERE user_id = $1 ORDER BY created_at DESC`, [userId]
+    );
+
+    return res.status(200).json({count: reviews.rows.length, reviews: reviews.rows});
+  }
+  catch (error) {
+    console.error("Own reviews error: ", error);
+    return res.status(500).json({message: "Own reviews error"});
+  }
+};

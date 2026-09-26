@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import "../styles/Home.css";
+import "./styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 
 function Home({
   search,
@@ -217,7 +217,11 @@ function Home({
 
                 {/* POSTER */}
 
-                <div className="movie-poster">
+                <Link 
+                  className="movie-poster"
+                  to={`/movie/${currentMovie.id}`}
+                  aria-label={`Open ${currentMovie.title || "movie"}`}
+                >
 
                   {currentMovie.poster_path ? (
                     <img
@@ -230,7 +234,7 @@ function Home({
                     </span>
                   )}
 
-                </div>
+                </Link> 
 
 
                 {/* MOVIE INFORMATION */}

@@ -68,21 +68,24 @@ export const getGenres = async (req, res) => {
 }
 
 export const getDetails = async (req, res) => {
-    const movieId = Number(req.params.movieId);
-
-    if (!Number.isSafeInteger(movieId) || movieId <= 0) {
-        return res.status(400).json({message: "movie_id must be a positive integer"});
-    }
-
     try {
+        const { id } = req.params;
+
+        if (!/^\d+$/.test(id)) {
+            return res.status(400).json({ message: "Invalid movie id" });
+        }
+
         const language = req.query.language || "fi-FI";
-        const data = await movieService.getMovieDetails(movieId, language);
-        return res.json(data);
+        const data = await movieService.getMovieDetails(id, language);
+        res.json(data);
     }
     catch (error) {
         console.error("Error fetching movie details:", error)
-        return res.status(500).json({message: error.message || "Internal Server Error"});
+
+        if (error.message?.includes("404")) {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+
+        res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }
-
-

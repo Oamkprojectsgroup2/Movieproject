@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 const posterUrl = (posterPath) =>
   posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
 
@@ -13,13 +15,17 @@ function FavoriteMovieList({ movies, failedMovieIds, onRemove, removingMovieId }
 
         return (
           <article className="favourites-movie" key={movie.id}>
-            <div className="favourites-poster">
+            <Link 
+              className="favourites-poster"
+              to={`/movie/${movie.id}`}
+              aria-label={`Open ${movie.title || "movie"}`}
+            >
               {poster ? (
                 <img src={poster} alt={`${movie.title} poster`} />
               ) : (
                 <span>No poster</span>
               )}
-            </div>
+            </Link>
             <div className="favourites-movie-info">
               <h2>{movie.title || "Untitled movie"}</h2>
               <p>{year || "Release year unavailable"}</p>

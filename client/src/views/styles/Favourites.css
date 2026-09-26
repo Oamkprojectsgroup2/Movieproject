@@ -64,6 +64,10 @@
   object-fit: cover;
 }
 
+a.favourites-poster {
+  text-decoration: none;
+}
+
 .favourites-movie-info {
   padding: 18px;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import "../styles/Theaters.css";
+import "./styles/Theaters.css";
 import { BASE_URL } from "../config";
 import SearchFilters from "../components/SearchFilters";
 
