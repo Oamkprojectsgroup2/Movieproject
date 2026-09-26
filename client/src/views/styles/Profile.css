@@ -98,7 +98,13 @@
 
 .profile-list li:last-child { border-bottom: none; }
 
-.profile-item-title { display: block; }
+.profile-item-title { 
+  display: block; 
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+a.profile-item-title:hover { color: var(--color-gold); }
 
 .profile-list li > span .profile-item-title { display: inline; }
 
