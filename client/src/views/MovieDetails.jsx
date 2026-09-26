@@ -382,7 +382,7 @@ function MovieDetails({ user, siteLanguage}) {
                   disabled={favoriteBusy}
                   aria-pressed={isFavorite}
                 >
-                  {isFavorite ? "♥ In favourites" : "♡ Add to favourites"}
+                  {isFavorite ? "♥ Remove from favourites" : "♡ Add to favourites"}
                 </button>
 
                 <button type="button" className="btn-outline">
