@@ -67,4 +67,22 @@ export const getGenres = async (req, res) => {
     }
 }
 
+export const getDetails = async (req, res) => {
+    const movieId = Number(req.params.movieId);
+
+    if (!Number.isSafeInteger(movieId) || movieId <= 0) {
+        return res.status(400).json({message: "movie_id must be a positive integer"});
+    }
+
+    try {
+        const language = req.query.language || "fi-FI";
+        const data = await movieService.getMovieDetails(movieId, language);
+        return res.json(data);
+    }
+    catch (error) {
+        console.error("Error fetching movie details:", error)
+        return res.status(500).json({message: error.message || "Internal Server Error"});
+    }
+}
+
 

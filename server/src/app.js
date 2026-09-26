@@ -5,6 +5,7 @@ import tvRoutes from './routes/tvRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import favoriteRoutes from './routes/favoriteRoutes.js';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use('/api/tv', tvRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/favorites', favoriteRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
