@@ -4,6 +4,8 @@ import authenticate from "../middleware/authenticate.js";
 
 const router = express.Router();
 
+router.get("/share/:userId", favoritesController.getSharedFavorites);
+
 router.use(authenticate);
 router.get("/", favoritesController.listFavorites);
 router.post("/", favoritesController.addFavorite);

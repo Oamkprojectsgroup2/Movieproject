@@ -59,3 +59,28 @@ export const removeFavorite = async (req, res) => {
         return handleError("remove", error, res);
     }
 };
+
+export const getSharedFavorites = async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    const [favorites, username] = await Promise.all([
+      favoritesService.getFavoritesByUserId(userId),
+      favoritesService.getUserNameById(userId),
+    ]);
+
+    return res.status(200).json({
+      favorites,
+      username,
+      user_name: username,
+      name: username,
+    });
+  } catch (error) {
+    console.error("Error fetching shared favorites:", error);
+    return res.status(500).json({ message: "Favorite movies error" });
+  }
+};
