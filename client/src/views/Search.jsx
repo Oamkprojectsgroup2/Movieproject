@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useEffectEvent } from "react";
 import "../styles/Search.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
@@ -72,24 +72,11 @@ function Search({
     };
   }, [user]);
 
-useEffect(() => {
-  if (search.trim()) {
-    handleSearch();
-  }
-}, [contentType]);
-
-useEffect(() => {
-  if (searchTrigger > 0 && search.trim()) {
-    handleSearch();
-  }
-}, [searchTrigger]);
-
-
   const handleSearch = async (e, pageNumber = 1) => {
     if (e) {
     e.preventDefault();
     }
- 
+
     if (!search.trim()) {
       setResults([]);
       setHasSearched(true);
@@ -188,6 +175,42 @@ useEffect(() => {
     }
   }; 
 
+  const searchFromEffect = useEffectEvent(() => {
+    if (search.trim()) {
+      handleSearch();
+    }
+  });
+
+  const loadSearchPageFromEffect = useEffectEvent((pageNumber) => {
+    handleSearch(null, pageNumber);
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        searchFromEffect();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentType]);
+
+  useEffect(() => {
+    if (searchTrigger > 0) {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (!cancelled) {
+          searchFromEffect();
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [searchTrigger]);
+
   const handleLoadMore = () => {
     if (page < totalPages &&!loadingMore)
     {
@@ -269,7 +292,7 @@ useEffect(() => {
       autoPageCount.current < MAX_AUTO_PAGES
     ) {
       autoPageCount.current += 1;
-      handleSearch(null, page + 1);
+      loadSearchPageFromEffect(page + 1);
     }
   }, [filteredResults.length, page, totalPages, loading, loadingMore, error, hasSearched, genre, year, language]);
 

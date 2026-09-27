@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useEffectEvent } from 'react';
 import { BASE_URL } from "../config";
 
 const LANGUAGES = [
@@ -111,10 +111,22 @@ function Ogview() {
     fetchData(`/tv/search?query=${encodeURIComponent(searchTvQuery)}`, `TV Search: "${searchTvQuery}"`);
   };
 
-  useEffect(() => {
+  const reloadActiveRequest = useEffectEvent(() => {
     if (activeRequest.endpoint) {
       fetchData(activeRequest.endpoint, activeRequest.label);
     }
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        reloadActiveRequest();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [language, region]);
 
   return (
