@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import "../styles/SearchFilters.css";
+import "./styles/SearchFilters.css";
 import { BASE_URL } from "../config";
 
 function SearchFilters({
   genre,
   setGenre,
-  year,
   setYear,
-  language,
   siteLanguage = "en-US",
   contentType = "movie",
   setLanguage,
@@ -42,13 +40,13 @@ function SearchFilters({
 
         setGenres(data.genres || []);
         onGenresLoaded?.(data.genres || []);
-      } catch (err) {
+      } catch {
         setGenres([]);
       }
     };
 
     fetchGenres();
-  }, [contentType, siteLanguage]);
+  }, [contentType, siteLanguage, onGenresLoaded]);
 
   const [languages, setLanguages] = useState([]);
 
@@ -58,7 +56,7 @@ function SearchFilters({
         const response = await fetch(`${BASE_URL}/config/languages`);
         const data = await response.json();
         setLanguages(data || []);
-      } catch (err) {
+      } catch {
         setLanguages([]);
       }
     };

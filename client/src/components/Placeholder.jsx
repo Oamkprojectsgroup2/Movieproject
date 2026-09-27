@@ -1,4 +1,4 @@
-import "../styles/Placeholder.css";
+import "./styles/Placeholder.css";
 
 function Placeholder({ title, message = "This page is not built yet." }) {
   return (

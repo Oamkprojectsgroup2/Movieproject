@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import "../styles/Search.css";
+import { useState, useEffect, useMemo, useRef, useEffectEvent } from "react";
+import { Link } from "react-router";
+import "./styles/Search.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
 
@@ -72,24 +73,11 @@ function Search({
     };
   }, [user]);
 
-useEffect(() => {
-  if (search.trim()) {
-    handleSearch();
-  }
-}, [contentType]);
-
-useEffect(() => {
-  if (searchTrigger > 0 && search.trim()) {
-    handleSearch();
-  }
-}, [searchTrigger]);
-
-
   const handleSearch = async (e, pageNumber = 1) => {
     if (e) {
     e.preventDefault();
     }
- 
+
     if (!search.trim()) {
       setResults([]);
       setHasSearched(true);
@@ -188,6 +176,42 @@ useEffect(() => {
     }
   }; 
 
+  const searchFromEffect = useEffectEvent(() => {
+    if (search.trim()) {
+      handleSearch();
+    }
+  });
+
+  const loadSearchPageFromEffect = useEffectEvent((pageNumber) => {
+    handleSearch(null, pageNumber);
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        searchFromEffect();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentType]);
+
+  useEffect(() => {
+    if (searchTrigger > 0) {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (!cancelled) {
+          searchFromEffect();
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [searchTrigger]);
+
   const handleLoadMore = () => {
     if (page < totalPages &&!loadingMore)
     {
@@ -269,7 +293,7 @@ useEffect(() => {
       autoPageCount.current < MAX_AUTO_PAGES
     ) {
       autoPageCount.current += 1;
-      handleSearch(null, page + 1);
+      loadSearchPageFromEffect(page + 1);
     }
   }, [filteredResults.length, page, totalPages, loading, loadingMore, error, hasSearched, genre, year, language]);
 
@@ -439,6 +463,12 @@ useEffect(() => {
                     rating !== null
                       ? Math.round(rating / 2)
                       : 0;
+                                    
+                  const posterContent = item.poster_path ? (
+                    <img src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} alt={`${title} poster`} />
+                  ) : (
+                    <span>Poster</span>
+                  );
                   const isFavorite = Boolean(user && favoriteIds.has(item.id));
 
                   return (
@@ -449,24 +479,27 @@ useEffect(() => {
 
                       {/* POSTER */}
 
-                      <div className="search-result-poster">
+                      {contentType === "movie" ? (
 
-                        {item.poster_path ? (
+                        <Link
+                          className="search-result-poster"
+                          to={`/movie/${item.id}`}
+                          aria-label={`Open ${title}`}
+                        >
+                          {posterContent}
 
-                          <img
-                            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                            alt={`${title} poster`}
-                          />
+                        </Link>
+                      
+                      ) : (
 
-                        ) : (
+                      
 
-                          <span>
-                            Poster
-                          </span>
+                        <div className="search-result-poster">
+                          {posterContent}
+                        </div>
 
-                        )}
+                      )}
 
-                      </div>
 
 
                       {/* INFORMATION */}

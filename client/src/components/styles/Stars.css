@@ -1,0 +1,13 @@
+.stars {
+  display:inline-flex;
+  gap: 2px;
+  line-height: 1;
+}
+
+.star {
+  color: var(--color-text-muted);
+}
+
+.star-filled {
+  color: var(--color-gold);
+}

@@ -41,6 +41,8 @@
 }
 
 .favourites-movie {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -64,7 +66,14 @@
   object-fit: cover;
 }
 
+a.favourites-poster {
+  text-decoration: none;
+}
+
 .favourites-movie-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 18px;
 }
 
@@ -107,6 +116,15 @@
 .favourites-remove:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.favourites-remove {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.favourites-movie-info > :has(+ .favourites-remove) {
+  margin-bottom: 14px;
 }
 
 .favourites-state {

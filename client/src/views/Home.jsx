@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import "../styles/Home.css";
+import "./styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 
 function Home({
   search,
@@ -48,7 +48,13 @@ function Home({
           );
         }
 
-        setRecommendedMovies(data.results || []);
+        const recommendations = data.results || [];
+        setRecommendedMovies(recommendations);
+        setActiveRecommendation((current) =>
+          recommendations.length > 0 && current >= recommendations.length
+            ? 0
+            : current
+        );
       } catch (err) {
         setRecommendationError(err.message);
       } finally {
@@ -58,16 +64,6 @@ function Home({
 
     fetchRecommendedMovies();
   }, []);
-
-  // Keep active recommendation valid when results change
-  useEffect(() => {
-    if (
-      recommendedMovies.length > 0 &&
-      activeRecommendation >= recommendedMovies.length
-    ) {
-      setActiveRecommendation(0);
-    }
-  }, [recommendedMovies, activeRecommendation]);
 
   // Automatically change movie every 6 seconds
   useEffect(() => {
@@ -217,7 +213,11 @@ function Home({
 
                 {/* POSTER */}
 
-                <div className="movie-poster">
+                <Link 
+                  className="movie-poster"
+                  to={`/movie/${currentMovie.id}`}
+                  aria-label={`Open ${currentMovie.title || "movie"}`}
+                >
 
                   {currentMovie.poster_path ? (
                     <img
@@ -230,7 +230,7 @@ function Home({
                     </span>
                   )}
 
-                </div>
+                </Link> 
 
 
                 {/* MOVIE INFORMATION */}

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import "../styles/Theaters.css";
+import { useState, useEffect, useRef, useEffectEvent } from "react";
+import "./styles/Theaters.css";
 import { BASE_URL } from "../config";
 import SearchFilters from "../components/SearchFilters";
 
@@ -26,14 +26,6 @@ function Theaters() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
-
-  /*
-   * Automatically load currently playing movies
-   * when the Theaters page is opened.
-   */
-  useEffect(() => {
-    handleSearch(1);
-  }, []);
 
   const handleSearch = async (pageNumber = 1) => {
     if (pageNumber === 1) {
@@ -110,6 +102,26 @@ function Theaters() {
       setLoadingMore(false);
     }
   };
+
+  const searchFromEffect = useEffectEvent((pageNumber) => {
+    handleSearch(pageNumber);
+  });
+
+  /*
+   * Automatically load currently playing movies
+   * when the Theaters page is opened.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        searchFromEffect(1);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleLoadMore = () => {
     if (
@@ -206,7 +218,7 @@ function Theaters() {
       autoPageCount.current < MAX_AUTO_PAGES
     ) {
       autoPageCount.current += 1;
-      handleSearch(page + 1);
+      searchFromEffect(page + 1);
     }
   }, [filteredResults.length, page, totalPages, loading, loadingMore, error, genre, language]);
 
