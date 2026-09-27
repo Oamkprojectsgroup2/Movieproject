@@ -38,10 +38,7 @@ function MovieDetails({ user, siteLanguage}) {
   }, [movieId]);
 
   useEffect(() => {
-    if (!user) {
-      setIsFavorite(false);
-      return;
-    }
+    if (!user) return;
 
     let cancelled = false;
 
@@ -110,7 +107,10 @@ function MovieDetails({ user, siteLanguage}) {
   }, [movieId, siteLanguage]);
 
   useEffect(() => {
-    loadReviews();
+    const load = async () => {
+      await loadReviews();
+    };
+    load();
   }, [loadReviews]);
 
   if (loading) {
