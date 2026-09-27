@@ -13,6 +13,7 @@ import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
 import Profile from './views/Profile'
 import Favourites from './views/Favourites';
+import Reviews from "./views/Reviews";
 
 function getTokenExpiry(token) {
   try {
@@ -173,7 +174,9 @@ function App() {
             />
           ) : <Navigate to="/" />
         } />
-        <Route path="/reviews" element={<Placeholder title="Reviews" />} />
+        <Route path="/reviews" element={
+          user ? <Reviews /> : <Navigate to="/" />
+        } />
         <Route path="/movie/:movieId" element={
           <MovieDetails user={user} siteLanguage={siteLanguage} />
         } />
