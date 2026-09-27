@@ -48,7 +48,13 @@ function Home({
           );
         }
 
-        setRecommendedMovies(data.results || []);
+        const recommendations = data.results || [];
+        setRecommendedMovies(recommendations);
+        setActiveRecommendation((current) =>
+          recommendations.length > 0 && current >= recommendations.length
+            ? 0
+            : current
+        );
       } catch (err) {
         setRecommendationError(err.message);
       } finally {
@@ -58,16 +64,6 @@ function Home({
 
     fetchRecommendedMovies();
   }, []);
-
-  // Keep active recommendation valid when results change
-  useEffect(() => {
-    if (
-      recommendedMovies.length > 0 &&
-      activeRecommendation >= recommendedMovies.length
-    ) {
-      setActiveRecommendation(0);
-    }
-  }, [recommendedMovies, activeRecommendation]);
 
   // Automatically change movie every 6 seconds
   useEffect(() => {
