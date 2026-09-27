@@ -5,13 +5,8 @@ import DeleteForm from "../components/DeleteForm";
 import { BASE_URL } from "../config";
 import "./styles/Profile.css";
 
-//todo: replace with API data
+//todo: replace groups with API data
 
-const reviews = [
-  { id: 1, title: "First movie", stars: 4, createdAt: "2026-09-15" },
-  { id: 2, title: "Second movie", stars: 3, createdAt: "2026-09-10" },
-  { id: 3, title: "Third movie", stars: 5, createdAt: "2026-08-27" },
-];
 const groups = [
   { id: 1, name: "Men over 40", role: "owner", pendingRequests: 2 },
   { id: 2, name: "Murder mysteries for wife's", role: "member" },
@@ -20,6 +15,7 @@ const groups = [
 
 function timeAgo(date) {
   const days = Math.floor((Date.now() - new Date(date)) / 86400000);
+  if (days < 1) return "today";
   if (days < 7) return `${days} d ago`;
   return `${Math.floor(days / 7)} w ago`;
 }
@@ -40,6 +36,9 @@ function Profile({ user, onLogout, onDeleteAccount }) {
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState(null);
   const [favoritesPartial, setFavoritesPartial] = useState(false);
+  const [reviews, setReviews] = useState ({ total: 0, items: [] });
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +93,61 @@ function Profile({ user, onLogout, onDeleteAccount }) {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadReviews() {
+      try {
+        const response = await fetch(`${BASE_URL}/reviews/me`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "Reviews could not be loaded");
+        }
+
+        const latest = (data.reviews || []).slice(0, 3);
+        const details = await Promise.allSettled(
+          latest.map(async (review) => {
+            const movieResponse = await fetch(`${BASE_URL}/movies/${review.movies_tmdb_id}?language=en-US`);
+            if (!movieResponse.ok) {
+              throw new Error("Movie details could not be loaded");
+            }
+            return movieResponse.json();
+          }),
+        );
+
+        if (!cancelled) {
+          setReviews({
+            total: data.count,
+            items: latest.map((review, i) => ({
+              id: review.review_id,
+              movieId: review.movies_tmdb_id,
+              title: details[i].status === "fulfilled" ? details[i].value.title : "Unknown movie",
+              stars: review.star,
+              createdAt: review.created_at,
+            })),
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setReviewsError(error.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setReviewsLoading(false);
+        }
+      }
+    }
+
+    loadReviews();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const hiddenFavorites = Math.max(favorites.total - favorites.posters.length, 0);
 
   return (
@@ -102,7 +156,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         <div className="profile-avatar">{user.user_name[0]}</div>
         <div className="profile-identity">
           <h1>{user.user_name}</h1>
-          <p>{reviews.length} reviews · {favoritesLoading ? "..." : favorites.total} favorites · {groups.length} groups</p>
+          <p>{reviewsLoading ? "..." : reviews.total} reviews · {favoritesLoading ? "..." : favorites.total} favorites · {groups.length} groups</p>
         </div>
         <button className="btn-outline" onClick={onLogout}>Log out</button>
       </header>
@@ -114,16 +168,20 @@ function Profile({ user, onLogout, onDeleteAccount }) {
             <Link to="/reviews">See all</Link>
           </div>
           <ul className="profile-list">
-            {reviews.map((r) => (
+            {reviews.items.map((r) => (
               <li key={r.id}>
                 <div>
-                  <span className="profile-item-title">{r.title}</span>
+                  <Link to={`/movie/${r.movieId}`} className="profile-item-title">{r.title}</Link>
                   <Stars count={r.stars} />
                 </div>
                 <span className="profile-meta">{timeAgo(r.createdAt)}</span>
               </li>
             ))}
           </ul>
+          {reviewsError && <p className="profile-url error">{reviewsError}</p>}
+          {!reviewsLoading && !reviewsError && reviews.total === 0 && (
+            <p className="profile-meta">You haven't reviewed any movies yet.</p>
+          )}
         </section>
 
         <section className="profile-card">
