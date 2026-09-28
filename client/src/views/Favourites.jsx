@@ -132,8 +132,8 @@ const handleShareClick = async () => {
       "User";
 
     const generatedUrl = userId
-      ? `${window.location.origin}/shared-favourites?userId=${userId}&username=${encodeURIComponent(userName)}`
-      : `${window.location.origin}/shared-favourites?user=${encodeURIComponent(userName)}`;
+      ? `${window.location.origin}/shared-favourites?userId=${userId}`
+      : `${window.location.origin}/shared-favourites`;
 
     setShareUrl(generatedUrl);
     await navigator.clipboard.writeText(generatedUrl);

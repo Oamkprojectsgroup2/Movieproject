@@ -3,31 +3,19 @@ import { BASE_URL } from "../config";
 import "./styles/SharedFavourites.css";
 
 function SharedFavourites() {
-  const params = new URLSearchParams(window.location.search);
-  const usernameFromUrl = params.get("username");
-
-  function getStoredUser() {
-    try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
-    }
-  };
-
-  const storedUser = getStoredUser();
-
+  const [sharedData, setSharedData] = useState(null);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const username = usernameFromUrl || storedUser?.user_name || "User";
+  const username =
+    sharedData?.user_name || sharedData?.username || sharedData?.name || "This user";
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("userId");
     let cancelled = false;
 
-   
-    const userId = params.get("userId");
-    
     async function loadSharedFavorites() {
       try {
         if (!userId) {
@@ -41,20 +29,24 @@ function SharedFavourites() {
           throw new Error(data.message || "Could not load favourites.");
         }
 
-        const sharedData = await sharedResponse.json();
+        const data = await sharedResponse.json();
 
-        const movieIds = (sharedData.favorites || []).map((item) => item.movie_id);
+        if (cancelled) return;
+
+        setSharedData(data);
+
+        const movieIds = (data.favorites || []).map((item) => item.movie_id);
 
         const results = await Promise.allSettled(
           movieIds.map(async (movieId) => {
             const response = await fetch(`${BASE_URL}/movies/${movieId}?language=en`);
-            const data = await response.json().catch(() => ({}));
+            const movieData = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-              throw new Error(data.message || "Movie details could not be loaded");
+              throw new Error(movieData.message || "Movie details could not be loaded");
             }
 
-            return data;
+            return movieData;
           })
         );
 
@@ -84,6 +76,7 @@ function SharedFavourites() {
   }, []);
 
   const titleText = `${username}'s favorite list`;
+  const emptyMessage = `${username} has no favourites yet.`;
 
   return (
     <main className="shared-favourites-page">
@@ -91,7 +84,6 @@ function SharedFavourites() {
         <div>
           <p className="shared-favourites-eyebrow">Shared collection</p>
           <h1>{titleText}</h1>
-          
           <p>{username}'s publicly shared favorites</p>
         </div>
       </header>
@@ -111,7 +103,7 @@ function SharedFavourites() {
 
       {!loading && !error && movies.length === 0 && (
         <div className="shared-favourites-state">
-          <h2>Your list is empty</h2>
+          <h2>{emptyMessage}</h2>
         </div>
       )}
 
@@ -137,7 +129,10 @@ function SharedFavourites() {
                   <h2>{movie.title}</h2>
                   <p>{year}</p>
                   <p className="shared-favourites-rating">
-                    Rating {movie.vote_average != null ? `${Number(movie.vote_average).toFixed(1)} / 10` : "N/A"}
+                    Rating{" "}
+                    {movie.vote_average != null
+                      ? `${Number(movie.vote_average).toFixed(1)} / 10`
+                      : "N/A"}
                   </p>
                 </div>
               </article>
