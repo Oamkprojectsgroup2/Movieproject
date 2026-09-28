@@ -124,13 +124,7 @@ const handleShareClick = async () => {
     const payload = JSON.parse(atob(token.split(".")[1]));
 
     const userId = payload.user_id ?? payload.id ?? storedUser?.user_id;
-    const userName =
-      payload.user_name ??
-      payload.username ??
-      storedUser?.user_name ??
-      storedUser?.username ??
-      "User";
-
+    
     const generatedUrl = userId
       ? `${window.location.origin}/shared-favourites?userId=${userId}`
       : `${window.location.origin}/shared-favourites`;
