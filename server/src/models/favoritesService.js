@@ -60,5 +60,5 @@ export const getUserNameById = async (userId) => {
     [userId]
   );
 
-  return result.rows[0]?.username ?? "User";
+  return result.rows[0]?.user_name ?? "User";
 };

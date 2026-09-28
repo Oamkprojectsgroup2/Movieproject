@@ -3,27 +3,31 @@ import { BASE_URL } from "../config";
 import "./styles/SharedFavourites.css";
 
 function SharedFavourites() {
+  const params = new URLSearchParams(window.location.search);
+  const usernameFromUrl = params.get("username");
+
+  function getStoredUser() {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  };
+
+  const storedUser = getStoredUser();
+
   const [movies, setMovies] = useState([]);
-  const [username, setUsername] = useState("User");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const username = usernameFromUrl || storedUser?.user_name || "User";
 
   useEffect(() => {
     let cancelled = false;
 
-    const params = new URLSearchParams(window.location.search);
+   
     const userId = params.get("userId");
-    const usernameFromUrl = params.get("username");
-
-    if (usernameFromUrl) {
-      setUsername(usernameFromUrl);
-    } else {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-      if (storedUser?.user_name) {
-        setUsername(storedUser.user_name);
-      }
-    }
-
+    
     async function loadSharedFavorites() {
       try {
         if (!userId) {
@@ -38,17 +42,6 @@ function SharedFavourites() {
         }
 
         const sharedData = await sharedResponse.json();
-
-        if (!cancelled) {
-          setUsername(
-            usernameFromUrl ||
-            sharedData.username ||
-            sharedData.user_name ||
-            sharedData.name ||
-            JSON.parse(localStorage.getItem("user") || "null")?.user_name ||
-            "User"
-          );
-        }
 
         const movieIds = (sharedData.favorites || []).map((item) => item.movie_id);
 
