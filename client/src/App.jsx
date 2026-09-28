@@ -13,6 +13,7 @@ import { BASE_URL } from "./config";
 import Placeholder from "./components/Placeholder";
 import Profile from './views/Profile'
 import Favourites from './views/Favourites';
+import SharedFavourites from "./views/SharedFavourites.jsx";
 import Reviews from "./views/Reviews";
 
 function getTokenExpiry(token) {
@@ -164,6 +165,7 @@ function App() {
         <Route path="/favourites" element={
           user ? <Favourites /> : <Navigate to="/" />
         } />
+        <Route path="/shared-favourites" element={<SharedFavourites />} />
         <Route path="/groups" element={<Placeholder title="Groups" />} />
         <Route path="/profile" element={
           user ? (

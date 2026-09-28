@@ -40,6 +40,8 @@ function Favourites() {
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [removingMovieId, setRemovingMovieId] = useState(null);
+  const [shareUrl, setShareUrl] = useState("");
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -109,14 +111,52 @@ function Favourites() {
     }
   };
 
+const handleShareClick = async () => {
+  const token = localStorage.getItem("token");
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+
+  if (!token) {
+    setError("You must be logged in to share your favourites.");
+    return;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    const userId = payload.user_id ?? payload.id ?? storedUser?.user_id;
+    
+    const generatedUrl = userId
+      ? `${window.location.origin}/shared-favourites?userId=${userId}`
+      : `${window.location.origin}/shared-favourites`;
+
+    setShareUrl(generatedUrl);
+    await navigator.clipboard.writeText(generatedUrl);
+  } catch {
+    setError("Copy failed. Your browser blocked clipboard access.");
+  }
+};
+
   return (
     <main className="favourites-page">
       <header className="favourites-header">
         <p className="favourites-eyebrow">Your collection</p>
         <h1>Favorite movies</h1>
         <p>Movies you have saved for later.</p>
-      </header>
 
+        <button type="button" className="share-favorites-btn" onClick={handleShareClick}>
+           Share URL
+        </button>
+        {shareUrl && (
+        <input
+          type="text"
+          className="share-url-input"
+          value={shareUrl}
+          readOnly
+          onFocus={(e) => e.target.select()}
+        />
+      )}
+
+      </header>
       {loading && <div className="favourites-state"><h2>Loading favorites...</h2></div>}
       {!loading && error && (
         <div className="favourites-state favourites-state-error">

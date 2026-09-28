@@ -187,3 +187,42 @@ a.favourites-poster {
     grid-template-columns: 1fr;
   }
 }
+
+.share-favorites-btn {
+  margin-top: 18px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-line-strong);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.share-favorites-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.share-favorites-btn:active {
+  transform: translateY(0);
+}
+
+.share-url-input {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text);
+  font: inherit;
+  border-radius: 8px;
+}
+
+.share-url-input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px rgba(255, 214, 102, 0.2);
+}

@@ -34,3 +34,31 @@ export const removeFavorite = async (userId, movieId) => {
 
     return result.rows[0] ?? null;
 };
+
+export const getFavoritesByUserId = async (userId) => {
+  const result = await pool.query(
+    `
+      SELECT movies_tmdb_id AS movie_id
+      FROM favorite_movies
+      WHERE user_id = $1
+      ORDER BY movies_tmdb_id
+    `,
+    [userId]
+  );
+
+  return result.rows;
+};
+
+export const getUserNameById = async (userId) => {
+  const result = await pool.query(
+    `
+      SELECT user_name
+      FROM users
+      WHERE user_id = $1
+      LIMIT 1
+    `,
+    [userId]
+  );
+
+  return result.rows[0]?.user_name ?? "User";
+};
