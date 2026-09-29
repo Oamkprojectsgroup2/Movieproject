@@ -20,3 +20,17 @@ export default function authenticate(req, res, next) {
         });
     }
 };
+
+export function optionalAuthenticate(req, res, next) {
+    const authorization = req.headers.authorization;
+
+    if (authorization?.startsWith("Bearer ")) {
+        try {
+            req.user = jwt.verify(authorization.split(" ")[1], process.env.JWT_SECRET);
+        } catch {
+            // Continue as guest
+        }
+    }
+
+    next();
+};
