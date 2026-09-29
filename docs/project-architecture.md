@@ -94,11 +94,16 @@ Import everything from `react-router` (not `react-router-dom`).
 - `GET /api/groups/:groupId` returns private group details for the owner or an
    accepted member. The response includes group metadata, accepted members, and
    group favorite movie IDs with the name of the user who added each movie when
-   that user still exists.
+   that user still exists. Authorized responses also include the server-derived
+   `is_owner` boolean for presentation decisions.
 - Guests, pending members, rejected members, and non-members cannot access
    group details. The endpoint returns `401` for missing or invalid
    authentication, `403` for an authenticated user without access, and `404`
    when the group does not exist.
+- No group membership or management mutation endpoints currently exist. Future
+   owner-only actions must compare `req.user.user_id` with the authoritative
+   `groups.owner_id` on the server; client-provided ownership flags must never
+   determine authorization.
 - The group page requests movie metadata from `GET /api/movies/:movieId` and
    keeps individual TMDB lookup failures visible without hiding the rest of the
    group content.
