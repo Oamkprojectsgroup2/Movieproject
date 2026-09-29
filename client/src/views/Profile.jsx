@@ -2,16 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Modal from "../components/Modal";
 import DeleteForm from "../components/DeleteForm";
+import CreateGroupForm from "../components/CreateGroupForm";
 import { BASE_URL } from "../config";
 import "./styles/Profile.css";
-
-//todo: replace groups with API data
-
-const groups = [
-  { id: 1, name: "Men over 40", role: "owner", pendingRequests: 2 },
-  { id: 2, name: "Murder mysteries for wife's", role: "member" },
-  { id: 3, name: "Anime lovers", role: "pending" }
-];
 
 function timeAgo(date) {
   const days = Math.floor((Date.now() - new Date(date)) / 86400000);
@@ -32,6 +25,10 @@ function Stars({ count }) {
 
 function Profile({ user, onLogout, onDeleteAccount }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [groupsError, setGroupsError] = useState(null);
   const [favorites, setFavorites] = useState({ total: 0, posters: [] });
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState(null);
@@ -39,6 +36,75 @@ function Profile({ user, onLogout, onDeleteAccount }) {
   const [reviews, setReviews] = useState ({ total: 0, items: [] });
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewsError, setReviewsError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGroups() {
+      try {
+        const response = await fetch(`${BASE_URL}/groups`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "Groups could not be loaded");
+        }
+
+        if (!cancelled) {
+          setGroups(data.groups || []);
+          setGroupsError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setGroupsError(error.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setGroupsLoading(false);
+        }
+      }
+    }
+
+    loadGroups();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCreateGroup = async (values) => {
+    const response = await fetch(`${BASE_URL}/groups`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(values),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.message || "Could not create group");
+    }
+
+    const newGroup = {
+      ...data.group,
+      owner_name: user.user_name,
+      member_count: 1,
+      my_status: "accepted",
+    };
+
+    setGroups((current) =>
+      [...current, newGroup].sort((first, second) =>
+        first.group_name.localeCompare(second.group_name),
+      ),
+    );
+    setCreateGroupOpen(false);
+  };
+
+  const myGroups = groups.filter((group) => group.my_status);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,7 +222,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         <div className="profile-avatar">{user.user_name[0]}</div>
         <div className="profile-identity">
           <h1>{user.user_name}</h1>
-          <p>{reviewsLoading ? "..." : reviews.total} reviews · {favoritesLoading ? "..." : favorites.total} favorites · {groups.length} groups</p>
+          <p>{reviewsLoading ? "..." : reviews.total} reviews · {favoritesLoading ? "..." : favorites.total} favorites · {groupsLoading ? "..." : myGroups.length} groups</p>
         </div>
         <button className="btn-outline" onClick={onLogout}>Log out</button>
       </header>
@@ -208,23 +274,31 @@ function Profile({ user, onLogout, onDeleteAccount }) {
         <section className="profile-card wide">
           <div className="profile-card-head">
             <h2>Your groups</h2>
-            <button className="link-button">Create group</button>
+            <button className="link-button" onClick={() => setCreateGroupOpen(true)}>Create group</button>
           </div>
-          <ul className="profile-list">
-            {groups.map((g) => (
-              <li key={g.id}>
-                <span>
-                  <span className="profile-item-title">{g.name}</span>
-                  <span className="profile-meta"> · {g.role}</span>
-                </span>
-                {g.role === "owner" && g.pendingRequests > 0 && (
-                  <button className="link-button warning">🔔 {g.pendingRequests} requests waiting</button>
-                )}
-                {g.role === "member" && <button className="link-button">Leave</button>}
-                {g.role === "pending" && <button className="link-button">Cancel request</button>}
-              </li>
-            ))}
-          </ul>
+          {groupsLoading && <p className="profile-meta">Loading groups...</p>}
+          {groupsError && <p className="profile-url error" role="alert">{groupsError}</p>}
+          {!groupsLoading && !groupsError && myGroups.length === 0 && (
+            <p className="profile-meta">You haven't joined any groups yet.</p>
+          )}
+          {!groupsLoading && !groupsError && myGroups.length > 0 && (
+            <ul className="profile-list">
+              {myGroups.map((group) => {
+                const role = group.owner_id === user.user_id
+                  ? "owner"
+                  : group.my_status;
+
+                return (
+                  <li key={group.group_id}>
+                    <Link to={`/groups/${group.group_id}`} className="profile-item-title">
+                      {group.group_name}
+                    </Link>
+                    <span className="profile-meta">{role}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
       </div>
 
@@ -239,6 +313,10 @@ function Profile({ user, onLogout, onDeleteAccount }) {
           onSubmit={onDeleteAccount}
           onCancel={() => setDeleteOpen(false)}
         />
+      </Modal>
+
+      <Modal isOpen={createGroupOpen} onClose={() => setCreateGroupOpen(false)}>
+        <CreateGroupForm onSubmit={handleCreateGroup} />
       </Modal>
     </main>
   );
