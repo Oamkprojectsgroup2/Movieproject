@@ -77,6 +77,22 @@
   letter-spacing: 0.04em;
 }
 
+.group-details-movies {
+  grid-column: 1 / -1;
+}
+
+.group-details-movies .favourites-grid {
+  max-width: none;
+  margin: 0;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.group-details-movies .favourites-partial-warning {
+  max-width: none;
+  margin-right: 0;
+  margin-left: 0;
+}
+
 .group-details-members,
 .group-details-favorites {
   display: grid;
@@ -127,5 +143,9 @@
 @media (max-width: 680px) {
   .group-details-layout {
     grid-template-columns: 1fr;
+  }
+
+  .group-details-movies {
+    grid-column: auto;
   }
 }

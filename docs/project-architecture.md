@@ -52,7 +52,8 @@ The frontend uses [React Router](https://reactrouter.com/) (`react-router` v8) t
 | `/search`   | `views/Search.jsx`     |
 | `/theaters` | `views/Theaters.jsx`   |
 | `/favourites` | `views/Favourites.jsx` (authenticated owner) |
-| `/groups`     | `components/Placeholder.jsx` (for now) |
+| `/groups`     | `views/Groups.jsx` |
+| `/groups/:groupId` | `views/GroupDetails.jsx` (authenticated accepted group member) |
 | `/profile`    | `views/Profile.jsx` (only when logged in) |
 | `/reviews`    | `components/Placeholder.jsx` (for now) |
 | `*`           | `components/Placeholder.jsx` (404)    |
@@ -83,6 +84,24 @@ Import everything from `react-router` (not `react-router-dom`).
    authenticated user's list.
 - `GET /api/movies/:movieId` retrieves TMDB details through the backend for
    rendering favorite movie cards; the TMDB token is never sent to the client.
+
+### Group API
+
+- `GET /api/groups` returns the public group list. When an authenticated token
+   is supplied, each row also includes the current user's membership status.
+- `POST /api/groups` creates a group for the authenticated user and adds the
+   creator as an accepted member.
+- `GET /api/groups/:groupId` returns private group details for the owner or an
+   accepted member. The response includes group metadata, accepted members, and
+   group favorite movie IDs with the name of the user who added each movie when
+   that user still exists.
+- Guests, pending members, rejected members, and non-members cannot access
+   group details. The endpoint returns `401` for missing or invalid
+   authentication, `403` for an authenticated user without access, and `404`
+   when the group does not exist.
+- The group page requests movie metadata from `GET /api/movies/:movieId` and
+   keeps individual TMDB lookup failures visible without hiding the rest of the
+   group content.
 
 ## The handling of environment variables and API keys
 

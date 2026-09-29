@@ -162,7 +162,7 @@ function GroupDetails() {
       </header>
 
       <div className="group-details-layout">
-        <section className="group-details-section">
+        <section className="group-details-section group-details-movies">
           <h2>Members</h2>
           {group.members.length > 0 ? (
             <ul className="group-details-members">
