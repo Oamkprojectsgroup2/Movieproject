@@ -33,3 +33,28 @@ export const listGroups = async (req, res) => {
     return res.status(500).json({ message: "Could not load groups" });
   }
 };
+
+export const getGroupDetails = async (req, res) => {
+  const groupId = Number(req.params.groupId);
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    return res.status(400).json({ message: "Group ID must be a positive integer" });
+  }
+
+  try {
+    const details = await groupService.getGroupDetails(groupId, req.user.user_id);
+
+    if (!details) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (!details.authorized) {
+      return res.status(403).json({ message: "You do not have access to this group" });
+    }
+
+    return res.status(200).json({ group: details.group });
+  } catch (error) {
+    console.error("Group detail error:", error);
+    return res.status(500).json({ message: "Could not load group" });
+  }
+};
