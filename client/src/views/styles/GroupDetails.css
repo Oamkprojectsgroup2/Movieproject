@@ -1,0 +1,131 @@
+.group-details-page {
+  min-height: calc(100vh - 80px);
+  padding: clamp(28px, 5vw, 56px) 5vw 80px;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(193, 18, 31, 0.2), transparent 32%),
+    linear-gradient(135deg, var(--color-ground) 0%, var(--color-ground-raised) 52%, rgb(22, 20, 20) 100%);
+}
+
+.group-details-page > * {
+  max-width: 1000px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.group-details-back {
+  display: block;
+  margin-bottom: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-gold);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-details-back:hover {
+  color: var(--color-text);
+}
+
+.group-details-header {
+  margin-bottom: 28px;
+}
+
+.group-details-eyebrow {
+  margin: 0 0 10px;
+  color: var(--color-accent);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.group-details-header h1 {
+  margin: 0 0 10px;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.group-details-header p:last-child {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.group-details-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.group-details-section {
+  padding: 22px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+}
+
+.group-details-section h2 {
+  margin: 0 0 16px;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.group-details-members,
+.group-details-favorites {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group-details-members li,
+.group-details-favorites li {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.group-details-members li:last-child,
+.group-details-favorites li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.group-details-muted,
+.group-details-status,
+.group-details-state p {
+  color: var(--color-text-secondary);
+}
+
+.group-details-state {
+  max-width: 680px;
+  padding: 28px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+}
+
+.group-details-state h1 {
+  margin: 0 0 10px;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.group-details-state p {
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .group-details-layout {
+    grid-template-columns: 1fr;
+  }
+}
