@@ -4,6 +4,7 @@ import Modal from "../components/Modal";
 import DeleteForm from "../components/DeleteForm";
 import { BASE_URL } from "../config";
 import "./styles/Profile.css";
+import Stars from "../components/Stars";
 
 //todo: replace groups with API data
 
@@ -18,16 +19,6 @@ function timeAgo(date) {
   if (days < 1) return "today";
   if (days < 7) return `${days} d ago`;
   return `${Math.floor(days / 7)} w ago`;
-}
-
-function Stars({ count }) {
-  return (
-    <span className="profile-stars" aria-label={`${count} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= count ? "star-on" : "star-off"}>★</span>
-      ))}
-    </span>
-  );
 }
 
 function Profile({ user, onLogout, onDeleteAccount }) {
@@ -172,7 +163,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
               <li key={r.id}>
                 <div>
                   <Link to={`/movie/${r.movieId}`} className="profile-item-title">{r.title}</Link>
-                  <Stars count={r.stars} />
+                  <Stars value={r.stars} />
                 </div>
                 <span className="profile-meta">{timeAgo(r.createdAt)}</span>
               </li>

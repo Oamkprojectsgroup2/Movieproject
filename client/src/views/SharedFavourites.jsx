@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../config";
 import "./styles/SharedFavourites.css";
+import MovieRatings from "../components/MovieRatings";
+import useCineCircleRatings from "../hooks/useCineCircleRatings";
 
 function SharedFavourites() {
   const [sharedData, setSharedData] = useState(null);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const cineCircle = useCineCircleRatings(movies.map((movie) => movie.id));
 
   const username =
     sharedData?.user_name || sharedData?.username || sharedData?.name || "This user";
@@ -126,14 +130,11 @@ function SharedFavourites() {
                 </div>
 
                 <div className="shared-favourites-movie-info">
-                  <h2>{movie.title}</h2>
-                  <p>{year}</p>
-                  <p className="shared-favourites-rating">
-                    Rating{" "}
-                    {movie.vote_average != null
-                      ? `${Number(movie.vote_average).toFixed(1)} / 10`
-                      : "N/A"}
-                  </p>
+                    <h2>{movie.title}</h2>
+                    <p>{year}</p>
+                    <div className="shared-favourites-rating">
+                      <MovieRatings voteAverage={movie.vote_average} cineCircle={cineCircle[movie.id]} />
+                    </div>
                 </div>
               </article>
             );

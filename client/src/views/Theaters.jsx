@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useEffectEvent } from "react";
 import "./styles/Theaters.css";
 import { BASE_URL } from "../config";
 import SearchFilters from "../components/SearchFilters";
-
-
-
+import MovieRatings from "../components/MovieRatings";
+import useCineCircleRatings from "../hooks/useCineCircleRatings";
+import { Link } from "react-router";
 
 const LANGUAGES = {
   en: "English",
@@ -164,12 +164,6 @@ function Theaters() {
     );
   };
 
-  const getRating = (movie) => {
-    return movie.vote_average
-      ? movie.vote_average
-      : null;
-  };
-
   /*
    * Apply the filters to the currently loaded movies.
    */
@@ -180,7 +174,7 @@ function Theaters() {
 
       const movieLanguage =
         movie.original_language || "";
-
+      
       const matchesGenre =
         !genre ||
         movieGenres.includes(
@@ -197,6 +191,8 @@ function Theaters() {
       );
     }
   );
+
+  const cineCircle = useCineCircleRatings(filteredResults.map((movie) => movie.id));
 
   const MIN_VISIBLE_RESULTS = 20;
   const MAX_AUTO_PAGES = 5;
@@ -311,17 +307,7 @@ function Theaters() {
                   (movie) => {
 
                     const title =
-                      getTitle(movie);
-
-                    const rating =
-                      getRating(movie);
-
-                    const stars =
-                      rating !== null
-                        ? Math.round(
-                            rating / 2
-                          )
-                        : 0;
+                      getTitle(movie); 
 
                     return (
                       <article
@@ -331,20 +317,21 @@ function Theaters() {
 
                         {/* POSTER */}
 
-                        <div className="theaters-poster">
-
+                        <Link
+                          className="theaters-poster"
+                          to={`/movie/${movie.id}`}
+                          aria-label={`Open ${title}`}
+                        >
                           {movie.poster_path ? (
                             <img
                               src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                               alt={`${title} poster`}
                             />
                           ) : (
-                            <span>
-                              Poster
-                            </span>
+                            <span>Poster</span>
                           )}
+                        </Link>
 
-                        </div>
 
 
                         {/* INFORMATION */}
@@ -360,26 +347,7 @@ function Theaters() {
 
                           <div className="theaters-rating">
 
-                            <span>
-                              {"★".repeat(
-                                stars
-                              )}
-                            </span>
-
-                            <span className="rating-empty">
-                              {"★".repeat(
-                                5 - stars
-                              )}
-                            </span>
-
-                            {rating !== null && (
-                              <span>
-                                {" "}
-                                {rating.toFixed(
-                                  1
-                                )}/10
-                              </span>
-                            )}
+                              <MovieRatings voteAverage={movie.vote_average} cineCircle={cineCircle[movie.id]} />
 
                           </div>
 

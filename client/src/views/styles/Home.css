@@ -351,12 +351,6 @@ a.movie-poster {
   color: var(--color-gold);
 }
 
-
-.rating-empty {
-  color: var(--color-text-muted);
-}
-
-
 .movie-info p {
   margin: 7px 0;
 

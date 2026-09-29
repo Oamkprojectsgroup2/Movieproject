@@ -229,6 +229,15 @@
   display: block;
 }
 
+a.theaters-poster {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.theaters-poster:hover {
+  border-color: var(--color-gold);
+}
+
 
 /*MOVIE INFO */
 
@@ -281,11 +290,6 @@
 .theaters-rating > span:first-child {
   color: var(--color-gold);
 }
-
-.rating-empty {
-  color: var(--color-text-muted);
-}
-
 
 /*INFO TEXT*/
 

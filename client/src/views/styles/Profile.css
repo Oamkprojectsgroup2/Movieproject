@@ -110,12 +110,6 @@ a.profile-item-title:hover { color: var(--color-gold); }
 
 .profile-meta { color: var(--color-text-secondary); font-size: 14px; }
 
-.profile-stars { font-size: 12px; letter-spacing: 2px; }
-
-.star-on { color: var(--color-gold); }
-
-.star-off { color: var(--color-text-muted); }
-
 .profile-posters {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

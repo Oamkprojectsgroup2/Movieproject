@@ -1,0 +1,10 @@
+.movie-ratings-compact { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+}
+
+.rating-empty-text { 
+  font-size: 0.85em; 
+  color: var(--color-text-muted); 
+}

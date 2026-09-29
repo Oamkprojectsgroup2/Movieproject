@@ -3,6 +3,10 @@ import { Link } from "react-router";
 import "./styles/Search.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
+import MovieRatings from "../components/MovieRatings";
+import Stars from "../components/Stars";
+import { tmdbToFive } from "../utils/ratings";
+import useCineCircleRatings from "../hooks/useCineCircleRatings";
 
 function Search({
   search,
@@ -272,6 +276,10 @@ function Search({
     });
   }, [results, genre, language]);
 
+  const cineCircle = useCineCircleRatings(
+    contentType === "movie" ? filteredResults.map((item) => item.id) : []
+  );
+
   const MIN_VISIBLE_RESULTS = 20;
   const MAX_AUTO_PAGES = 5;
 
@@ -453,16 +461,6 @@ function Search({
                     releaseDate
                       ? releaseDate.slice(0, 4)
                       : "N/A";
-
-                  const rating =
-                    item.vote_average
-                      ? item.vote_average
-                      : null;
-
-                  const stars =
-                    rating !== null
-                      ? Math.round(rating / 2)
-                      : 0;
                                     
                   const posterContent = item.poster_path ? (
                     <img src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} alt={`${title} poster`} />
@@ -513,19 +511,10 @@ function Search({
 
                         <div className="search-result-rating">
 
-                          <span>
-                            {"★".repeat(stars)}
-                          </span>
-
-                          <span className="rating-empty">
-                            {"★".repeat(5 - stars)}
-                          </span>
-
-                          {rating !== null && (
-                            <span>
-                              {" "}
-                              {rating.toFixed(1)}/10
-                            </span>
+                          {contentType === "movie" ? (
+                            <MovieRatings voteAverage={item.vote_average} cineCircle={cineCircle[item.id]} />
+                          ) : (
+                            <Stars value={tmdbToFive(item.vote_average)} />
                           )}
 
                         </div>
