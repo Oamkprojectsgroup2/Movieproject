@@ -5,6 +5,8 @@ import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
 
+const MAX_VISIBLE_MEMBERS = 5;
+
 async function loadMovieDetails(movieIds) {
   const results = await Promise.allSettled(
     movieIds.map(async (movieId) => {
@@ -57,6 +59,7 @@ function GroupDetails() {
   const [movies, setMovies] = useState([]);
   const [failedMovieIds, setFailedMovieIds] = useState([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
+  const [showAllMembers, setShowAllMembers] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -80,6 +83,7 @@ function GroupDetails() {
         }
 
         if (!cancelled) {
+          setShowAllMembers(false);
           setGroup(data.group);
         }
       } catch (loadError) {
@@ -147,6 +151,10 @@ function GroupDetails() {
     );
   }
 
+  const visibleMembers = showAllMembers
+    ? group.members
+    : group.members.slice(0, MAX_VISIBLE_MEMBERS);
+
   return (
     <main className="group-details-page">
       <button type="button" className="group-details-back" onClick={() => navigate("/groups")}>
@@ -162,20 +170,36 @@ function GroupDetails() {
       </header>
 
       <div className="group-details-layout">
-        <section className="group-details-section group-details-movies">
+        <section className="group-details-section">
           <h2>Members</h2>
           {group.members.length > 0 ? (
-            <ul className="group-details-members">
-              {group.members.map((member) => (
-                <li key={member.user_id}>{member.user_name}</li>
-              ))}
-            </ul>
+            <>
+              <ul className="group-details-members">
+                {visibleMembers.map((member) => (
+                  <li key={member.user_id}>
+                    <span>{member.user_name}</span>
+                    {member.user_id === group.owner_id && (
+                      <span className="group-details-badge">Owner</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {group.members.length > MAX_VISIBLE_MEMBERS && (
+                <button
+                  type="button"
+                  className="group-details-members-toggle"
+                  onClick={() => setShowAllMembers((current) => !current)}
+                >
+                  {showAllMembers ? "Show fewer members" : "Show more members"}
+                </button>
+              )}
+            </>
           ) : (
             <p className="group-details-muted">No accepted members yet.</p>
           )}
         </section>
 
-        <section className="group-details-section">
+        <section className="group-details-section group-details-movies">
           <h2>Group favorites</h2>
           {moviesLoading ? (
             <p className="group-details-muted">Loading group favorites...</p>
