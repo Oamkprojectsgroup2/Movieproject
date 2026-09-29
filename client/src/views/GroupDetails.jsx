@@ -1,7 +1,38 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
+import "./styles/Favourites.css";
+
+async function loadMovieDetails(movieIds) {
+  const results = await Promise.allSettled(
+    movieIds.map(async (movieId) => {
+      const response = await fetch(`${BASE_URL}/movies/${movieId}?language=en-US`);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Movie details could not be loaded");
+      }
+
+      return data;
+    }),
+  );
+
+  return {
+    movies: results
+      .filter((result) => result.status === "fulfilled")
+      .map((result) => result.value)
+      .sort((firstMovie, secondMovie) =>
+        (firstMovie.title || "").localeCompare(secondMovie.title || "", undefined, {
+          sensitivity: "base",
+        }),
+      ),
+    failedMovieIds: results
+      .map((result, index) => (result.status === "rejected" ? movieIds[index] : null))
+      .filter(Boolean),
+  };
+}
 
 function getErrorState(response, data) {
   if (response.status === 401) {
@@ -23,6 +54,9 @@ function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [failedMovieIds, setFailedMovieIds] = useState([]);
+  const [moviesLoading, setMoviesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -67,6 +101,29 @@ function GroupDetails() {
       cancelled = true;
     };
   }, [groupId]);
+
+  useEffect(() => {
+    if (!group) return undefined;
+
+    let cancelled = false;
+    const movieIds = group.favorites.map((favorite) => favorite.movie_id);
+
+    async function loadGroupMovies() {
+      setMoviesLoading(true);
+      const details = await loadMovieDetails(movieIds);
+
+      if (!cancelled) {
+        setMovies(details.movies);
+        setFailedMovieIds(details.failedMovieIds);
+        setMoviesLoading(false);
+      }
+    }
+
+    loadGroupMovies();
+    return () => {
+      cancelled = true;
+    };
+  }, [group]);
 
   if (loading) {
     return (
@@ -120,15 +177,17 @@ function GroupDetails() {
 
         <section className="group-details-section">
           <h2>Group favorites</h2>
-          {group.favorites.length > 0 ? (
-            <ul className="group-details-favorites">
-              {group.favorites.map((favorite) => (
-                <li key={favorite.movie_id}>
-                  Movie {favorite.movie_id}
-                  {favorite.added_by ? ` · added by ${favorite.added_by}` : ""}
-                </li>
-              ))}
-            </ul>
+          {moviesLoading ? (
+            <p className="group-details-muted">Loading group favorites...</p>
+          ) : group.favorites.length > 0 ? (
+            <>
+              {failedMovieIds.length > 0 && (
+                <p className="favourites-partial-warning">
+                  Some group movies are temporarily unavailable.
+                </p>
+              )}
+              <FavoriteMovieList movies={movies} failedMovieIds={failedMovieIds} />
+            </>
           ) : (
             <p className="group-details-muted">No movies have been added to this group yet.</p>
           )}
