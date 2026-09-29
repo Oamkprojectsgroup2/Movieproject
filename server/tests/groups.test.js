@@ -182,6 +182,35 @@ test('includes the current user\'s membership status when a token is sent', asyn
     assert.equal(group.my_status, 'accepted');
 });
 
+test('preserves pending and rejected membership statuses in the group list', async () => {
+    const owner = await createUser('statusowner');
+    const pending = await createUser('statuspending');
+    const rejected = await createUser('statusrejected');
+    const ownerToken = await tokenFor(owner);
+    const pendingToken = await tokenFor(pending);
+    const rejectedToken = await tokenFor(rejected);
+    const createResponse = await createGroup(ownerToken, { group_name: uniqueGroupName('statuses') });
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, pending.user_id, 'pending');
+    await addMember(groupId, rejected.user_id, 'rejected');
+
+    const pendingResponse = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${pendingToken}`);
+    const rejectedResponse = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${rejectedToken}`);
+
+    const pendingGroup = pendingResponse.body.groups.find((group) => group.group_id === groupId);
+    const rejectedGroup = rejectedResponse.body.groups.find((group) => group.group_id === groupId);
+
+    assert.equal(pendingResponse.statusCode, 200);
+    assert.equal(pendingGroup.my_status, 'pending');
+    assert.equal(rejectedResponse.statusCode, 200);
+    assert.equal(rejectedGroup.my_status, 'rejected');
+});
+
 test('returns group details to the owner and accepted members', async () => {
     const owner = await createUser('detailowner');
     const member = await createUser('detailmember');

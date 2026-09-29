@@ -287,12 +287,17 @@ function Profile({ user, onLogout, onDeleteAccount }) {
                 const role = group.owner_id === user.user_id
                   ? "owner"
                   : group.my_status;
+                const groupName = group.my_status === "accepted" ? (
+                  <Link to={`/groups/${group.group_id}`} className="profile-item-title">
+                    {group.group_name}
+                  </Link>
+                ) : (
+                  <span className="profile-item-title">{group.group_name}</span>
+                );
 
                 return (
                   <li key={group.group_id}>
-                    <Link to={`/groups/${group.group_id}`} className="profile-item-title">
-                      {group.group_name}
-                    </Link>
+                    {groupName}
                     <span className="profile-meta">{role}</span>
                   </li>
                 );
