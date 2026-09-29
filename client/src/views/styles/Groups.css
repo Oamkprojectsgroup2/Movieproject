@@ -1,0 +1,192 @@
+.groups-page {
+  min-height: calc(100vh - 80px);
+  padding: clamp(28px, 5vw, 56px) 5vw 80px;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(193, 18, 31, 0.2), transparent 32%),
+    linear-gradient(135deg, var(--color-ground) 0%, var(--color-ground-raised) 52%, rgb(22, 20, 20) 100%);
+}
+
+.groups-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.groups-heading {
+  margin: 0 0 16px;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+.groups-heading.small {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.groups-search {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-surface-input);
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+.groups-search::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.groups-search:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background: var(--color-surface-input-focus);
+}
+
+.groups-status {
+  margin: 0 0 16px;
+  color: var(--color-text-secondary);
+}
+
+.groups-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.groups-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.groups-card:hover,
+.groups-card:focus-within {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.groups-card-info {
+  min-width: 0;
+}
+
+.groups-card-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.groups-card-meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.groups-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.groups-badge.owner {
+  background: rgba(212, 163, 115, 0.18);
+  color: var(--color-gold);
+}
+
+.groups-badge.member {
+  background: rgba(127, 176, 105, 0.18);
+  color: var(--color-success);
+}
+
+.groups-card-action {
+  flex-shrink: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.groups-panel {
+  position: sticky;
+  top: 24px;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface-card);
+}
+
+.groups-mine {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.groups-mine li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.groups-mine-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.groups-mine-item:hover .groups-mine-name {
+  color: var(--color-gold);
+}
+
+.groups-mine-meta {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.groups-create {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 18px;
+}
+
+@media (max-width: 800px) {
+  .groups-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .groups-panel {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .groups-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
