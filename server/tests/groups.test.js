@@ -208,6 +208,7 @@ test('returns group details to the owner and accepted members', async () => {
         owner_id: owner.user_id,
         owner_name: owner.user_name,
         member_count: 2,
+        is_owner: true,
         members: expectedMembers,
         favorites: [
             { movie_id: 101, added_by: owner.user_name },
@@ -217,11 +218,12 @@ test('returns group details to the owner and accepted members', async () => {
 
     const ownerResponse = await getGroup(groupId, ownerToken);
     const memberResponse = await getGroup(groupId, memberToken);
+    const expectedMemberGroup = { ...expectedGroup, is_owner: false };
 
     assert.equal(ownerResponse.statusCode, 200);
     assert.deepEqual(ownerResponse.body, { group: expectedGroup });
     assert.equal(memberResponse.statusCode, 200);
-    assert.deepEqual(memberResponse.body, { group: expectedGroup });
+    assert.deepEqual(memberResponse.body, { group: expectedMemberGroup });
 });
 
 test('protects group details with authentication and accepted membership', async () => {
@@ -240,16 +242,17 @@ test('protects group details with authentication and accepted membership', async
     await addMember(groupId, rejected.user_id, 'rejected');
 
     const unauthorizedCases = [
-        ['without authentication', undefined],
-        ['with an invalid token', 'invalid-token'],
-        ['as a pending member', pendingToken],
-        ['as a rejected member', rejectedToken],
-        ['as a non-member', outsiderToken],
+        ['without authentication', undefined, 401, 'Authentication required'],
+        ['with an invalid token', 'invalid-token', 401, 'Invalid or expired token'],
+        ['as a pending member', pendingToken, 403, 'You do not have access to this group'],
+        ['as a rejected member', rejectedToken, 403, 'You do not have access to this group'],
+        ['as a non-member', outsiderToken, 403, 'You do not have access to this group'],
     ];
 
-    for (const [description, token] of unauthorizedCases) {
+    for (const [description, token, statusCode, message] of unauthorizedCases) {
         const response = await getGroup(groupId, token);
-        assert.equal(response.statusCode, token === undefined || token === 'invalid-token' ? 401 : 403, description);
+        assert.equal(response.statusCode, statusCode, description);
+        assert.deepEqual(response.body, { message }, description);
     }
 
     const malformedResponse = await getGroup('not-a-number', ownerToken);
