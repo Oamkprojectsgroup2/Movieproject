@@ -63,6 +63,7 @@ export const getGroupDetails = async (groupId, userId) => {
   }
 
   const group = groupResult.rows[0];
+  const isOwner = group.owner_id === userId;
   const accessResult = await pool.query(
     `SELECT 1
      FROM members
@@ -102,6 +103,7 @@ export const getGroupDetails = async (groupId, userId) => {
     authorized: true,
     group: {
       ...group,
+      is_owner: isOwner,
       members: membersResult.rows,
       favorites: favoritesResult.rows,
     },
