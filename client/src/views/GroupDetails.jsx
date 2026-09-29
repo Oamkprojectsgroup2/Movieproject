@@ -5,7 +5,7 @@ import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
 
-const MAX_VISIBLE_MEMBERS = 5;
+const MAX_VISIBLE_GROUP_ITEMS = 4;
 
 async function loadMovieDetails(movieIds) {
   const results = await Promise.allSettled(
@@ -60,6 +60,7 @@ function GroupDetails() {
   const [failedMovieIds, setFailedMovieIds] = useState([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
   const [showAllMembers, setShowAllMembers] = useState(false);
+  const [showAllMovies, setShowAllMovies] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -84,6 +85,7 @@ function GroupDetails() {
 
         if (!cancelled) {
           setShowAllMembers(false);
+          setShowAllMovies(false);
           setGroup(data.group);
         }
       } catch (loadError) {
@@ -140,8 +142,8 @@ function GroupDetails() {
   if (error) {
     return (
       <main className="group-details-page">
-        <button type="button" className="group-details-back" onClick={() => navigate("/groups")}>
-          Back to groups
+        <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
+          ← Back to groups
         </button>
         <section className="group-details-state group-details-state-error" role="alert">
           <h1>{error.title}</h1>
@@ -153,12 +155,18 @@ function GroupDetails() {
 
   const visibleMembers = showAllMembers
     ? group.members
-    : group.members.slice(0, MAX_VISIBLE_MEMBERS);
+    : group.members.slice(0, MAX_VISIBLE_GROUP_ITEMS);
+  const visibleMovies = showAllMovies
+    ? movies
+    : movies.slice(0, MAX_VISIBLE_GROUP_ITEMS);
+  const visibleFailedMovieIds = showAllMovies
+    ? failedMovieIds
+    : failedMovieIds.slice(0, Math.max(0, MAX_VISIBLE_GROUP_ITEMS - visibleMovies.length));
 
   return (
     <main className="group-details-page">
-      <button type="button" className="group-details-back" onClick={() => navigate("/groups")}>
-        Back to groups
+      <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
+        ← Back to groups
       </button>
 
       <header className="group-details-header">
@@ -179,12 +187,12 @@ function GroupDetails() {
                   <li key={member.user_id}>
                     <span>{member.user_name}</span>
                     {member.user_id === group.owner_id && (
-                      <span className="group-details-badge">Owner</span>
+                      <span className="groups-badge owner">Owner</span>
                     )}
                   </li>
                 ))}
               </ul>
-              {group.members.length > MAX_VISIBLE_MEMBERS && (
+              {group.members.length > MAX_VISIBLE_GROUP_ITEMS && (
                 <button
                   type="button"
                   className="group-details-members-toggle"
@@ -210,7 +218,16 @@ function GroupDetails() {
                   Some group movies are temporarily unavailable.
                 </p>
               )}
-              <FavoriteMovieList movies={movies} failedMovieIds={failedMovieIds} />
+              <FavoriteMovieList movies={visibleMovies} failedMovieIds={visibleFailedMovieIds} />
+              {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
+                <button
+                  type="button"
+                  className="group-details-members-toggle"
+                  onClick={() => setShowAllMovies((current) => !current)}
+                >
+                  {showAllMovies ? "Show fewer movies" : "Show more movies"}
+                </button>
+              )}
             </>
           ) : (
             <p className="group-details-muted">No movies have been added to this group yet.</p>

@@ -15,17 +15,23 @@
 
 .group-details-back {
   display: block;
+  width: 100%;
+  max-width: 1000px;
   margin-bottom: 28px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-gold);
-  font: inherit;
-  cursor: pointer;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: left;
 }
 
-.group-details-back:hover {
-  color: var(--color-text);
+.group-details-page .back-link {
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 15px;
+}
+
+.group-details-page .back-link:hover {
+  color: var(--color-gold);
 }
 
 .group-details-header {
@@ -115,21 +121,14 @@
   gap: 12px;
 }
 
+.group-details-members .groups-badge {
+  font-family: var(--font-display);
+}
+
 .group-details-members li:last-child,
 .group-details-favorites li:last-child {
   padding-bottom: 0;
   border-bottom: 0;
-}
-
-.group-details-badge {
-  flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(212, 163, 115, 0.18);
-  color: var(--color-gold);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .group-details-members-toggle {
