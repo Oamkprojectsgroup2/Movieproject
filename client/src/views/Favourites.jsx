@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/Favourites.css";
+import useCineCircleRatings from "../hooks/useCineCircleRatings";
+
 
 async function loadMovieDetails(movieIds) {
   const results = await Promise.allSettled(
@@ -41,8 +43,8 @@ function Favourites() {
   const [actionError, setActionError] = useState(null);
   const [removingMovieId, setRemovingMovieId] = useState(null);
   const [shareUrl, setShareUrl] = useState("");
+  const cineCircle = useCineCircleRatings(movies.map((movie) => movie.id));
   
-
   useEffect(() => {
     let cancelled = false;
 
@@ -183,6 +185,7 @@ const handleShareClick = async () => {
             failedMovieIds={failedMovieIds}
             onRemove={removeFavorite}
             removingMovieId={removingMovieId}
+            cineCircle={cineCircle}
           />
         </>
       )}

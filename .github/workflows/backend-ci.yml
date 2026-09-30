@@ -1,4 +1,4 @@
-name: Backend CI
+name: Application CI
 
 on:
   pull_request:
@@ -14,6 +14,7 @@ env:
 
 jobs:
   lint:
+    name: Client checks
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,7 +37,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Build client
+        run: npm run build
+
   test:
+    name: Backend tests
     runs-on: ubuntu-latest
     defaults:
       run:

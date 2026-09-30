@@ -5,6 +5,7 @@ import authenticate, { optionalAuthenticate } from "../middleware/authenticate.j
 const router = express.Router();
 
 router.get("/", optionalAuthenticate, groupController.listGroups);
+router.get("/:groupId", authenticate, groupController.getGroupDetails);
 router.post("/", authenticate, groupController.createGroup);
 router.post("/join/:groupId", authenticate, groupController.joinGroup);
 router.get("/pending/:groupId", authenticate, groupController.pendingMembers);

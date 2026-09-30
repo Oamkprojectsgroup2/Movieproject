@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import MovieRatings from "./MovieRatings";
 
 const posterUrl = (posterPath) =>
   posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
@@ -6,7 +7,7 @@ const posterUrl = (posterPath) =>
 const releaseYear = (releaseDate) =>
   releaseDate ? new Date(`${releaseDate}T00:00:00`).getFullYear() : null;
 
-function FavoriteMovieList({ movies, failedMovieIds, onRemove, removingMovieId }) {
+function FavoriteMovieList({ movies, failedMovieIds, onRemove, removingMovieId, cineCircle = {} }) {
   return (
     <div className="favourites-grid">
       {movies.map((movie) => {
@@ -29,9 +30,9 @@ function FavoriteMovieList({ movies, failedMovieIds, onRemove, removingMovieId }
             <div className="favourites-movie-info">
               <h2>{movie.title || "Untitled movie"}</h2>
               <p>{year || "Release year unavailable"}</p>
-              <p className="favourites-rating">
-                {movie.vote_average ? `Rating ${movie.vote_average.toFixed(1)} / 10` : "No rating"}
-              </p>
+                <div className="favourites-rating">
+                  <MovieRatings voteAverage={movie.vote_average} cineCircle={cineCircle[movie.id]} />
+                </div>
               {onRemove && (
                 <button
                   className="favourites-remove"

@@ -54,6 +54,23 @@ function createGroup(token, body) {
     return pending.send(body);
 }
 
+function getGroup(groupId, token) {
+    const pending = request(app).get(`/api/groups/${groupId}`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending;
+}
+
+async function addMember(groupId, userId, status) {
+    await pool.query(
+        'INSERT INTO members (user_id, group_id, status) VALUES ($1, $2, $3)',
+        [userId, groupId, status],
+    );
+}
+
 async function memberRows(groupId) {
     const result = await pool.query(
         'SELECT user_id, group_id, status FROM members WHERE group_id = $1',
@@ -163,6 +180,117 @@ test('includes the current user\'s membership status when a token is sent', asyn
 
     assert.equal(response.statusCode, 200);
     assert.equal(group.my_status, 'accepted');
+});
+
+test('preserves pending and rejected membership statuses in the group list', async () => {
+    const owner = await createUser('statusowner');
+    const pending = await createUser('statuspending');
+    const rejected = await createUser('statusrejected');
+    const ownerToken = await tokenFor(owner);
+    const pendingToken = await tokenFor(pending);
+    const rejectedToken = await tokenFor(rejected);
+    const createResponse = await createGroup(ownerToken, { group_name: uniqueGroupName('statuses') });
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, pending.user_id, 'pending');
+    await addMember(groupId, rejected.user_id, 'rejected');
+
+    const pendingResponse = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${pendingToken}`);
+    const rejectedResponse = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${rejectedToken}`);
+
+    const pendingGroup = pendingResponse.body.groups.find((group) => group.group_id === groupId);
+    const rejectedGroup = rejectedResponse.body.groups.find((group) => group.group_id === groupId);
+
+    assert.equal(pendingResponse.statusCode, 200);
+    assert.equal(pendingGroup.my_status, 'pending');
+    assert.equal(rejectedResponse.statusCode, 200);
+    assert.equal(rejectedGroup.my_status, 'rejected');
+});
+
+test('returns group details to the owner and accepted members', async () => {
+    const owner = await createUser('detailowner');
+    const member = await createUser('detailmember');
+    const deletedAdder = await createUser('detaildeleted');
+    const ownerToken = await tokenFor(owner);
+    const memberToken = await tokenFor(member);
+    const createResponse = await createGroup(ownerToken, { group_name: uniqueGroupName('detail') });
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, member.user_id, 'accepted');
+    await pool.query(
+        `INSERT INTO group_favorites (group_id, movies_tmdb_id, user_id)
+         VALUES ($1, $2, $3), ($1, $4, $5)`,
+        [groupId, 101, owner.user_id, 102, deletedAdder.user_id],
+    );
+    await pool.query('DELETE FROM users WHERE user_id = $1', [deletedAdder.user_id]);
+
+    const expectedMembers = [owner, member]
+        .map((user) => ({ user_id: user.user_id, user_name: user.user_name }))
+        .sort((a, b) => a.user_name.localeCompare(b.user_name));
+    const expectedGroup = {
+        group_id: groupId,
+        group_name: createResponse.body.group.group_name,
+        owner_id: owner.user_id,
+        owner_name: owner.user_name,
+        member_count: 2,
+        is_owner: true,
+        members: expectedMembers,
+        favorites: [
+            { movie_id: 101, added_by: owner.user_name },
+            { movie_id: 102, added_by: null },
+        ],
+    };
+
+    const ownerResponse = await getGroup(groupId, ownerToken);
+    const memberResponse = await getGroup(groupId, memberToken);
+    const expectedMemberGroup = { ...expectedGroup, is_owner: false };
+
+    assert.equal(ownerResponse.statusCode, 200);
+    assert.deepEqual(ownerResponse.body, { group: expectedGroup });
+    assert.equal(memberResponse.statusCode, 200);
+    assert.deepEqual(memberResponse.body, { group: expectedMemberGroup });
+});
+
+test('protects group details with authentication and accepted membership', async () => {
+    const owner = await createUser('accessowner');
+    const pending = await createUser('accesspending');
+    const rejected = await createUser('accessrejected');
+    const outsider = await createUser('accessoutsider');
+    const ownerToken = await tokenFor(owner);
+    const pendingToken = await tokenFor(pending);
+    const rejectedToken = await tokenFor(rejected);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(ownerToken, { group_name: uniqueGroupName('access') });
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, pending.user_id, 'pending');
+    await addMember(groupId, rejected.user_id, 'rejected');
+
+    const unauthorizedCases = [
+        ['without authentication', undefined, 401, 'Authentication required'],
+        ['with an invalid token', 'invalid-token', 401, 'Invalid or expired token'],
+        ['as a pending member', pendingToken, 403, 'You do not have access to this group'],
+        ['as a rejected member', rejectedToken, 403, 'You do not have access to this group'],
+        ['as a non-member', outsiderToken, 403, 'You do not have access to this group'],
+    ];
+
+    for (const [description, token, statusCode, message] of unauthorizedCases) {
+        const response = await getGroup(groupId, token);
+        assert.equal(response.statusCode, statusCode, description);
+        assert.deepEqual(response.body, { message }, description);
+    }
+
+    const malformedResponse = await getGroup('not-a-number', ownerToken);
+    assert.equal(malformedResponse.statusCode, 400);
+    assert.deepEqual(malformedResponse.body, { message: 'Group ID must be a positive integer' });
+
+    const missingResponse = await getGroup(999999999, ownerToken);
+    assert.equal(missingResponse.statusCode, 404);
+    assert.deepEqual(missingResponse.body, { message: 'Group not found' });
 });
 
 test('accepts a group name of exactly 50 characters', async () => {

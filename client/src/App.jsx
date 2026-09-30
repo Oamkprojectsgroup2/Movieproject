@@ -16,6 +16,7 @@ import Favourites from './views/Favourites';
 import SharedFavourites from "./views/SharedFavourites.jsx";
 import Reviews from "./views/Reviews";
 import Groups from "./views/Groups";
+import GroupDetails from "./views/GroupDetails";
 
 function getTokenExpiry(token) {
   try {
@@ -168,6 +169,7 @@ function App() {
         } />
         <Route path="/shared-favourites" element={<SharedFavourites />} />
         <Route path="/groups" element={<Groups user={user} onLoginClick={() => setAuthView("login")} />} />
+        <Route path="/groups/:groupId" element={<GroupDetails />} />
         <Route path="/profile" element={
           user ? (
             <Profile
