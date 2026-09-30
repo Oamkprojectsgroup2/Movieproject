@@ -45,3 +45,67 @@ export const listGroups = async (userId = null) => {
 
   return result.rows;
 };
+
+export const getGroupDetails = async (groupId, userId) => {
+  const groupResult = await pool.query(
+    `SELECT g.group_id, g.group_name, g.owner_id, owner.user_name AS owner_name,
+     COUNT(m.user_id) FILTER (WHERE m.status = 'accepted')::int AS member_count
+     FROM groups g
+     JOIN users owner ON owner.user_id = g.owner_id
+     LEFT JOIN members m ON m.group_id = g.group_id
+     WHERE g.group_id = $1
+     GROUP BY g.group_id, owner.user_name`,
+    [groupId],
+  );
+
+  if (groupResult.rows.length === 0) {
+    return null;
+  }
+
+  const group = groupResult.rows[0];
+  const isOwner = group.owner_id === userId;
+  const accessResult = await pool.query(
+    `SELECT 1
+     FROM members
+     WHERE group_id = $1 AND user_id = $2 AND status = 'accepted'
+     UNION ALL
+     SELECT 1
+     FROM groups
+     WHERE group_id = $1 AND owner_id = $2
+     LIMIT 1`,
+    [groupId, userId],
+  );
+
+  if (accessResult.rows.length === 0) {
+    return { authorized: false };
+  }
+
+  const [membersResult, favoritesResult] = await Promise.all([
+    pool.query(
+      `SELECT m.user_id, u.user_name
+       FROM members m
+       JOIN users u ON u.user_id = m.user_id
+       WHERE m.group_id = $1 AND m.status = 'accepted'
+       ORDER BY u.user_name`,
+      [groupId],
+    ),
+    pool.query(
+      `SELECT gf.movies_tmdb_id AS movie_id, u.user_name AS added_by
+       FROM group_favorites gf
+       LEFT JOIN users u ON u.user_id = gf.user_id
+       WHERE gf.group_id = $1
+       ORDER BY gf.group_favorite_id`,
+      [groupId],
+    ),
+  ]);
+
+  return {
+    authorized: true,
+    group: {
+      ...group,
+      is_owner: isOwner,
+      members: membersResult.rows,
+      favorites: favoritesResult.rows,
+    },
+  };
+};
