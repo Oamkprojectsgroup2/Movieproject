@@ -140,3 +140,33 @@ export const listMyReviews = async (req, res) => {
     return res.status(500).json({message: "Own reviews error"});
   }
 };
+
+export const getAverages = async (req, res) => {
+  try {
+    const ids = String(req.query.ids || "")
+      .split(",")
+      .filter((id) => /^\d+$/.test(id))
+      .map(Number);
+      
+    if (ids.length === 0) return res.status(200).json({});
+
+    const result = await pool.query(
+      `SELECT movies_tmdb_id, AVG(star)::float AS average, COUNT(*)::int AS count
+       FROM reviews WHERE movies_tmdb_id = ANY($1::int[])
+       GROUP BY movies_tmdb_id`, 
+      [ids]
+    );
+
+    const averages = {};
+    for (const row of result.rows) {
+      averages[row.movies_tmdb_id] = {
+        average: row.average, 
+        count: row.count
+      };
+    }
+    return res.status(200).json(averages);
+  } catch (error) {
+    console.error("Reviews averages error: ", error);
+    return res.status(500).json({ message: "Reviews averages error" });
+  }
+};

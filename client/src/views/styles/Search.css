@@ -252,23 +252,6 @@
   font-weight: 400;
 }
 
-
-.search-result-rating {
-  margin-bottom: 14px;
-
-  font-size: clamp(17px, 1.4vw, 23px);
-
-  letter-spacing: 2px;
-
-  color: var(--color-gold);
-}
-
-
-.search-result-rating .rating-empty {
-  color: var(--color-text-muted);
-}
-
-
 .search-result-info p {
   margin: 7px 0;
 

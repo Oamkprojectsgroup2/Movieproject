@@ -5,22 +5,13 @@ import DeleteForm from "../components/DeleteForm";
 import CreateGroupForm from "../components/CreateGroupForm";
 import { BASE_URL } from "../config";
 import "./styles/Profile.css";
+import Stars from "../components/Stars";
 
 function timeAgo(date) {
   const days = Math.floor((Date.now() - new Date(date)) / 86400000);
   if (days < 1) return "today";
   if (days < 7) return `${days} d ago`;
   return `${Math.floor(days / 7)} w ago`;
-}
-
-function Stars({ count }) {
-  return (
-    <span className="profile-stars" aria-label={`${count} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= count ? "star-on" : "star-off"}>★</span>
-      ))}
-    </span>
-  );
 }
 
 function Profile({ user, onLogout, onDeleteAccount }) {
@@ -240,7 +231,7 @@ function Profile({ user, onLogout, onDeleteAccount }) {
               <li key={r.id}>
                 <div>
                   <Link to={`/movie/${r.movieId}`} className="profile-item-title">{r.title}</Link>
-                  <Stars count={r.stars} />
+                  <Stars value={r.stars} />
                 </div>
                 <span className="profile-meta">{timeAgo(r.createdAt)}</span>
               </li>

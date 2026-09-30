@@ -11,3 +11,9 @@
 .star-filled {
   color: var(--color-gold);
 }
+
+.stars-value {
+  margin-left: 6px;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}

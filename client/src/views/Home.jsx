@@ -3,6 +3,8 @@ import "./styles/Home.css";
 import SearchFilters from "../components/SearchFilters";
 import { BASE_URL } from "../config";
 import { useNavigate, Link } from "react-router";
+import Stars from "../components/Stars";
+import { tmdbToFive } from "../utils/ratings";
 
 function Home({
   search,
@@ -243,22 +245,7 @@ function Home({
 
                   <div className="movie-rating">
 
-                    <span>
-                      {"★".repeat(
-                        Math.round(
-                          (currentMovie.vote_average || 0) / 2
-                        )
-                      )}
-                    </span>
-
-                    <span className="rating-empty">
-                      {"★".repeat(
-                        5 -
-                        Math.round(
-                          (currentMovie.vote_average || 0) / 2
-                        )
-                      )}
-                    </span>
+                    <Stars value={tmdbToFive(currentMovie.vote_average)} />
 
                   </div>
                   

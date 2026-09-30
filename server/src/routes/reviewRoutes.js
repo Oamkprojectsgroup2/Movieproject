@@ -9,5 +9,6 @@ router.get("/search/:movieId", reviewController.viewReview);
 router.put("/update", authenticate, reviewController.updateReview);
 router.delete("/delete/:movieId", authenticate, reviewController.deleteReview);
 router.get("/me", authenticate, reviewController.listMyReviews);
+router.get("/averages", reviewController.getAverages);
 
 export default router;
