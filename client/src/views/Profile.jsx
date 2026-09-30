@@ -104,7 +104,9 @@ function Profile({ user, onLogout, onDeleteAccount }) {
     setCreateGroupOpen(false);
   };
 
-  const myGroups = groups.filter((group) => group.my_status);
+  const myGroups = groups.filter(
+    (group) => group.my_status === "accepted" || group.my_status === "pending",
+  );
 
   useEffect(() => {
     let cancelled = false;
