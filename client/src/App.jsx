@@ -169,7 +169,7 @@ function App() {
         } />
         <Route path="/shared-favourites" element={<SharedFavourites />} />
         <Route path="/groups" element={<Groups user={user} onLoginClick={() => setAuthView("login")} />} />
-        <Route path="/groups/:groupId" element={<GroupDetails />} />
+        <Route path="/groups/:groupId" element={<GroupDetails user={user} onLoginClick={() => setAuthView("login")}/>} />
         <Route path="/profile" element={
           user ? (
             <Profile

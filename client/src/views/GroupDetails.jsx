@@ -38,21 +38,21 @@ async function loadMovieDetails(movieIds) {
 
 function getErrorState(response, data) {
   if (response.status === 401) {
-    return { title: "Log in to view this group", message: "Group content is available to members only." };
+    return {title: "Log in to view this group", message: "Group content is available to members only."};
   }
 
   if (response.status === 403) {
-    return { title: "Group access denied", message: data.message || "You are not an accepted member of this group." };
+    return {title: "Group access denied", message: data.message || "You are not an accepted member of this group."};
   }
 
   if (response.status === 404) {
-    return { title: "Group not found", message: "This group may have been deleted or the link may be incorrect." };
+    return {title: "Group not found", message: "This group may have been deleted or the link may be incorrect."};
   }
 
-  return { title: "Group could not be loaded", message: data.message || "Please try again later." };
+  return {title: "Group could not be loaded", message: data.message || "Please try again later."};
 }
 
-function GroupDetails() {
+function GroupDetails({user, onLoginClick}) {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
@@ -63,6 +63,7 @@ function GroupDetails() {
   const [showAllMovies, setShowAllMovies] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userStatus, setUserStatus] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,26 +74,41 @@ function GroupDetails() {
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_URL}/groups/${groupId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await response.json().catch(() => ({}));
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const groupPromise = fetch(`${BASE_URL}/groups/${groupId}`, { headers});
+        //if not valid user, empty promise is ran to not break logic
+        const membershipPromise = token ? fetch(`${BASE_URL}/membership/${groupId}`, { headers }) : Promise.resolve(null);
+        const [responseGroup, responseMembership] = await Promise.all([groupPromise,membershipPromise]);
+        
+        const groupData = await responseGroup.json().catch(() => ({}));
+        let membership = null;
+        if (responseMembership && responseMembership.ok) {
+          const membershipStatus = await responseMembership.json().catch(() => ({}));
+          membership = membershipStatus.status ?? null;
+        }
 
-        if (!response.ok) {
-          const errorState = getErrorState(response, data);
-          throw Object.assign(new Error(errorState.message), { errorState });
+        if (!responseGroup.ok) {
+          const errorState = getErrorState(responseGroup, groupData);
+          const err = new Error(errorState.message);
+          err.errorState = {...errorState, userStatus: membership };
+          err.userStatus = membership;
+          throw err;
         }
 
         if (!cancelled) {
           setShowAllMembers(false);
           setShowAllMovies(false);
-          setGroup(data.group);
+          setGroup(groupData.group);
+          setUserStatus(membership);
         }
       } catch (loadError) {
         if (!cancelled) {
+          const resolvedStatus = loadError.userStatus ?? loadError.errorState?.userStatus ?? null;
+          setUserStatus(resolvedStatus);
           setError(loadError.errorState || {
-            title: "Group could not be loaded",
+            title: loadError.errorState?.title || "Group could not be loaded",
             message: loadError.message || "Please try again later.",
+            userStatus: resolvedStatus,
           });
         }
       } finally {
@@ -106,7 +122,7 @@ function GroupDetails() {
     return () => {
       cancelled = true;
     };
-  }, [groupId]);
+  }, [groupId, user]);
 
   useEffect(() => {
     if (!group) return undefined;
@@ -146,8 +162,19 @@ function GroupDetails() {
           ← Back to groups
         </button>
         <section className="group-details-state group-details-state-error" role="alert">
-          <h1>{error.title}</h1>
-          <p>{error.message}</p>
+          <div>
+            <h1>{error.title}</h1>
+            <p>{error.message}</p>
+          </div>
+          <div>
+            <button
+              type="button"
+              className="group-details-join-request"
+            >
+              Request to join group
+            </button>
+            <p>Status: {userStatus ?? "Not requested"}</p>
+          </div>
         </section>
       </main>
     );

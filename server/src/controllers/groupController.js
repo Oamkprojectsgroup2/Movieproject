@@ -44,7 +44,7 @@ export const joinGroup = async (req,res) => {
     }
 
     const member = await groupService.joinGroup(groupId, userId);
-    return res.status(201).json({message: "Join request successful", data: member})
+    return res.status(201).json({message: "Join request successful", data: member});
   }
   catch (error){
         //Code 23505 = PostgreSQL Unique Constraint Violation == join reques already exists
@@ -54,6 +54,26 @@ export const joinGroup = async (req,res) => {
         console.error("Group joining error: ", error);
         return res.status(500).json({message: "Group joining error"});
     }
+};
+
+export const myStatus = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const userId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id"});
+    }
+    const membership = await groupService.membershipCheck(groupId, userId);
+    if (membership.length === 0) {
+      return res.status(200).json({message: "No membership found", status: null});
+    }
+    return res.status(200).json({message: "Membership check successful", status: membership[0].status});
+  }
+  catch (error) {
+    console.error("Membership check error:", error);
+    return res.status(500).json({ message: "Membership check error" });
+  }
 };
 
 export const pendingMembers = async (req,res) => {
@@ -146,6 +166,7 @@ export const memberReject = async (req,res) => {
     return res.status(500).json({ message: "Member reject error" });
   }
 };
+
 export const getGroupDetails = async (req, res) => {
   const groupId = Number(req.params.groupId);
 

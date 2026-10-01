@@ -60,10 +60,17 @@ export const ownerCheck = async (groupId, userId) => {
     `SELECT owner_id FROM groups WHERE group_id = $1`, [groupId]
   );
   //If group doesnt exist or wrong owner
-  if (result.rows.length === 0 || result.rows[0].owner_id !== userId) {
-    return false
+  if (result.rows.length === 1 && result.rows[0].owner_id === userId) {
+    return true
   }
-  return true
+  return false
+};
+
+export const membershipCheck = async (groupID, userId) => {
+  const result = await pool.query(
+    `SELECT status FROM members WHERE group_id = $1 AND user_id = $2`, [groupID, userId]
+  );
+  return result.rows;
 };
 
 export const getPendingMembers = async (groupId, userId) => {
@@ -95,6 +102,7 @@ export const rejectMember = async (groupId, userId) => {
   );
   return result.rows[0];
 };
+
 export const getGroupDetails = async (groupId, userId) => {
   const groupResult = await pool.query(
     `SELECT g.group_id, g.group_name, g.owner_id, owner.user_name AS owner_name,

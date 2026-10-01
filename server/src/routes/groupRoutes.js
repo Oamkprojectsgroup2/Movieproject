@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/", optionalAuthenticate, groupController.listGroups);
 router.get("/:groupId", authenticate, groupController.getGroupDetails);
 router.post("/", authenticate, groupController.createGroup);
+router.get("/membership/:groupId", authenticate, groupController.myStatus);
 router.post("/join/:groupId", authenticate, groupController.joinGroup);
 router.get("/pending/:groupId", authenticate, groupController.pendingMembers);
 router.put("/accept/:groupId/:userId", authenticate, groupController.memberAccept);
