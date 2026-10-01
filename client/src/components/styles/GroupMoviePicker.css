@@ -1,10 +1,15 @@
 .group-movie-picker {
-  min-width: min(320px, 75vw);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-inline: 1.5rem;
   text-align: center;
 }
 
 .group-movie-picker h2 {
-  margin: 0 2rem 1rem;
+  margin: 0 0 1rem;
+  text-align: center;
+  color: var(--color-text);
 }
 
 .group-movie-picker-list {
@@ -18,24 +23,30 @@
 }
 
 .group-movie-picker-button {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--color-line, #777);
-  background: transparent;
-  color: var(--color-text, inherit);
+  height: 56px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
   font: inherit;
+  font-size: 16px;
   cursor: pointer;
+  transition: background-color 150ms ease;
 }
 
 .group-movie-picker-button:hover:not(:disabled) {
-  background: rgb(255 255 255 / 8%);
+  background: var(--color-button-hover);
 }
 
 .group-movie-picker-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
+  opacity: 0.6;
+  cursor: default;
 }
 
 .group-movie-picker-status {

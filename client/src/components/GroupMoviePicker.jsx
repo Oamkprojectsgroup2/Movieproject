@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BASE_URL } from "../config";
 import Modal from "./Modal";
 import "../components/styles/GroupMoviePicker.css";
+import { isAcceptedMember } from "../../../server/src/helper/groupMembership";
 
 function GroupMoviePicker({ isOpen, movieId, movieTitle, onClose }) {
   const [groups, setGroups] = useState([]);
@@ -34,8 +35,7 @@ function GroupMoviePicker({ isOpen, movieId, movieTitle, onClose }) {
 
         if (!cancelled) {
           setGroups(
-            (data.groups || []).filter(
-              (group) => group.my_status === "accepted",
+            (data.groups || []).filter((group) => isAcceptedMember(group.my_status),
             ),
           );
         }
@@ -95,7 +95,7 @@ function GroupMoviePicker({ isOpen, movieId, movieTitle, onClose }) {
         aria-labelledby="group-movie-picker-title"
       >
         <h2 id="group-movie-picker-title">
-          Add {movieTitle} to
+          ADD TO GROUP
         </h2>
 
         {error && <p role="alert" className="group-movie-picker-error">{error}</p>}
