@@ -1,0 +1,48 @@
+.group-movie-picker {
+  min-width: min(320px, 75vw);
+  text-align: center;
+}
+
+.group-movie-picker h2 {
+  margin: 0 2rem 1rem;
+}
+
+.group-movie-picker-list {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.group-movie-picker-button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-line, #777);
+  background: transparent;
+  color: var(--color-text, inherit);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-movie-picker-button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+}
+
+.group-movie-picker-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.group-movie-picker-status {
+  margin: 1rem 0 0;
+}
+
+.group-movie-picker-error {
+  margin: 0.75rem 0;
+  color: var(--color-error, #ff7777);
+}

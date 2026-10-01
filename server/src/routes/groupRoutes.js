@@ -7,5 +7,6 @@ const router = express.Router();
 router.get("/", optionalAuthenticate, groupController.listGroups);
 router.get("/:groupId", authenticate, groupController.getGroupDetails);
 router.post("/", authenticate, groupController.createGroup);
+router.post("/:groupId/favorites", authenticate, groupController.addMovieToGroup);
 
 export default router;

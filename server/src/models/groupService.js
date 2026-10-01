@@ -109,3 +109,40 @@ export const getGroupDetails = async (groupId, userId) => {
     },
   };
 };
+
+
+export const addMovieToGroup = async (groupId, movieId, userId) => {
+  const insertResult = await pool.query(
+     `INSERT INTO group_favorites (group_id, movies_tmdb_id, user_id)
+     SELECT $1, $2, $3
+     WHERE EXISTS (
+       SELECT 1
+       FROM members
+       WHERE group_id = $1 AND user_id = $3 AND status = 'accepted'
+     )
+     ON CONFLICT (group_id, movies_tmdb_id) DO NOTHING
+     RETURNING group_favorite_id`,
+    [groupId, movieId, userId],
+  );
+
+  if (insertResult.rows.length > 0) {
+    return {added: true };
+  }
+  const groupResult = await pool.query(
+    "SELECT 1 FROM groups WHERE group_id = $1",
+    [groupId],
+  );
+  if (groupResult.rows.length === 0) {
+    return { notFound: true };
+  }
+  const memberResult = await pool.query(
+    `SELECT 1 FROM members
+    WHERE group_id = $1 AND user_id = $2 AND status = 'accepted'`,
+    [groupId, userId],
+  );
+
+if (memberResult.rows.length === 0) {
+  return { unauthorized: true };
+}
+return { added: false};
+};

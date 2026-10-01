@@ -58,3 +58,40 @@ export const getGroupDetails = async (req, res) => {
     return res.status(500).json({ message: "Could not load group" });
   }
 };
+
+export const addMovieToGroup = async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const movieId = Number(req.body?.movie_id);
+
+ if (!Number.isInteger(groupId) || groupId <= 0) {
+    return res.status(400).json({ message: "Group ID must be a positive integer" });
+  }
+
+  if (!Number.isInteger(movieId) || movieId <= 0) {
+    return res.status(400).json({ message: "Movie ID must be a positive integer" });
+  }
+
+  try {
+    const result = await groupService.addMovieToGroup(
+      groupId,
+      movieId,
+      req.user.user_id,
+    );
+
+    if (result.notFound) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (result.unauthorized) {
+      return res.status(403).json({ message: "Only accepted group members can add movies" });
+    }
+
+    return res.status(result.added ? 201 : 200).json({
+      message: result.added ? "Movie added to group" : "Movie is already in this group",
+      added: result.added,
+    });
+  } catch (error) {
+    console.error("Add group movie error:", error);
+    return res.status(500).json({ message: "Could not add movie to group" });
+  }
+};
