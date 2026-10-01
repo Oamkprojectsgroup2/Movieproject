@@ -63,6 +63,8 @@ function GroupDetails() {
   const [showAllMovies, setShowAllMovies] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +109,34 @@ function GroupDetails() {
       cancelled = true;
     };
   }, [groupId]);
+
+  const handleDeleteGroup = async () => {
+    if (!window.confirm(`Delete "${group.group_name}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not delete group");
+      }
+
+      navigate("/groups", { replace: true });
+    } catch (err) {
+      setDeleteError(err.message || "Could not delete group");
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (!group) return undefined;
@@ -175,6 +205,17 @@ function GroupDetails() {
         <p>
           Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
         </p>
+        {group.is_owner && (
+          <button
+            type="button"
+            className="group-details-delete"
+            onClick={handleDeleteGroup}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete group"}
+          </button>
+        )}
+        {deleteError && <p role="alert">{deleteError}</p>}
       </header>
 
       <div className="group-details-layout">

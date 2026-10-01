@@ -64,6 +64,16 @@ function getGroup(groupId, token) {
     return pending;
 }
 
+function deleteGroup(groupId, token) {
+    const pending = request(app).delete(`/api/groups/${groupId}`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending;
+}
+
 async function addMember(groupId, userId, status) {
     await pool.query(
         'INSERT INTO members (user_id, group_id, status) VALUES ($1, $2, $3)',
@@ -321,4 +331,82 @@ test('rejects a group name longer than 50 characters', async () => {
 
     assert.equal(response.statusCode, 400);
     assert.deepEqual(response.body, { message: 'Group name must be at most 50 characters' });
+});
+
+test('allows only the owner to delete a group', async () => {
+    const owner = await createUser('deleteowner');
+    const outsider = await createUser('deleteoutsider');
+    const ownerToken = await tokenFor(owner);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('deleteowner') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const unauthenticatedResponse = await deleteGroup(groupId);
+    assert.equal(unauthenticatedResponse.statusCode, 401);
+
+    const outsiderResponse = await deleteGroup(groupId, outsiderToken);
+    assert.equal(outsiderResponse.statusCode, 403);
+    assert.deepEqual(outsiderResponse.body, {
+        message: 'Only the group owner can delete this group',
+    });
+
+    const groupResult = await pool.query(
+        'SELECT group_id FROM groups WHERE group_id = $1',
+        [groupId],
+    );
+    assert.equal(groupResult.rowCount, 1);
+});
+
+test('owner deletion removes the group and its related data from the public list', async () => {
+    const owner = await createUser('deletecascade');
+    const member = await createUser('deletecascademember');
+    const ownerToken = await tokenFor(owner);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('deletecascade') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, member.user_id, 'accepted');
+    await pool.query(
+        `INSERT INTO group_favorites (group_id, movies_tmdb_id, user_id)
+         VALUES ($1, $2, $3)`,
+        [groupId, 987654, owner.user_id],
+    );
+
+    const deleteResponse = await deleteGroup(groupId, ownerToken);
+    assert.equal(deleteResponse.statusCode, 204);
+
+    const groupResult = await pool.query(
+        'SELECT group_id FROM groups WHERE group_id = $1',
+        [groupId],
+    );
+    const membersResult = await pool.query(
+        'SELECT group_id FROM members WHERE group_id = $1',
+        [groupId],
+    );
+    const favoritesResult = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1',
+        [groupId],
+    );
+    const publicListResponse = await listGroups();
+
+    assert.equal(groupResult.rowCount, 0);
+    assert.equal(membersResult.rowCount, 0);
+    assert.equal(favoritesResult.rowCount, 0);
+    assert.equal(
+        publicListResponse.body.groups.some((group) => group.group_id === groupId),
+        false,
+    );
+});
+
+test('returns 404 when the owner tries to delete a missing group', async () => {
+    const owner = await createUser('deletemissing');
+    const response = await deleteGroup(999999999, await tokenFor(owner));
+
+    assert.equal(response.statusCode, 404);
+    assert.deepEqual(response.body, { message: 'Group not found' });
 });

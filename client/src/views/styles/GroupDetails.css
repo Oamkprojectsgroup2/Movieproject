@@ -180,3 +180,18 @@
     grid-column: auto;
   }
 }
+
+.group-details-delete {
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #b42318;
+  border-radius: 6px;
+  background: transparent;
+  color: #b42318;
+  cursor: pointer;
+}
+
+.group-details-delete:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}

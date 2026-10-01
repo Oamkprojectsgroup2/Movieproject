@@ -8,5 +8,6 @@ router.get("/", optionalAuthenticate, groupController.listGroups);
 router.get("/:groupId", authenticate, groupController.getGroupDetails);
 router.post("/", authenticate, groupController.createGroup);
 router.post("/:groupId/favorites", authenticate, groupController.addMovieToGroup);
+router.delete('/:groupId', authenticate, groupController.deleteGroup);
 
 export default router;

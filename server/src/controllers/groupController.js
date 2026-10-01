@@ -59,6 +59,31 @@ export const getGroupDetails = async (req, res) => {
   }
 };
 
+export const deleteGroup = async (req, res) => {
+  const groupId = Number(req.params.groupId);
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    return res.status(400).json({ message: "Group ID must be a positive integer" });
+  }
+
+  try {
+    const result = await groupService.deleteGroup(groupId, req.user.user_id);
+
+    if (result.notFound) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (result.unauthorized) {
+      return res.status(403).json({ message: "Only the group owner can delete this group" });
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Group delete error:", error);
+    return res.status(500).json({ message: "Could not delete group" });
+  }
+};
+
 export const addMovieToGroup = async (req, res) => {
   const groupId = Number(req.params.groupId);
   const movieId = Number(req.body?.movie_id);

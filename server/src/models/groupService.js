@@ -110,6 +110,41 @@ export const getGroupDetails = async (groupId, userId) => {
   };
 };
 
+export const deleteGroup = async (groupId, ownerId) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const groupResult = await client.query(
+      `SELECT owner_id FROM groups WHERE group_id = $1 FOR UPDATE`,
+      [groupId],
+    );
+
+    if (groupResult.rows.length === 0) {
+      await client.query("COMMIT");
+      return { notFound: true };
+    }
+
+    if (Number(groupResult.rows[0].owner_id) !== Number(ownerId)) {
+      await client.query("COMMIT");
+      return { unauthorized: true };
+    }
+
+    await client.query(
+      `DELETE FROM groups WHERE group_id = $1`,
+      [groupId],
+    );
+
+    await client.query("COMMIT");
+    return { deleted: true };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
 
 export const addMovieToGroup = async (groupId, movieId, userId) => {
   const insertResult = await pool.query(
