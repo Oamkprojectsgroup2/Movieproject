@@ -4,6 +4,8 @@ import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
+import Modal from "../components/Modal";
+import ManageForm from "../components/ManageForm";
 
 const MAX_VISIBLE_GROUP_ITEMS = 4;
 
@@ -64,6 +66,10 @@ function GroupDetails({user, onLoginClick}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userStatus, setUserStatus] = useState(null);
+  const [manageView, setManageView] = useState(null);
+  const openManage = () => setManageView(true);
+  const closeManage = () => setManageView(null);
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -264,6 +270,7 @@ function GroupDetails({user, onLoginClick}) {
             <button
               type="button"
               className="btn-primary"
+              onClick={openManage}
               >
                 Manage members
             </button>)}
@@ -322,6 +329,9 @@ function GroupDetails({user, onLoginClick}) {
           )}
         </section>
       </div>
+      <Modal isOpen={manageView !== null} onClose={closeManage}>
+        <ManageForm />
+      </Modal>
     </main>
   );
 }
