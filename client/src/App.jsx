@@ -150,7 +150,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={
-          <Home search={search} setSearch={setSearch}
+          <Home user={user} search={search} setSearch={setSearch}
                 genre={genre} setGenre={setGenre}
                 year={year} setYear={setYear}
                 language={language} setLanguage={setLanguage} />
