@@ -438,3 +438,52 @@ a.search-result-poster {
 a.search-result-poster:hover {
   border-color: var(--color-gold);
 }
+
+.add-movie-modal {
+  min-width: min(320px, 75vw);
+  text-align: center;
+}
+
+.add-movie-modal h2 {
+  margin: 0 2rem 0.5rem;
+  text-align: center;
+}
+
+.add-movie-modal-title {
+  margin: 0 0 1rem;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.add-movie-modal-groups {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  left: -10px;
+}
+
+.add-movie-modal-groups .search-favorite-button {
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% - 12px);
+  margin-inline: auto;
+  text-align: left;
+}
+
+.add-movie-modal-status,
+.add-movie-modal-error {
+  text-align: center;
+}
+
+.add-movie-modal-status {
+  margin: 1rem 0 0;
+}
+
+.add-movie-modal-error {
+  margin: 0.75rem 0;
+}

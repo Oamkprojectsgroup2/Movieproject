@@ -109,3 +109,75 @@ export const getGroupDetails = async (groupId, userId) => {
     },
   };
 };
+
+export const deleteGroup = async (groupId, ownerId) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const groupResult = await client.query(
+      `SELECT owner_id FROM groups WHERE group_id = $1 FOR UPDATE`,
+      [groupId],
+    );
+
+    if (groupResult.rows.length === 0) {
+      await client.query("COMMIT");
+      return { notFound: true };
+    }
+
+    if (Number(groupResult.rows[0].owner_id) !== Number(ownerId)) {
+      await client.query("COMMIT");
+      return { unauthorized: true };
+    }
+
+    await client.query(
+      `DELETE FROM groups WHERE group_id = $1`,
+      [groupId],
+    );
+
+    await client.query("COMMIT");
+    return { deleted: true };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const addMovieToGroup = async (groupId, movieId, userId) => {
+  const insertResult = await pool.query(
+     `INSERT INTO group_favorites (group_id, movies_tmdb_id, user_id)
+     SELECT $1, $2, $3
+     WHERE EXISTS (
+       SELECT 1
+       FROM members
+       WHERE group_id = $1 AND user_id = $3 AND status = 'accepted'
+     )
+     ON CONFLICT (group_id, movies_tmdb_id) DO NOTHING
+     RETURNING group_favorite_id`,
+    [groupId, movieId, userId],
+  );
+
+  if (insertResult.rows.length > 0) {
+    return {added: true };
+  }
+  const groupResult = await pool.query(
+    "SELECT 1 FROM groups WHERE group_id = $1",
+    [groupId],
+  );
+  if (groupResult.rows.length === 0) {
+    return { notFound: true };
+  }
+  const memberResult = await pool.query(
+    `SELECT 1 FROM members
+    WHERE group_id = $1 AND user_id = $2 AND status = 'accepted'`,
+    [groupId, userId],
+  );
+
+if (memberResult.rows.length === 0) {
+  return { unauthorized: true };
+}
+return { added: false};
+};

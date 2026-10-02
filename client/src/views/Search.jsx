@@ -7,6 +7,7 @@ import MovieRatings from "../components/MovieRatings";
 import Stars from "../components/Stars";
 import { tmdbToFive } from "../utils/ratings";
 import useCineCircleRatings from "../hooks/useCineCircleRatings";
+import GroupMoviePicker from "../components/GroupMoviePicker";
 
 function Search({
   search,
@@ -40,6 +41,7 @@ function Search({
   const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [favoriteActionId, setFavoriteActionId] = useState(null);
   const [favoriteError, setFavoriteError] = useState(null);
+  const [movieToAdd, setMovieToAdd] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -76,6 +78,18 @@ function Search({
       cancelled = true;
     };
   }, [user]);
+
+
+    const openGroupPicker = (item) => {
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+    setMovieToAdd({
+      id: item.id,
+      title: item.title || item.name || "this movie",
+    });
+  };
 
   const handleSearch = async (e, pageNumber = 1) => {
     if (e) {
@@ -379,7 +393,6 @@ function Search({
 
           </div>
 
-
           {/* RESULTS */}
 
           <div className="search-results">
@@ -555,6 +568,16 @@ function Search({
                           </button>
                         )}
 
+                        {contentType === "movie" && (
+                          <button
+                            type="button"
+                            className="search-favorite-button"
+                            onClick={() => openGroupPicker(item)}
+                            >
+                              {user ? "Add to group" : "Log in to add to group"}
+                          </button>
+                        )}
+
                       </div>
 
                     </article>
@@ -604,7 +627,14 @@ function Search({
 />
 
       </div>
-
+    
+  <GroupMoviePicker
+        isOpen={Boolean(movieToAdd)}
+        movieId={movieToAdd?.id}
+        movieTitle={movieToAdd?.title}
+        onClose={() => setMovieToAdd(null)}
+      />
+    
     </main>
   );
 }
