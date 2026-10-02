@@ -4,6 +4,8 @@ import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
+import Modal from "../components/Modal";
+import "./../components/styles/Auth.css";
 
 const MAX_VISIBLE_GROUP_ITEMS = 4;
 
@@ -65,6 +67,8 @@ function GroupDetails() {
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -110,10 +114,16 @@ function GroupDetails() {
     };
   }, [groupId]);
 
-  const handleDeleteGroup = async () => {
-    if (!window.confirm(`Delete "${group.group_name}"? This cannot be undone.`)) {
-      return;
-    }
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteOpen(false);
+    setDeleteConfirmation("");
+    setDeleteError("");
+  };
+
+  const handleDeleteGroup = async (event) => {
+    event.preventDefault();
+    if (deleteConfirmation !== "DELETE" || deleting) return;
 
     setDeleting(true);
     setDeleteError("");
@@ -209,10 +219,14 @@ function GroupDetails() {
           <button
             type="button"
             className="group-details-delete"
-            onClick={handleDeleteGroup}
-            disabled={deleting}
+            onClick={() => {
+              setDeleteError("");
+              setDeleteConfirmation("");
+              setDeleteOpen(true);
+            }}
+            
           >
-            {deleting ? "Deleting..." : "Delete group"}
+            Delete group
           </button>
         )}
         {deleteError && <p role="alert">{deleteError}</p>}
@@ -275,6 +289,45 @@ function GroupDetails() {
           )}
         </section>
       </div>
+
+      <Modal isOpen={deleteOpen} onClose={closeDeleteModal}>
+        <form className="auth-form" onSubmit={handleDeleteGroup} noValidate>
+          <h2>DELETE GROUP</h2>
+          <p className="auth-lead">
+            This permanently removes <strong>{group.group_name}</strong> and its group data.
+          </p>
+
+          <div className="auth-warning">
+            <p>⚠ Group members and group favorites will also be removed.</p>
+          </div>
+
+          <input
+            type="text"
+            placeholder="type DELETE to confirm"
+            aria-label="Type DELETE to confirm"
+            autoFocus
+            value={deleteConfirmation}
+            onChange={(event) => setDeleteConfirmation(event.target.value)}
+          />
+
+          {deleteError && <p className="auth-error" role="alert">{deleteError}</p>}
+
+          <button
+            type="submit"
+            className="auth-submit danger"
+            disabled={deleteConfirmation !== "DELETE" || deleting}
+          >
+            {deleting ? "Deleting..." : "🗑 Delete group"}
+          </button>
+
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeDeleteModal} disabled={deleting}>
+              Cancel
+            </button>
+          </p>
+        </form>
+      </Modal>
     </main>
   );
 }
