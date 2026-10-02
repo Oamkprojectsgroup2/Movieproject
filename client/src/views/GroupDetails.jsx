@@ -258,7 +258,16 @@ function GroupDetails({user, onLoginClick}) {
 
       <div className="group-details-layout">
         <section className="group-details-section">
-          <h2>Members</h2>
+          <div className="group-details-members-header">
+            <h2>Members</h2>
+            {user && user.user_id === group.owner_id && (
+            <button
+              type="button"
+              className="btn-primary"
+              >
+                Manage members
+            </button>)}
+          </div>
           {group.members.length > 0 ? (
             <>
               <ul className="group-details-members">
