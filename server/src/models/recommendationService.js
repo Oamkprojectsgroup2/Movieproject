@@ -4,12 +4,54 @@ import {
   getMovieDetails,
   getPopularMovies,
   discoverMoviesByGenres,
+  getMovieRecommendations,
 } from "./moviesService.js";
 
 const RESULT_LIMIT = 20;
 const TOP_GENRE_COUNT = 3;
 const MAX_FAVORITES_TO_SCAN = 20;
 const MAX_PAGES = 5;
+const MAX_SEED_FAVORITES = 10;
+
+
+const shuffle = (items) => {
+  const copy = [...items];
+
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+};
+
+const getSimilarMovies = async (favoritesIds, excludedIds, language) => {
+  const results = await Promise.allSettled(
+    shuffle(favoritesIds)
+      .slice(0, MAX_SEED_FAVORITES)
+      .map((movieId) => getMovieRecommendations(movieId, 1, language)),
+  );
+
+  const scores = new Map();
+
+  for (const result of results) {
+    if (result.status !== "fulfilled") continue;
+
+    (result.value.results || []).forEach((movie, index) => {
+      if (excludedIds.has(movie.id)) return;
+
+      const points = 1 + (20 - index) / 40;
+      const entry = scores.get(movie.id) || { movie, score: 0 };
+      entry.score += points;
+      scores.set(movie.id, entry);
+    });
+  }
+
+  return [...scores.values()]
+    .sort((a, b) => b.score - a.score || b.movie.popularity - a.movie.popularity)
+    .slice(0, RESULT_LIMIT)
+    .map(({ movie }) => movie);
+};
 
 const getExcludedMovieIds = async (userId, favoriteIds) => {
   const result = await pool.query(
@@ -78,22 +120,23 @@ export const getRecommendations = async (userId, language = "fi-FI", region = "F
     return { type: "popular", results };
   }
 
-  const genreIds = await getTopGenreIds(favoriteIds, language);
+  const picked = await getSimilarMovies(favoriteIds, excludedIds, language);
 
-  if (genreIds.length === 0) {
-    const results = await collectMovies(fetchPopularPage, excludedIds, []);
-    return { type: "popular", results };
+  if (picked.length < RESULT_LIMIT) {
+    const genreIds = await getTopGenreIds(favoriteIds, language);
+    if (genreIds.length > 0) {
+      await collectMovies(
+        (page) => discoverMoviesByGenres(genreIds, page, language, region),
+        excludedIds,
+        picked
+      );
+    }
   }
-
-  const picked = await collectMovies(
-    (page) => discoverMoviesByGenres(genreIds, page, language, region),
-    excludedIds,
-    []
-  );
 
   if (picked.length < RESULT_LIMIT) {
     await collectMovies(fetchPopularPage, excludedIds, picked);
   }
 
   return { type: "recommended", results: picked };
+
 };

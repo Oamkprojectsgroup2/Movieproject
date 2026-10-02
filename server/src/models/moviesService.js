@@ -40,3 +40,7 @@ export const discoverMoviesByGenres = (genreIds, page = 1, language = "fi-FI", r
         region,
     });
 }
+
+export const getMovieRecommendations = (id, page = 1, language = "fi-FI") => {
+  return tmdbFetch(`/movie/${id}/recommendations`, { page, language });
+}

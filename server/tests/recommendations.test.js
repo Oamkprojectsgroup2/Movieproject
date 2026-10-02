@@ -29,7 +29,7 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function fakeTmdb({ failDiscover = false } = {}) {
+function fakeTmdb({ failDiscover = false, recommendations = {} } = {}) {
   const calls = [];
 
   mock.method(globalThis, 'fetch', async (input) => {
@@ -43,6 +43,12 @@ function fakeTmdb({ failDiscover = false } = {}) {
 
     if (url.pathname.endsWith('/movie/popular')) {
       return jsonResponse({ results: popularIds.map(movie), total_pages: 1 });
+    }
+
+    const recs = url.pathname.match(/\/movie\/(\d+)\/recommendations$/);
+    if (recs) {
+      const ids = recommendations[Number(recs[1])] || [];
+      return jsonResponse({ results: ids.map(movie), total_pages: 1 });
     }
 
     const details = url.pathname.match(/\/movie\/(\d+)$/);
@@ -201,4 +207,57 @@ test('returns 500 when TMDB fails', async () => {
 
   assert.equal(response.statusCode, 500);
   assert.ok(response.body.message);
+});
+
+test('ranks movies recommended for several favorites first', async () => {
+  const user = await createUser('rank');
+  await addFavorites(user.user_id, [101, 102, 103]);
+  fakeTmdb({
+    recommendations: {
+      101: [701, 702, 703],
+      102: [702, 703],
+      103: [703],
+    },
+  });
+
+  const response = await recommendationsRequest(await tokenFor(user));
+  const ids = response.body.results.map((result) => result.id);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.type, 'recommended');
+  assert.deepEqual(ids.slice(0, 3), [703, 702, 701]);
+  assert.equal(ids.length, 20, 'genre and popular movies should fill the rest');
+});
+
+test('excludes favorites and reviewed movies from TMDB recommendations', async () => {
+  const user = await createUser('recexcl');
+  await addFavorites(user.user_id, [101, 102]);
+  await addReview(user.user_id, REVIEWED_ID);
+  fakeTmdb({
+    recommendations: {
+      101: [102, REVIEWED_ID, 701],
+    },
+  });
+
+  const response = await recommendationsRequest(await tokenFor(user));
+  const ids = response.body.results.map((result) => result.id);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(ids[0], 701);
+  assert.ok(!ids.includes(102), 'favorite should be excluded');
+  assert.ok(!ids.includes(REVIEWED_ID), 'reviewed movie should be excluded');
+  assert.equal(new Set(ids).size, ids.length, 'results should not contain duplicates');
+});
+
+test('uses at most 10 favorites for TMDB recommendations', async () => {
+  const user = await createUser('maxseed');
+  const favoriteIds = Array.from({ length: 12 }, (_, i) => 101 + i);
+  await addFavorites(user.user_id, favoriteIds);
+  const calls = fakeTmdb();
+
+  const response = await recommendationsRequest(await tokenFor(user));
+  const recommendationCalls = calls.filter((url) => url.pathname.endsWith('/recommendations'));
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(recommendationCalls.length, 10);
 });
