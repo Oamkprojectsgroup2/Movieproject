@@ -77,7 +77,7 @@ function GroupDetails({user, onLoginClick}) {
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
         const groupPromise = fetch(`${BASE_URL}/groups/${groupId}`, { headers});
         //if not valid user, empty promise is ran to not break logic
-        const membershipPromise = token ? fetch(`${BASE_URL}/membership/${groupId}`, { headers }) : Promise.resolve(null);
+        const membershipPromise = token ? fetch(`${BASE_URL}/groups/membership/${groupId}`, { headers }) : Promise.resolve(null);
         const [responseGroup, responseMembership] = await Promise.all([groupPromise,membershipPromise]);
         
         const groupData = await responseGroup.json().catch(() => ({}));
@@ -169,7 +169,7 @@ function GroupDetails({user, onLoginClick}) {
           <div>
             <button
               type="button"
-              className="group-details-join-request"
+              className="btn-primary"
             >
               Request to join group
             </button>
