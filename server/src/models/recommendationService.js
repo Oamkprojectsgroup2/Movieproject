@@ -9,7 +9,7 @@ import {
 
 const RESULT_LIMIT = 20;
 const TOP_GENRE_COUNT = 3;
-const MAX_FAVORITES_TO_SCAN = 20;
+const MAX_FAVORITES_TO_SCAN = 10;
 const MAX_PAGES = 5;
 const MAX_SEED_FAVORITES = 10;
 
@@ -48,7 +48,7 @@ const getSimilarMovies = async (favoritesIds, excludedIds, language) => {
   }
 
   return [...scores.values()]
-    .sort((a, b) => b.score - a.score || b.movie.popularity - a.movie.popularity)
+    .sort((a, b) => b.score - a.score || (b.movie.popularity ?? 0) - (a.movie.popularity ?? 0))
     .slice(0, RESULT_LIMIT)
     .map(({ movie }) => movie);
 };
@@ -69,7 +69,7 @@ const getExcludedMovieIds = async (userId, favoriteIds) => {
 
 const getTopGenreIds = async (favoritesIds, language) => {
   const results = await Promise.allSettled(
-    favoritesIds
+    shuffle(favoritesIds)
       .slice(0, MAX_FAVORITES_TO_SCAN)
       .map((movieId) => getMovieDetails(movieId, language)),
   );
@@ -108,6 +108,14 @@ const collectMovies = async (fetchPage, excludedIds, picked) => {
   return picked;
 };
 
+const collectSafely = async (fetchPage, excludedIds, picked) => {
+  try {
+    await collectMovies(fetchPage, excludedIds, picked) => {
+  } catch (error) {
+    console.error("Recommendation fallback failed:", error.message);  
+  }
+};
+
 export const getRecommendations = async (userId, language = "fi-FI", region = "FI") => {
   const favorites = await listFavorites(userId);
   const favoriteIds = favorites.map((favorite) => favorite.movie_id);
@@ -125,7 +133,7 @@ export const getRecommendations = async (userId, language = "fi-FI", region = "F
   if (picked.length < RESULT_LIMIT) {
     const genreIds = await getTopGenreIds(favoriteIds, language);
     if (genreIds.length > 0) {
-      await collectMovies(
+      await collectSafely(
         (page) => discoverMoviesByGenres(genreIds, page, language, region),
         excludedIds,
         picked
@@ -133,10 +141,18 @@ export const getRecommendations = async (userId, language = "fi-FI", region = "F
     }
   }
 
+  const personalizedCount = picked.length;
+
   if (picked.length < RESULT_LIMIT) {
-    await collectMovies(fetchPopularPage, excludedIds, picked);
+    await collectSafely(fetchPopularPage, excludedIds, picked);
   }
 
-  return { type: "recommended", results: picked };
+  if (picked.length === 0) {
+    throw new Error("No recommendations available");
+  }
 
+  return { 
+    type: personalizedCount > 0 ? "recommended" : "popular",
+    results: picked 
+  };
 };

@@ -32,10 +32,12 @@ function Home({
 
   // Fetch recommended movies from backend
   useEffect(() => {
+    let cancelled = false;
+
     const fetchList = async (path, headers = {}) => {
       const response = await fetch(
-      `${BASE_URL}${path}?language=${tmdbLanguage}&region=${tmdbRegion}`,
-      { headers }
+        `${BASE_URL}${path}?language=${tmdbLanguage}&region=${tmdbRegion}`,
+        { headers },
       );
       const data = await response.json().catch(() => ({}));
       return { response, data };
@@ -47,17 +49,20 @@ function Home({
 
       try {
         const token = localStorage.getItem("token");
+        let response = null;
+        let data = {};
         let type = "popular";
-        let { response, data } = { response: null, data: {} };
 
         if (user && token) {
           ({ response, data } = await fetchList("/movies/recommended", {
             Authorization: `Bearer ${token}`,
           }));
-          type = data.type || "recommended";
+          if (response.ok) {
+            type = data.type || "recommended";
+          }
         }
 
-        if (!response || response.status === 401) {
+        if (!response || !response.ok) {
           ({ response, data } = await fetchList("/movies/popular"));
           type = "popular";
         }
@@ -70,6 +75,8 @@ function Home({
           );
         }
 
+        if (cancelled) return;
+
         const recommendations = data.results || [];
         setRecommendedMovies(recommendations);
         setListType(type);
@@ -79,13 +86,17 @@ function Home({
             : current
         );
       } catch (err) {
-        setRecommendationError(err.message);
+        if (!cancelled) setRecommendationError(err.message);
       } finally {
-        setLoadingRecommendations(false);
+        if (!cancelled) setLoadingRecommendations(false);
       }
     };
 
     fetchRecommendedMovies();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // Automatically change movie every 6 seconds
