@@ -110,9 +110,9 @@ const collectMovies = async (fetchPage, excludedIds, picked) => {
 
 const collectSafely = async (fetchPage, excludedIds, picked) => {
   try {
-    await collectMovies(fetchPage, excludedIds, picked) => {
+    await collectMovies(fetchPage, excludedIds, picked);
   } catch (error) {
-    console.error("Recommendation fallback failed:", error.message);  
+    console.error("Recommendation fallback failed:", error.message);
   }
 };
 
@@ -151,8 +151,8 @@ export const getRecommendations = async (userId, language = "fi-FI", region = "F
     throw new Error("No recommendations available");
   }
 
-  return { 
+  return {
     type: personalizedCount > 0 ? "recommended" : "popular",
-    results: picked 
+    results: picked
   };
 };

@@ -29,7 +29,7 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function fakeTmdb({ failDiscover = false, recommendations = {} } = {}) {
+function fakeTmdb({ failDiscover = false, failPopular = false, recommendations = {} } = {}) {
   const calls = [];
 
   mock.method(globalThis, 'fetch', async (input) => {
@@ -42,6 +42,7 @@ function fakeTmdb({ failDiscover = false, recommendations = {} } = {}) {
     }
 
     if (url.pathname.endsWith('/movie/popular')) {
+      if (failPopular) return jsonResponse({}, 500);
       return jsonResponse({ results: popularIds.map(movie), total_pages: 1 });
     }
 
@@ -198,10 +199,22 @@ test('excludes favorites and reviewed movies and fills up to 20 from popular', a
   assert.deepEqual(ids.slice(10), [601, 602, 603, 604, 605, 606, 607, 608, 609, 610]);
 });
 
+test('falls back to popular movies when genre discovery fails', async () => {
+  const user = await createUser('fallback');
+  await addFavorites(user.user_id, [101]);
+  fakeTmdb({ failDiscover: true });
+
+  const response = await recommendationsRequest(await tokenFor(user));
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.type, 'popular');
+  assert.equal(response.body.results.length, 20);
+});
+
 test('returns 500 when TMDB fails', async () => {
   const user = await createUser('fail');
   await addFavorites(user.user_id, [101]);
-  fakeTmdb({ failDiscover: true });
+  fakeTmdb({ failDiscover: true, failPopular: true });
 
   const response = await recommendationsRequest(await tokenFor(user));
 
