@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Route, Routes } from "react-router";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
@@ -122,7 +122,7 @@ function GroupDetails({user, onLoginClick}) {
     return () => {
       cancelled = true;
     };
-  }, [groupId, user]);
+  }, [groupId, user, userStatus]);
 
   useEffect(() => {
     if (!group) return undefined;
@@ -147,6 +147,55 @@ function GroupDetails({user, onLoginClick}) {
     };
   }, [group]);
 
+  const handleMembershipRequest = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/groups/join/${groupId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Join request failed");
+    }
+    setUserStatus(data.status);
+    }
+    catch (err) {
+      alert.apply(err.message);
+    }
+  };
+
+  const buttonConfig = () => {
+    if (!user) {
+      return {
+        text: "Log in to continue",
+        onClick: onLoginClick,
+        disabled: false,
+      };
+    }
+    if (userStatus === "pending") {
+      return {
+        text: "Membership pending",
+        onClick: null,
+        disabled: true,
+      };
+    }
+    if (userStatus === "rejected") {
+      return {
+        text: "Membership rejected",
+        onClick: null,
+        disabled: true,
+      };
+    }
+    return {
+      text: "Request to join group",
+      onClick: handleMembershipRequest,
+      disabled: false,
+    };
+  };
+
   if (loading) {
     return (
       <main className="group-details-page">
@@ -156,6 +205,7 @@ function GroupDetails({user, onLoginClick}) {
   }
 
   if (error) {
+    const {text, onClick, disabled} = buttonConfig();
     return (
       <main className="group-details-page">
         <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
@@ -170,8 +220,10 @@ function GroupDetails({user, onLoginClick}) {
             <button
               type="button"
               className="btn-primary"
+              onClick={onClick}
+              disabled={disabled}
             >
-              Request to join group
+              {text}
             </button>
             <p>Status: {userStatus ?? "Not requested"}</p>
           </div>
