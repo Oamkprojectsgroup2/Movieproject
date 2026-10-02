@@ -1,4 +1,5 @@
 import * as movieService from "../models/moviesService.js";
+import * as recommendationService from "../models/recommendationService.js";
 
 export const categoryRequest = (method, errorMessage) => async (req,res) => {
     try {
@@ -89,3 +90,15 @@ export const getDetails = async (req, res) => {
         res.status(500).json({message: error.message || "Internal Server Error"});
     }
 }
+
+export const getRecommended = async (req, res) => {
+    try {
+        const language = req.query.language || "fi-FI";
+        const region = req.query.region || "FI";
+        const data = await recommendationService.getRecommendations(req.user.user_id, language, region);
+        res.json(data);
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
+        res.status(500).json({ message: "Could not load recommendations" });
+    }
+};

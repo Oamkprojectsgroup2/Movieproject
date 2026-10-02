@@ -29,3 +29,14 @@ export const getMovieGenres = (language = "fi-FI") => {
 export const getMovieDetails = (id, language = "fi-FI") => {
     return tmdbFetch(`/movie/${id}`, { language, append_to_response: "credits" });
 }
+
+export const discoverMoviesByGenres = (genreIds, page = 1, language = "fi-FI", region = "FI") => {
+    return tmdbFetch("/discover/movie", {
+        with_genres: genreIds.join("|"),
+        sort_by: "popularity.desc",
+        include_adult: false,
+        page,
+        language,
+        region,
+    });
+}

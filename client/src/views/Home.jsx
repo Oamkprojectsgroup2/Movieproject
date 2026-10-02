@@ -7,6 +7,7 @@ import Stars from "../components/Stars";
 import { tmdbToFive } from "../utils/ratings";
 
 function Home({
+  user,
   search,
   setSearch,
   genre,
@@ -23,7 +24,7 @@ function Home({
   const [genres, setGenres] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [recommendationError, setRecommendationError] = useState(null);
-
+  const [listType, setListType] = useState("popular");
   // TMDB language/region settings
   // These can later be moved to shared application state if needed.
   const tmdbLanguage = "en-US";
@@ -31,16 +32,35 @@ function Home({
 
   // Fetch recommended movies from backend
   useEffect(() => {
+    const fetchList = async (path, headers = {}) => {
+      const response = await fetch(
+      `${BASE_URL}${path}?language=${tmdbLanguage}&region=${tmdbRegion}`,
+      { headers }
+      );
+      const data = await response.json().catch(() => ({}));
+      return { response, data };
+    };
+
     const fetchRecommendedMovies = async () => {
       setLoadingRecommendations(true);
       setRecommendationError(null);
 
       try {
-        const response = await fetch(
-          `${BASE_URL}/movies/popular?language=${tmdbLanguage}&region=${tmdbRegion}`
-        );
+        const token = localStorage.getItem("token");
+        let type = "popular";
+        let { response, data } = { response: null, data: {} };
 
-        const data = await response.json();
+        if (user && token) {
+          ({ response, data } = await fetchList("/movies/recommended", {
+            Authorization: `Bearer ${token}`,
+          }));
+          type = data.type || "recommended";
+        }
+
+        if (!response || response.status === 401) {
+          ({ response, data } = await fetchList("/movies/popular"));
+          type = "popular";
+        }
 
         if (!response.ok) {
           throw new Error(
@@ -52,6 +72,7 @@ function Home({
 
         const recommendations = data.results || [];
         setRecommendedMovies(recommendations);
+        setListType(type);
         setActiveRecommendation((current) =>
           recommendations.length > 0 && current >= recommendations.length
             ? 0
@@ -65,7 +86,7 @@ function Home({
     };
 
     fetchRecommendedMovies();
-  }, []);
+  }, [user]);
 
   // Automatically change movie every 6 seconds
   useEffect(() => {
@@ -143,7 +164,7 @@ function Home({
       <section className="recommended">
         <div className="postcard">
         <h2 className="recommended-title">
-          Recommended
+          {listType === "recommended" ? "Recommended for you" : "Popular movies"}
         </h2>
 
         {loadingRecommendations && (
