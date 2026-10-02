@@ -64,6 +64,16 @@ function getGroup(groupId, token) {
     return pending;
 }
 
+function addMovieToGroup(groupId, token, movieId) {
+    const pending = request(app).post(`/api/groups/${groupId}/favorites`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending.send({ movie_id: movieId });
+}
+
 function deleteGroup(groupId, token) {
     const pending = request(app).delete(`/api/groups/${groupId}`);
 
@@ -409,4 +419,109 @@ test('returns 404 when the owner tries to delete a missing group', async () => {
 
     assert.equal(response.statusCode, 404);
     assert.deepEqual(response.body, { message: 'Group not found' });
+});
+
+test('allows an accepted member to add a movie to the group', async () => {
+    const owner = await createUser('favoriteowner');
+    const member = await createUser('favoritemember');
+    const ownerToken = await tokenFor(owner);
+    const memberToken = await tokenFor(member);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('favorite') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654321;
+
+    await addMember(groupId, member.user_id, 'accepted');
+
+    const response = await addMovieToGroup(groupId, memberToken, movieId);
+    const detailsResponse = await getGroup(groupId, memberToken);
+
+    assert.equal(response.statusCode, 201);
+    assert.equal(response.body.added, true);
+    assert.deepEqual(detailsResponse.body.group.favorites, [
+        { movie_id: movieId, added_by: member.user_name },
+    ]);
+});
+
+test('does not add a duplicate group favorite', async () => {
+    const owner = await createUser('duplicatemovie');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('duplicate') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654322;
+
+    const firstResponse = await addMovieToGroup(groupId, token, movieId);
+    const secondResponse = await addMovieToGroup(groupId, token, movieId);
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+
+    assert.equal(firstResponse.statusCode, 201);
+    assert.equal(secondResponse.statusCode, 200);
+    assert.equal(secondResponse.body.added, false);
+    assert.equal(result.rowCount, 1);
+});
+
+test('requires authentication and accepted membership to add a group favorite', async () => {
+    const owner = await createUser('favoriteaccessowner');
+    const pending = await createUser('favoritepending');
+    const rejected = await createUser('favoriterejected');
+    const outsider = await createUser('favoriteoutsider');
+    const ownerToken = await tokenFor(owner);
+    const pendingToken = await tokenFor(pending);
+    const rejectedToken = await tokenFor(rejected);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('favoriteaccess') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654323;
+
+    await addMember(groupId, pending.user_id, 'pending');
+    await addMember(groupId, rejected.user_id, 'rejected');
+
+    const unauthorizedCases = [
+        ['without authentication', undefined, 401],
+        ['with an invalid token', 'invalid-token', 401],
+        ['as a pending member', pendingToken, 403],
+        ['as a rejected member', rejectedToken, 403],
+        ['as a non-member', outsiderToken, 403],
+    ];
+
+    for (const [description, token, statusCode] of unauthorizedCases) {
+        const response = await addMovieToGroup(groupId, token, movieId);
+        assert.equal(response.statusCode, statusCode, description);
+    }
+
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+    assert.equal(result.rowCount, 0);
+});
+
+test('validates group and movie IDs when adding a group favorite', async () => {
+    const owner = await createUser('favoritevalidation');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('favoritevalidation') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const invalidGroupResponse = await addMovieToGroup('not-a-number', token, 654324);
+    assert.equal(invalidGroupResponse.statusCode, 400);
+
+    const invalidMovieResponse = await addMovieToGroup(groupId, token, 'not-a-number');
+    assert.equal(invalidMovieResponse.statusCode, 400);
+
+    const missingGroupResponse = await addMovieToGroup(999999999, token, 654324);
+    assert.equal(missingGroupResponse.statusCode, 404);
 });

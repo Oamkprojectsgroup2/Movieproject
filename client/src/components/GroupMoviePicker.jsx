@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BASE_URL } from "../config";
 import Modal from "./Modal";
 import "../components/styles/GroupMoviePicker.css";
-import { isAcceptedMember } from "../../../server/src/helper/groupMembership";
+
 
 function GroupMoviePicker({ isOpen, movieId, onClose }) {
   const [groups, setGroups] = useState([]);
@@ -35,7 +35,7 @@ function GroupMoviePicker({ isOpen, movieId, onClose }) {
 
         if (!cancelled) {
           setGroups(
-            (data.groups || []).filter((group) => isAcceptedMember(group.my_status),
+            (data.groups || []).filter((group) => group.my_status === "accepted",
             ),
           );
         }
@@ -45,7 +45,7 @@ function GroupMoviePicker({ isOpen, movieId, onClose }) {
         if (!cancelled) setLoading(false);
       }
     }
-
+    
     loadGroups();
 
     return () => {
