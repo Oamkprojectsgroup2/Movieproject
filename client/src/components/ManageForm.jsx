@@ -76,7 +76,7 @@ export default function ManageForm({groupId,  groupName, onClose}) {
   };
 
   return (
-    <div>
+    <div className="members-container">
       <h2>Manage Memberships for {groupName}</h2>
       {loading && <p>Loading members</p>}
       {error && <p className="error">{error}</p>}
@@ -85,34 +85,31 @@ export default function ManageForm({groupId,  groupName, onClose}) {
         <ul className="members-pending-list">
           {members.map((member) => (
             <li key={member.user_id} className="member-pending-item">
-              <span>{member.user_name || member.status} || </span>
-              <span>
-                <div className="members-pending-buttons">
-                  <button
-                    type="btn-primary"
-                    className="btn-accept"
-                    onClick={() => handleDecision(member.user_id, groupId, "accept")}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    type="btn-primary"
-                    className="btn-reject"
-                    onClick={() => handleDecision(member.user_id,groupId, "reject")}
-                  >
-                    Reject
-                  </button>
-                </div>
-              </span>
+              <div className="member-pending-info">
+                <span className="member-name">{member.user_name}</span>
+                <span className="member-status">{member.status}</span>
+              </div>
+
+              <div className="members-pending-buttons">
+                <button
+                  type="primary"
+                  className="members-pending-btn-accept"
+                  onClick={() => handleDecision(member.user_id, groupId, "accept")}
+                >
+                  Accept
+                </button>
+                <button
+                  type="primary"
+                  className="members-pending-btn-reject"
+                  onClick={() => handleDecision(member.user_id, groupId, "reject")}
+                >
+                  Reject
+                </button>
+              </div>
             </li>
           ))}
         </ul>
         )}
-
-        {onClose && (
-          <button type="button" onClick={onClose}>
-            Close
-          </button>)}
     </div>
   );
 }
