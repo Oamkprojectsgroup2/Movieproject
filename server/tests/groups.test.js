@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'node:crypto';
-import { after, before, test } from 'node:test';
+import { after, before, mock, test } from 'node:test';
 import request from 'supertest';
 import app from '../src/app.js';
 import pool from '../src/helper/db.js';
@@ -644,4 +644,37 @@ test('validates group and movie IDs when removing a group favorite', async () =>
     assert.deepEqual(invalidMovieResponse.body, {
         message: 'Movie ID must be a positive integer',
     });
+});
+test('returns 500 and keeps the movie when removing a group favorite hits a database error', async () => {
+    const owner = await createUser('removeerror');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removeerror') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654329;
+
+    await addMovieToGroup(groupId, token, movieId);
+
+    mock.method(pool, 'connect', async () => {
+        throw new Error('simulated database failure');
+    });
+    mock.method(console, 'error', () => {});
+
+    let response;
+    try {
+        response = await removeMovieFromGroup(groupId, movieId, token);
+    } finally {
+        mock.restoreAll();
+    }
+
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+
+    assert.equal(response.statusCode, 500);
+    assert.deepEqual(response.body, { message: 'Could not remove movie from group' });
+    assert.equal(result.rowCount, 1);
 });
