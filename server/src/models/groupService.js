@@ -181,3 +181,45 @@ if (memberResult.rows.length === 0) {
 }
 return { added: false};
 };
+
+export const removeMovieFromGroup = async (groupId, movieId, ownerId) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const groupResult = await client.query(
+      `SELECT owner_id FROM groups WHERE group_id = $1 FOR UPDATE`,
+      [groupId],
+    );
+
+    if (groupResult.rows.length === 0) {
+      await client.query("COMMIT");
+      return { notFound: true };
+    }
+
+    if (Number(groupResult.rows[0].owner_id) !== Number(ownerId)) {
+      await client.query("COMMIT");
+      return { unauthorized: true };
+    }
+
+    const deleteResult = await client.query(
+      `DELETE FROM group_favorites
+       WHERE group_id = $1 AND movies_tmdb_id = $2`,
+      [groupId, movieId],
+    );
+
+    if (deleteResult.rowCount === 0) {
+      await client.query("COMMIT");
+      return { movieNotFound: true };
+    }
+
+    await client.query("COMMIT");
+    return { removed: true };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};

@@ -120,3 +120,41 @@ export const addMovieToGroup = async (req, res) => {
     return res.status(500).json({ message: "Could not add movie to group" });
   }
 };
+
+export const removeMovieFromGroup = async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const movieId = Number(req.params.movieId);
+
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    return res.status(400).json({ message: "Group ID must be a positive integer" });
+  }
+
+  if (!Number.isInteger(movieId) || movieId <= 0) {
+    return res.status(400).json({ message: "Movie ID must be a positive integer" });
+  }
+
+  try {
+    const result = await groupService.removeMovieFromGroup(
+      groupId,
+      movieId,
+      req.user.user_id,
+    );
+
+    if (result.notFound) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (result.unauthorized) {
+      return res.status(403).json({ message: "Only the group owner can remove movies" });
+    }
+
+    if (result.movieNotFound) {
+      return res.status(404).json({ message: "Movie not found in this group" });
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Remove group movie error:", error);
+    return res.status(500).json({ message: "Could not remove movie from group" });
+  }
+};
