@@ -58,6 +58,7 @@ function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
+  const [movieIdsToLoad, setMovieIdsToLoad] = useState(null);
   const [movies, setMovies] = useState([]);
   const [failedMovieIds, setFailedMovieIds] = useState([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
@@ -65,6 +66,8 @@ function GroupDetails() {
   const [showAllMovies, setShowAllMovies] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [removingMovieId, setRemovingMovieId] = useState(null);
+  const [movieActionError, setMovieActionError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -93,6 +96,7 @@ function GroupDetails() {
           setShowAllMembers(false);
           setShowAllMovies(false);
           setGroup(data.group);
+          setMovieIdsToLoad(data.group.favorites.map((favorite) => favorite.movie_id));
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -148,15 +152,46 @@ function GroupDetails() {
     }
   };
 
+  const handleRemoveMovie = async (movieId) => {
+    if (!group.is_owner || removingMovieId !== null) return;
+
+    setRemovingMovieId(movieId);
+    setMovieActionError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/${groupId}/favorites/${movieId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not remove movie from group");
+      }
+
+      setGroup((currentGroup) => ({
+        ...currentGroup,
+        favorites: currentGroup.favorites.filter((favorite) => favorite.movie_id !== movieId),
+      }));
+      setMovies((currentMovies) => currentMovies.filter((movie) => movie.id !== movieId));
+      setFailedMovieIds((currentIds) => currentIds.filter((id) => id !== movieId));
+    } catch (removeError) {
+      setMovieActionError(removeError.message || "Could not remove movie from group");
+    } finally {
+      setRemovingMovieId(null);
+    }
+  };
+
   useEffect(() => {
-    if (!group) return undefined;
+    if (!movieIdsToLoad) return undefined;
 
     let cancelled = false;
-    const movieIds = group.favorites.map((favorite) => favorite.movie_id);
 
     async function loadGroupMovies() {
       setMoviesLoading(true);
-      const details = await loadMovieDetails(movieIds);
+      const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {
         setMovies(details.movies);
@@ -169,7 +204,7 @@ function GroupDetails() {
     return () => {
       cancelled = true;
     };
-  }, [group]);
+  }, [movieIdsToLoad]);
 
   if (loading) {
     return (
@@ -268,12 +303,22 @@ function GroupDetails() {
             <p className="group-details-muted">Loading group favorites...</p>
           ) : group.favorites.length > 0 ? (
             <>
+              {movieActionError && (
+                <p className="favourites-action-error" role="alert">
+                  {movieActionError}
+                </p>
+              )}
               {failedMovieIds.length > 0 && (
                 <p className="favourites-partial-warning">
                   Some group movies are temporarily unavailable.
                 </p>
               )}
-              <FavoriteMovieList movies={visibleMovies} failedMovieIds={visibleFailedMovieIds} />
+              <FavoriteMovieList
+                movies={visibleMovies}
+                failedMovieIds={visibleFailedMovieIds}
+                onRemove={group.is_owner ? handleRemoveMovie : undefined}
+                removingMovieId={removingMovieId}
+              />
               {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
                 <button
                   type="button"
@@ -285,7 +330,14 @@ function GroupDetails() {
               )}
             </>
           ) : (
-            <p className="group-details-muted">No movies have been added to this group yet.</p>
+            <>
+              {movieActionError && (
+                <p className="favourites-action-error" role="alert">
+                  {movieActionError}
+                </p>
+              )}
+              <p className="group-details-muted">No movies have been added to this group yet.</p>
+            </>
           )}
         </section>
       </div>
