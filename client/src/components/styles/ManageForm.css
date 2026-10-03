@@ -1,0 +1,12 @@
+.member-pending-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.members-pending-buttons button {
+  height: 25px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 16px;
+  margin: 4px;
+}

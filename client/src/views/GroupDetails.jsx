@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Route, Routes } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
@@ -249,90 +249,96 @@ function GroupDetails({user, onLoginClick}) {
     : failedMovieIds.slice(0, Math.max(0, MAX_VISIBLE_GROUP_ITEMS - visibleMovies.length));
 
   return (
-    <main className="group-details-page">
-      <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
-        ← Back to groups
-      </button>
+    <>
+      <main className="group-details-page">
+        <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
+          ← Back to groups
+        </button>
 
-      <header className="group-details-header">
-        <p className="group-details-eyebrow">Private group</p>
-        <h1>{group.group_name}</h1>
-        <p>
-          Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
-        </p>
-      </header>
+        <header className="group-details-header">
+          <p className="group-details-eyebrow">Private group</p>
+          <h1>{group.group_name}</h1>
+          <p>
+            Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
+          </p>
+        </header>
 
-      <div className="group-details-layout">
-        <section className="group-details-section">
-          <div className="group-details-members-header">
-            <h2>Members</h2>
-            {user && user.user_id === group.owner_id && (
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={openManage}
-              >
-                Manage members
-            </button>)}
-          </div>
-          {group.members.length > 0 ? (
-            <>
-              <ul className="group-details-members">
-                {visibleMembers.map((member) => (
-                  <li key={member.user_id}>
-                    <span>{member.user_name}</span>
-                    {member.user_id === group.owner_id && (
-                      <span className="groups-badge owner">Owner</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {group.members.length > MAX_VISIBLE_GROUP_ITEMS && (
+        <div className="group-details-layout">
+          <section className="group-details-section">
+            <div className="group-details-members-header">
+              <h2>Members</h2>
+              {user && user.user_id === group.owner_id && (
                 <button
                   type="button"
-                  className="group-details-members-toggle"
-                  onClick={() => setShowAllMembers((current) => !current)}
+                  className="btn-primary"
+                  onClick={openManage}
                 >
-                  {showAllMembers ? "Show fewer members" : "Show more members"}
-                </button>
-              )}
-            </>
-          ) : (
-            <p className="group-details-muted">No accepted members yet.</p>
-          )}
-        </section>
+                  Manage members
+                </button>)}
+            </div>
+            {group.members.length > 0 ? (
+              <>
+                <ul className="group-details-members">
+                  {visibleMembers.map((member) => (
+                    <li key={member.user_id}>
+                      <span>{member.user_name}</span>
+                      {member.user_id === group.owner_id && (
+                        <span className="groups-badge owner">Owner</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {group.members.length > MAX_VISIBLE_GROUP_ITEMS && (
+                  <button
+                    type="button"
+                    className="group-details-members-toggle"
+                    onClick={() => setShowAllMembers((current) => !current)}
+                  >
+                    {showAllMembers ? "Show fewer members" : "Show more members"}
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="group-details-muted">No accepted members yet.</p>
+            )}
+          </section>
 
-        <section className="group-details-section group-details-movies">
-          <h2>Group favorites</h2>
-          {moviesLoading ? (
-            <p className="group-details-muted">Loading group favorites...</p>
-          ) : group.favorites.length > 0 ? (
-            <>
-              {failedMovieIds.length > 0 && (
-                <p className="favourites-partial-warning">
-                  Some group movies are temporarily unavailable.
-                </p>
-              )}
-              <FavoriteMovieList movies={visibleMovies} failedMovieIds={visibleFailedMovieIds} />
-              {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
-                <button
-                  type="button"
-                  className="group-details-members-toggle"
-                  onClick={() => setShowAllMovies((current) => !current)}
-                >
-                  {showAllMovies ? "Show fewer movies" : "Show more movies"}
-                </button>
-              )}
-            </>
-          ) : (
-            <p className="group-details-muted">No movies have been added to this group yet.</p>
-          )}
-        </section>
-      </div>
+          <section className="group-details-section group-details-movies">
+            <h2>Group favorites</h2>
+            {moviesLoading ? (
+              <p className="group-details-muted">Loading group favorites...</p>
+            ) : group.favorites.length > 0 ? (
+              <>
+                {failedMovieIds.length > 0 && (
+                  <p className="favourites-partial-warning">
+                    Some group movies are temporarily unavailable.
+                  </p>
+                )}
+                <FavoriteMovieList movies={visibleMovies} failedMovieIds={visibleFailedMovieIds} />
+                {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
+                  <button
+                    type="button"
+                    className="group-details-members-toggle"
+                    onClick={() => setShowAllMovies((current) => !current)}
+                  >
+                    {showAllMovies ? "Show fewer movies" : "Show more movies"}
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="group-details-muted">No movies have been added to this group yet.</p>
+            )}
+          </section>
+        </div>
+      </main>
+
       <Modal isOpen={manageView !== null} onClose={closeManage}>
-        <ManageForm />
+        <ManageForm
+          groupId={groupId}
+          groupName={group?.group_name}
+        />
       </Modal>
-    </main>
+    </>
   );
 }
 
