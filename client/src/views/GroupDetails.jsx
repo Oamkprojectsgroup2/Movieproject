@@ -160,7 +160,7 @@ function GroupDetails() {
       const response = await fetch(`${BASE_URL}/groups/${groupId}/favorites/${movieId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `******"token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       const data = await response.json().catch(() => ({}));
