@@ -58,6 +58,7 @@ function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
+  const [movieIdsToLoad, setMovieIdsToLoad] = useState(null);
   const [movies, setMovies] = useState([]);
   const [failedMovieIds, setFailedMovieIds] = useState([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
@@ -95,6 +96,7 @@ function GroupDetails() {
           setShowAllMembers(false);
           setShowAllMovies(false);
           setGroup(data.group);
+          setMovieIdsToLoad(data.group.favorites.map((favorite) => favorite.movie_id));
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -183,14 +185,13 @@ function GroupDetails() {
   };
 
   useEffect(() => {
-    if (!group) return undefined;
+    if (!movieIdsToLoad) return undefined;
 
     let cancelled = false;
-    const movieIds = group.favorites.map((favorite) => favorite.movie_id);
 
     async function loadGroupMovies() {
       setMoviesLoading(true);
-      const details = await loadMovieDetails(movieIds);
+      const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {
         setMovies(details.movies);
@@ -203,7 +204,7 @@ function GroupDetails() {
     return () => {
       cancelled = true;
     };
-  }, [group]);
+  }, [movieIdsToLoad]);
 
   if (loading) {
     return (
