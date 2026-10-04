@@ -12,5 +12,9 @@ router.post("/join/:groupId", authenticate, groupController.joinGroup);
 router.get("/pending/:groupId", authenticate, groupController.pendingMembers);
 router.put("/accept/:groupId/:userId", authenticate, groupController.memberAccept);
 router.put("/reject/:groupId/:userId", authenticate, groupController.memberReject);
+router.post("/:groupId/favorites", authenticate, groupController.addMovieToGroup);
+router.delete("/:groupId/favorites/:movieId", authenticate, groupController.removeMovieFromGroup);
+router.delete('/:groupId', authenticate, groupController.deleteGroup);
 
 export default router;
+

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'node:crypto';
-import { after, before, test } from 'node:test';
+import { after, before, mock, test } from 'node:test';
 import request from 'supertest';
 import app from '../src/app.js';
 import pool from '../src/helper/db.js';
@@ -56,6 +56,36 @@ function createGroup(token, body) {
 
 function getGroup(groupId, token) {
     const pending = request(app).get(`/api/groups/${groupId}`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending;
+}
+
+function addMovieToGroup(groupId, token, movieId) {
+    const pending = request(app).post(`/api/groups/${groupId}/favorites`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending.send({ movie_id: movieId });
+}
+
+function removeMovieFromGroup(groupId, movieId, token) {
+    const pending = request(app).delete(`/api/groups/${groupId}/favorites/${movieId}`);
+
+    if (token) {
+        pending.set('Authorization', `Bearer ${token}`);
+    }
+
+    return pending;
+}
+
+function deleteGroup(groupId, token) {
+    const pending = request(app).delete(`/api/groups/${groupId}`);
 
     if (token) {
         pending.set('Authorization', `Bearer ${token}`);
@@ -321,4 +351,330 @@ test('rejects a group name longer than 50 characters', async () => {
 
     assert.equal(response.statusCode, 400);
     assert.deepEqual(response.body, { message: 'Group name must be at most 50 characters' });
+});
+
+test('allows only the owner to delete a group', async () => {
+    const owner = await createUser('deleteowner');
+    const outsider = await createUser('deleteoutsider');
+    const ownerToken = await tokenFor(owner);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('deleteowner') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const unauthenticatedResponse = await deleteGroup(groupId);
+    assert.equal(unauthenticatedResponse.statusCode, 401);
+
+    const outsiderResponse = await deleteGroup(groupId, outsiderToken);
+    assert.equal(outsiderResponse.statusCode, 403);
+    assert.deepEqual(outsiderResponse.body, {
+        message: 'Only the group owner can delete this group',
+    });
+
+    const groupResult = await pool.query(
+        'SELECT group_id FROM groups WHERE group_id = $1',
+        [groupId],
+    );
+    assert.equal(groupResult.rowCount, 1);
+});
+
+test('owner deletion removes the group and its related data from the public list', async () => {
+    const owner = await createUser('deletecascade');
+    const member = await createUser('deletecascademember');
+    const ownerToken = await tokenFor(owner);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('deletecascade') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    await addMember(groupId, member.user_id, 'accepted');
+    await pool.query(
+        `INSERT INTO group_favorites (group_id, movies_tmdb_id, user_id)
+         VALUES ($1, $2, $3)`,
+        [groupId, 987654, owner.user_id],
+    );
+
+    const deleteResponse = await deleteGroup(groupId, ownerToken);
+    assert.equal(deleteResponse.statusCode, 204);
+
+    const groupResult = await pool.query(
+        'SELECT group_id FROM groups WHERE group_id = $1',
+        [groupId],
+    );
+    const membersResult = await pool.query(
+        'SELECT group_id FROM members WHERE group_id = $1',
+        [groupId],
+    );
+    const favoritesResult = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1',
+        [groupId],
+    );
+    const publicListResponse = await listGroups();
+
+    assert.equal(groupResult.rowCount, 0);
+    assert.equal(membersResult.rowCount, 0);
+    assert.equal(favoritesResult.rowCount, 0);
+    assert.equal(
+        publicListResponse.body.groups.some((group) => group.group_id === groupId),
+        false,
+    );
+});
+
+test('returns 404 when the owner tries to delete a missing group', async () => {
+    const owner = await createUser('deletemissing');
+    const response = await deleteGroup(999999999, await tokenFor(owner));
+
+    assert.equal(response.statusCode, 404);
+    assert.deepEqual(response.body, { message: 'Group not found' });
+});
+
+test('allows an accepted member to add a movie to the group', async () => {
+    const owner = await createUser('favoriteowner');
+    const member = await createUser('favoritemember');
+    const ownerToken = await tokenFor(owner);
+    const memberToken = await tokenFor(member);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('favorite') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654321;
+
+    await addMember(groupId, member.user_id, 'accepted');
+
+    const response = await addMovieToGroup(groupId, memberToken, movieId);
+    const detailsResponse = await getGroup(groupId, memberToken);
+
+    assert.equal(response.statusCode, 201);
+    assert.equal(response.body.added, true);
+    assert.deepEqual(detailsResponse.body.group.favorites, [
+        { movie_id: movieId, added_by: member.user_name },
+    ]);
+});
+
+test('does not add a duplicate group favorite', async () => {
+    const owner = await createUser('duplicatemovie');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('duplicate') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654322;
+
+    const firstResponse = await addMovieToGroup(groupId, token, movieId);
+    const secondResponse = await addMovieToGroup(groupId, token, movieId);
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+
+    assert.equal(firstResponse.statusCode, 201);
+    assert.equal(secondResponse.statusCode, 200);
+    assert.equal(secondResponse.body.added, false);
+    assert.equal(result.rowCount, 1);
+});
+
+test('requires authentication and accepted membership to add a group favorite', async () => {
+    const owner = await createUser('favoriteaccessowner');
+    const pending = await createUser('favoritepending');
+    const rejected = await createUser('favoriterejected');
+    const outsider = await createUser('favoriteoutsider');
+    const ownerToken = await tokenFor(owner);
+    const pendingToken = await tokenFor(pending);
+    const rejectedToken = await tokenFor(rejected);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('favoriteaccess') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654323;
+
+    await addMember(groupId, pending.user_id, 'pending');
+    await addMember(groupId, rejected.user_id, 'rejected');
+
+    const unauthorizedCases = [
+        ['without authentication', undefined, 401],
+        ['with an invalid token', 'invalid-token', 401],
+        ['as a pending member', pendingToken, 403],
+        ['as a rejected member', rejectedToken, 403],
+        ['as a non-member', outsiderToken, 403],
+    ];
+
+    for (const [description, token, statusCode] of unauthorizedCases) {
+        const response = await addMovieToGroup(groupId, token, movieId);
+        assert.equal(response.statusCode, statusCode, description);
+    }
+
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+    assert.equal(result.rowCount, 0);
+});
+
+test('validates group and movie IDs when adding a group favorite', async () => {
+    const owner = await createUser('favoritevalidation');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('favoritevalidation') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const invalidGroupResponse = await addMovieToGroup('not-a-number', token, 654324);
+    assert.equal(invalidGroupResponse.statusCode, 400);
+
+    const invalidMovieResponse = await addMovieToGroup(groupId, token, 'not-a-number');
+    assert.equal(invalidMovieResponse.statusCode, 400);
+
+    const missingGroupResponse = await addMovieToGroup(999999999, token, 654324);
+    assert.equal(missingGroupResponse.statusCode, 404);
+});
+
+test('removes a movie only from the selected group when requested by its owner', async () => {
+    const owner = await createUser('removemovieowner');
+    const token = await tokenFor(owner);
+    const firstGroupResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removefirst') },
+    );
+    const secondGroupResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removesecond') },
+    );
+    const firstGroupId = firstGroupResponse.body.group.group_id;
+    const secondGroupId = secondGroupResponse.body.group.group_id;
+    const movieId = 654325;
+
+    await addMovieToGroup(firstGroupId, token, movieId);
+    await addMovieToGroup(secondGroupId, token, movieId);
+
+    const response = await removeMovieFromGroup(firstGroupId, movieId, token);
+    const firstGroup = await getGroup(firstGroupId, token);
+    const secondGroup = await getGroup(secondGroupId, token);
+    const remainingAssociation = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE movies_tmdb_id = $1 ORDER BY group_id',
+        [movieId],
+    );
+
+    assert.equal(response.statusCode, 204);
+    assert.deepEqual(firstGroup.body.group.favorites, []);
+    assert.deepEqual(secondGroup.body.group.favorites, [
+        { movie_id: movieId, added_by: owner.user_name },
+    ]);
+    assert.deepEqual(remainingAssociation.rows, [{ group_id: secondGroupId }]);
+});
+
+test('only the group owner can remove a movie from group favorites', async () => {
+    const owner = await createUser('removeauthowner');
+    const member = await createUser('removeauthmember');
+    const outsider = await createUser('removeauthoutsider');
+    const ownerToken = await tokenFor(owner);
+    const memberToken = await tokenFor(member);
+    const outsiderToken = await tokenFor(outsider);
+    const createResponse = await createGroup(
+        ownerToken,
+        { group_name: uniqueGroupName('removeauth') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654326;
+
+    await addMember(groupId, member.user_id, 'accepted');
+    await addMovieToGroup(groupId, ownerToken, movieId);
+
+    const unauthorizedCases = [
+        ['without authentication', undefined, 401],
+        ['with an invalid token', 'invalid-token', 401],
+        ['as an accepted group member', memberToken, 403],
+        ['as a non-member', outsiderToken, 403],
+    ];
+
+    for (const [description, token, statusCode] of unauthorizedCases) {
+        const response = await removeMovieFromGroup(groupId, movieId, token);
+        assert.equal(response.statusCode, statusCode, description);
+    }
+
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+    assert.equal(result.rowCount, 1);
+});
+
+test('handles missing groups and movies when removing a group favorite', async () => {
+    const owner = await createUser('removemissing');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removemissing') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const missingGroupResponse = await removeMovieFromGroup(999999999, 654327, token);
+    assert.equal(missingGroupResponse.statusCode, 404);
+    assert.deepEqual(missingGroupResponse.body, { message: 'Group not found' });
+
+    const missingMovieResponse = await removeMovieFromGroup(groupId, 654327, token);
+    assert.equal(missingMovieResponse.statusCode, 404);
+    assert.deepEqual(missingMovieResponse.body, { message: 'Movie not found in this group' });
+});
+
+test('validates group and movie IDs when removing a group favorite', async () => {
+    const owner = await createUser('removevalidation');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removevalidation') },
+    );
+    const groupId = createResponse.body.group.group_id;
+
+    const invalidGroupResponse = await removeMovieFromGroup('not-a-number', 654328, token);
+    assert.equal(invalidGroupResponse.statusCode, 400);
+    assert.deepEqual(invalidGroupResponse.body, {
+        message: 'Group ID must be a positive integer',
+    });
+
+    const invalidMovieResponse = await removeMovieFromGroup(groupId, 'not-a-number', token);
+    assert.equal(invalidMovieResponse.statusCode, 400);
+    assert.deepEqual(invalidMovieResponse.body, {
+        message: 'Movie ID must be a positive integer',
+    });
+});
+test('returns 500 and keeps the movie when removing a group favorite hits a database error', async () => {
+    const owner = await createUser('removeerror');
+    const token = await tokenFor(owner);
+    const createResponse = await createGroup(
+        token,
+        { group_name: uniqueGroupName('removeerror') },
+    );
+    const groupId = createResponse.body.group.group_id;
+    const movieId = 654329;
+
+    await addMovieToGroup(groupId, token, movieId);
+
+    mock.method(pool, 'connect', async () => {
+        throw new Error('simulated database failure');
+    });
+    mock.method(console, 'error', () => {});
+
+    let response;
+    try {
+        response = await removeMovieFromGroup(groupId, movieId, token);
+    } finally {
+        mock.restoreAll();
+    }
+
+    const result = await pool.query(
+        'SELECT group_id FROM group_favorites WHERE group_id = $1 AND movies_tmdb_id = $2',
+        [groupId, movieId],
+    );
+
+    assert.equal(response.statusCode, 500);
+    assert.deepEqual(response.body, { message: 'Could not remove movie from group' });
+    assert.equal(result.rowCount, 1);
 });

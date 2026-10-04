@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { BASE_URL } from "../config";
 import Stars from "../components/Stars";
 import "./styles/MovieDetails.css";
+import GroupMoviePicker from "../components/GroupMoviePicker";
 
 
 function MovieDetails({ user, siteLanguage}) {
@@ -22,6 +23,7 @@ function MovieDetails({ user, siteLanguage}) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteBusy,setFavoriteBusy] = useState(false);
   const [favoriteError, setFavoriteError] = useState(null);
+  const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   
   const loadReviews = useCallback(async () => {
     try{
@@ -385,7 +387,7 @@ function MovieDetails({ user, siteLanguage}) {
                   {isFavorite ? "♥ Remove from favourites" : "♡ Add to favourites"}
                 </button>
 
-                <button type="button" className="btn-outline">
+                <button type="button" className="btn-outline" onClick={() => setGroupPickerOpen(true)}>
                   Add to group
                 </button>
 
@@ -530,7 +532,12 @@ function MovieDetails({ user, siteLanguage}) {
         </section>
 
       </div>
-      
+      <GroupMoviePicker
+        isOpen={groupPickerOpen}
+        movieId={movieId}
+        movieTitle={movie.title}
+        onClose={() => setGroupPickerOpen(false)}
+      />
     </main>
   );
 }

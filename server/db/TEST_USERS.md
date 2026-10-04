@@ -24,7 +24,7 @@ Passwords are stored as bcrypt hashes (cost 10), so `bcrypt.compare()` works wit
 
 | ID | Username | Email (login) | Password | Reviews | Favs | Share token | Note |
 |---|---|---|---|---|---|---|---|
-| 1 | `aino_v` | aino.virtanen@example.com | `AinoTest01` | 5 | 7 | `f38b2ffc-80a4-4f5a-91c9-bc701e7ea419` | Owner of group 1 |
+| 1 | `aino_v` | aino.virtanen@example.com | `AinoTest01` | 5 | 21 | `f38b2ffc-80a4-4f5a-91c9-bc701e7ea419` | Owner of group 1. Over 10 favorites – recommendations test user |
 | 2 | `mikkok` | mikko.korhonen@example.com | `MikkoTest02` | 9 | 7 | – |  |
 | 3 | `laura_leffat` | laura.nieminen@example.com | `LauraTest03` | 4 | 10 | `f3f49249-dc28-4f90-a5ae-c7978306d03b` | Owner of group 2 |
 | 4 | `jussim` | jussi.makinen@example.com | `JussiTest04` | 4 | 7 | – |  |
@@ -79,6 +79,9 @@ Group favorites: each group has 3–6 movies. In group 1, one favorite has `user
 | Remove member / leave group | `aino_v` removes a member from group 1, or `mikkok` leaves on their own |
 | Encoding | `jäärä_jari` – Finnish letters in username |
 | Max length | `oona_movie_fanatic_2026xy` = 25 characters; 26 characters should be rejected |
+| Recommendations | Log in as `aino_v` → Home shows "Recommended for you". Aino has 21 favorites, so only 10 random ones are used per request and the carousel changes between visits. Favorites and reviewed movies never appear in the list |
+| Recommendations, few favorites | `tiinaj` (ID 9) has 5 favorites → all are used, so the list stays the same between visits |
+| Recommendations, no favorites | `empty_tester` (ID 18) → falls back to popular movies, heading "Popular movies" |
 
 ## TMDB Movies Used
 
@@ -91,6 +94,7 @@ Group favorites: each group has 3–6 movies. In group 1, one favorite has `user
 | 78 | Blade Runner |
 | 98 | Gladiator |
 | 105 | Back to the Future |
+| 106 | Predator |
 | 115 | The Big Lebowski |
 | 120 | The Lord of the Rings: The Fellowship of the Ring |
 | 122 | The Lord of the Rings: The Return of the King |
@@ -102,11 +106,13 @@ Group favorites: each group has 3–6 movies. In group 1, one favorite has `user
 | 278 | The Shawshank Redemption |
 | 329 | Jurassic Park |
 | 348 | Alien |
+| 377 | A Nightmare on Elm Street |
 | 424 | Schindler's List |
 | 489 | Good Will Hunting |
 | 550 | Fight Club |
 | 578 | Jaws |
 | 603 | The Matrix |
+| 609 | Poltergeist |
 | 680 | Pulp Fiction |
 | 694 | The Shining |
 | 769 | GoodFellas |
@@ -115,9 +121,18 @@ Group favorites: each group has 3–6 movies. In group 1, one favorite has `user
 | 862 | Toy Story |
 | 1124 | The Prestige |
 | 1422 | The Departed |
+| 1878 | Fear and Loathing in Las Vegas |
 | 1891 | The Empire Strikes Back |
+| 5548 | RoboCop |
+| 5876 | The Mist |
+| 9482 | Judge Dredd |
+| 9928 | Robots |
+| 11547 | Cabin Fever |
+| 14003 | Fullmetal Alchemist the Movie: Conqueror of Shamballa |
 | 16869 | Inglourious Basterds |
 | 19995 | Avatar |
+| 22970 | The Cabin in the Woods |
+| 23514 | The Rum Diary |
 | 27205 | Inception |
 | 76341 | Mad Max: Fury Road |
 | 157336 | Interstellar |
@@ -127,8 +142,10 @@ Group favorites: each group has 3–6 movies. In group 1, one favorite has `user
 | 346698 | Barbie |
 | 354912 | Coco |
 | 372058 | Your Name. |
+| 426285 | Fullmetal Alchemist |
 | 438631 | Dune |
 | 475557 | Joker |
 | 496243 | Parasite |
 | 693134 | Dune: Part Two |
 | 872585 | Oppenheimer |
+| 893723 | PAW Patrol: The Mighty Movie |

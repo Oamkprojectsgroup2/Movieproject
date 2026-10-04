@@ -171,6 +171,21 @@ INSERT INTO favorite_movies (user_id, movies_tmdb_id) VALUES
   (1, 157336),
   (1, 857),
   (1, 120),
+  -- More favorites for aino_v: over 10, for testing recommendations (shuffle + max 10 seed favorites)
+  (1, 106),  -- Predator
+  (1, 377),  -- A Nightmare on Elm Street
+  (1, 609),  -- Poltergeist
+  (1, 1878),  -- Fear and Loathing in Las Vegas
+  (1, 5548),  -- RoboCop
+  (1, 5876),  -- The Mist
+  (1, 9482),  -- Judge Dredd
+  (1, 9928),  -- Robots
+  (1, 11547),  -- Cabin Fever
+  (1, 14003),  -- Fullmetal Alchemist the Movie: Conqueror of Shamballa
+  (1, 22970),  -- The Cabin in the Woods
+  (1, 23514),  -- The Rum Diary
+  (1, 426285),  -- Fullmetal Alchemist
+  (1, 893723),  -- PAW Patrol: The Mighty Movie
   (2, 680),
   (2, 346698),
   (2, 11),

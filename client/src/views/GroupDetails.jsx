@@ -6,6 +6,8 @@ import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
 import Modal from "../components/Modal";
 import ManageForm from "../components/ManageForm";
+import Modal from "../components/Modal";
+import "./../components/styles/Auth.css";
 
 const MAX_VISIBLE_GROUP_ITEMS = 4;
 
@@ -58,6 +60,7 @@ function GroupDetails({user, onLoginClick}) {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
+  const [movieIdsToLoad, setMovieIdsToLoad] = useState(null);
   const [movies, setMovies] = useState([]);
   const [failedMovieIds, setFailedMovieIds] = useState([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
@@ -65,6 +68,12 @@ function GroupDetails({user, onLoginClick}) {
   const [showAllMovies, setShowAllMovies] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [removingMovieId, setRemovingMovieId] = useState(null);
+  const [movieActionError, setMovieActionError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [userStatus, setUserStatus] = useState(null);
   const [manageView, setManageView] = useState(null);
   const openManage = () => setManageView(true);
@@ -106,6 +115,7 @@ function GroupDetails({user, onLoginClick}) {
           setShowAllMovies(false);
           setGroup(groupData.group);
           setUserStatus(membership);
+          setMovieIdsToLoad(data.group.favorites.map((favorite) => favorite.movie_id));
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -130,15 +140,80 @@ function GroupDetails({user, onLoginClick}) {
     };
   }, [groupId, user, userStatus]);
 
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteOpen(false);
+    setDeleteConfirmation("");
+    setDeleteError("");
+  };
+
+  const handleDeleteGroup = async (event) => {
+    event.preventDefault();
+    if (deleteConfirmation !== "DELETE" || deleting) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not delete group");
+      }
+
+      navigate("/groups", { replace: true });
+    } catch (err) {
+      setDeleteError(err.message || "Could not delete group");
+      setDeleting(false);
+    }
+  };
+
+  const handleRemoveMovie = async (movieId) => {
+    if (!group.is_owner || removingMovieId !== null) return;
+
+    setRemovingMovieId(movieId);
+    setMovieActionError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/${groupId}/favorites/${movieId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not remove movie from group");
+      }
+
+      setGroup((currentGroup) => ({
+        ...currentGroup,
+        favorites: currentGroup.favorites.filter((favorite) => favorite.movie_id !== movieId),
+      }));
+      setMovies((currentMovies) => currentMovies.filter((movie) => movie.id !== movieId));
+      setFailedMovieIds((currentIds) => currentIds.filter((id) => id !== movieId));
+    } catch (removeError) {
+      setMovieActionError(removeError.message || "Could not remove movie from group");
+    } finally {
+      setRemovingMovieId(null);
+    }
+  };
+
   useEffect(() => {
-    if (!group) return undefined;
+    if (!movieIdsToLoad) return undefined;
 
     let cancelled = false;
-    const movieIds = group.favorites.map((favorite) => favorite.movie_id);
 
     async function loadGroupMovies() {
       setMoviesLoading(true);
-      const details = await loadMovieDetails(movieIds);
+      const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {
         setMovies(details.movies);
@@ -151,7 +226,7 @@ function GroupDetails({user, onLoginClick}) {
     return () => {
       cancelled = true;
     };
-  }, [group]);
+  }, [movieIdsToLoad]);
 
   const handleMembershipRequest = async () => {
     try {
@@ -261,6 +336,21 @@ function GroupDetails({user, onLoginClick}) {
           <p>
             Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
           </p>
+        {group.is_owner && (
+          <button
+            type="button"
+            className="group-details-delete"
+            onClick={() => {
+              setDeleteError("");
+              setDeleteConfirmation("");
+              setDeleteOpen(true);
+            }}
+            
+          >
+            Delete group
+          </button>
+        )}
+        {deleteError && <p role="alert">{deleteError}</p>}
         </header>
 
         <div className="group-details-layout">
@@ -309,12 +399,22 @@ function GroupDetails({user, onLoginClick}) {
               <p className="group-details-muted">Loading group favorites...</p>
             ) : group.favorites.length > 0 ? (
               <>
+              {movieActionError && (
+                <p className="favourites-action-error" role="alert">
+                  {movieActionError}
+                </p>
+              )}
                 {failedMovieIds.length > 0 && (
                   <p className="favourites-partial-warning">
                     Some group movies are temporarily unavailable.
                   </p>
                 )}
-                <FavoriteMovieList movies={visibleMovies} failedMovieIds={visibleFailedMovieIds} />
+                <FavoriteMovieList
+                movies={visibleMovies}
+                failedMovieIds={visibleFailedMovieIds}
+                onRemove={group.is_owner ? handleRemoveMovie : undefined}
+                removingMovieId={removingMovieId}
+              />
                 {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
                   <button
                     type="button"
@@ -326,10 +426,56 @@ function GroupDetails({user, onLoginClick}) {
                 )}
               </>
             ) : (
-              <p className="group-details-muted">No movies have been added to this group yet.</p>
+            <>
+              {movieActionError && (
+                <p className="favourites-action-error" role="alert">
+                  {movieActionError}
+                </p>
+              )}
+                <p className="group-details-muted">No movies have been added to this group yet.</p>
+            </>
             )}
           </section>
         </div>
+
+      <Modal isOpen={deleteOpen} onClose={closeDeleteModal}>
+        <form className="auth-form" onSubmit={handleDeleteGroup} noValidate>
+          <h2>DELETE GROUP</h2>
+          <p className="auth-lead">
+            This permanently removes <strong>{group.group_name}</strong> and its group data.
+          </p>
+
+          <div className="auth-warning">
+            <p>⚠ Group members and group favorites will also be removed.</p>
+          </div>
+
+          <input
+            type="text"
+            placeholder="type DELETE to confirm"
+            aria-label="Type DELETE to confirm"
+            autoFocus
+            value={deleteConfirmation}
+            onChange={(event) => setDeleteConfirmation(event.target.value)}
+          />
+
+          {deleteError && <p className="auth-error" role="alert">{deleteError}</p>}
+
+          <button
+            type="submit"
+            className="auth-submit danger"
+            disabled={deleteConfirmation !== "DELETE" || deleting}
+          >
+            {deleting ? "Deleting..." : "🗑 Delete group"}
+          </button>
+
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeDeleteModal} disabled={deleting}>
+              Cancel
+            </button>
+          </p>
+        </form>
+      </Modal>
       </main>
 
       <Modal isOpen={manageView !== null} onClose={closeManage}>
