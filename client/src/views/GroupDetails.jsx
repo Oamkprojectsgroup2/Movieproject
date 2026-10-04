@@ -6,7 +6,6 @@ import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
 import Modal from "../components/Modal";
 import ManageForm from "../components/ManageForm";
-import Modal from "../components/Modal";
 import "./../components/styles/Auth.css";
 
 const MAX_VISIBLE_GROUP_ITEMS = 4;
@@ -115,7 +114,7 @@ function GroupDetails({user, onLoginClick}) {
           setShowAllMovies(false);
           setGroup(groupData.group);
           setUserStatus(membership);
-          setMovieIdsToLoad(data.group.favorites.map((favorite) => favorite.movie_id));
+          setMovieIdsToLoad(groupData.group.favorites.map((favorite) => favorite.movie_id));
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -244,7 +243,7 @@ function GroupDetails({user, onLoginClick}) {
     setUserStatus(data.status);
     }
     catch (err) {
-      alert.apply(err.message);
+      alert(err.message);
     }
   };
 
