@@ -28,7 +28,7 @@ const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
   }
 }
 
-export default function ManageForm({groupId,  groupName, onClose}) {
+export default function ManageForm({groupId,  groupName}) {
   const [error, setError] = useState(null);
   const [decisionError, setDecisionError] = useState(null);
   const [members, setMembers] = useState([]);
@@ -79,7 +79,8 @@ export default function ManageForm({groupId,  groupName, onClose}) {
     <div className="members-container">
       <h2>Manage Memberships for {groupName}</h2>
       {loading && <p>Loading members</p>}
-      {error && <p className="error">{error}</p>}
+      {decisionError && <p className="error" role="alert">{decisionError}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
       {!loading && !error && members.length === 0 && <p>No pending members</p>}
       {!loading && !error && members.length > 0 && (
         <ul className="members-pending-list">
