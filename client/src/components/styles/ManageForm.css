@@ -1,0 +1,73 @@
+.members-container {
+  width: 100%;
+  min-width: 400px;
+  max-width: 900px; 
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+}
+
+.members-container h2 {
+  margin: 0 0 16px;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.members-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.member-pending-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-line);
+}
+.member-pending-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.member-pending-info {
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0; 
+  flex: 1;
+  white-space: nowrap;
+}
+
+.members-pending-buttons button {
+  height: 25px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 16px;
+  margin: 4px;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+}
+.members-pending-btn-accept {
+  background-color: greenyellow;
+}
+
+.members-pending-btn-reject {
+  background-color: red;
+}
+
+.modal-content:has(.members-container) {
+  width: 90vw;
+  max-width: 600px;
+}

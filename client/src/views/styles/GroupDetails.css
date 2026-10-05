@@ -144,6 +144,32 @@
 .group-details-members-toggle:hover {
   color: var(--color-text);
 }
+.group-details-members-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.group-details-members-header button {
+  height: 30px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 18px;
+  margin: 0px;
+}
+
+.group-details-join-request {
+  margin-top: 16px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--color-gold);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-details-join-request:hover {
+  color: var(--color-text);
+}
 
 .group-details-muted,
 .group-details-status,
@@ -157,6 +183,8 @@
   border: 1px solid var(--color-line);
   border-radius: 8px;
   background: var(--color-surface-card);
+  display: flex;
+  justify-content: space-between;
 }
 
 .group-details-state h1 {
@@ -168,7 +196,15 @@
 }
 
 .group-details-state p {
-  margin: 0;
+  margin: 4px;
+}
+
+.group-details-state button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 20px;
+  margin: 4px;
 }
 
 @media (max-width: 680px) {

@@ -5,6 +5,7 @@ import { BASE_URL } from "../config";
 import "./styles/GroupDetails.css";
 import "./styles/Favourites.css";
 import Modal from "../components/Modal";
+import ManageForm from "../components/ManageForm";
 import "./../components/styles/Auth.css";
 
 const MAX_VISIBLE_GROUP_ITEMS = 4;
@@ -40,21 +41,21 @@ async function loadMovieDetails(movieIds) {
 
 function getErrorState(response, data) {
   if (response.status === 401) {
-    return { title: "Log in to view this group", message: "Group content is available to members only." };
+    return {title: "Log in to view this group", message: "Group content is available to members only."};
   }
 
   if (response.status === 403) {
-    return { title: "Group access denied", message: data.message || "You are not an accepted member of this group." };
+    return {title: "Group access denied", message: data.message || "You are not an accepted member of this group."};
   }
 
   if (response.status === 404) {
-    return { title: "Group not found", message: "This group may have been deleted or the link may be incorrect." };
+    return {title: "Group not found", message: "This group may have been deleted or the link may be incorrect."};
   }
 
-  return { title: "Group could not be loaded", message: data.message || "Please try again later." };
+  return {title: "Group could not be loaded", message: data.message || "Please try again later."};
 }
 
-function GroupDetails() {
+function GroupDetails({user, onLoginClick}) {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
@@ -72,6 +73,13 @@ function GroupDetails() {
   const [deleteError, setDeleteError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [userStatus, setUserStatus] = useState(null);
+  const [manageView, setManageView] = useState(null);
+  const openManage = () => setManageView(true);
+  const closeManage = () => setManageView(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(true);
+  const refresh = () => setRefreshTrigger((prev) => !prev);
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -82,27 +90,42 @@ function GroupDetails() {
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_URL}/groups/${groupId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await response.json().catch(() => ({}));
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const groupPromise = fetch(`${BASE_URL}/groups/${groupId}`, { headers});
+        //if not valid user, empty promise is ran to not break logic
+        const membershipPromise = token ? fetch(`${BASE_URL}/groups/membership/${groupId}`, { headers }) : Promise.resolve(null);
+        const [responseGroup, responseMembership] = await Promise.all([groupPromise,membershipPromise]);
+        
+        const groupData = await responseGroup.json().catch(() => ({}));
+        let membership = null;
+        if (responseMembership && responseMembership.ok) {
+          const membershipStatus = await responseMembership.json().catch(() => ({}));
+          membership = membershipStatus.status ?? null;
+        }
 
-        if (!response.ok) {
-          const errorState = getErrorState(response, data);
-          throw Object.assign(new Error(errorState.message), { errorState });
+        if (!responseGroup.ok) {
+          const errorState = getErrorState(responseGroup, groupData);
+          const err = new Error(errorState.message);
+          err.errorState = {...errorState, userStatus: membership };
+          err.userStatus = membership;
+          throw err;
         }
 
         if (!cancelled) {
           setShowAllMembers(false);
           setShowAllMovies(false);
-          setGroup(data.group);
-          setMovieIdsToLoad(data.group.favorites.map((favorite) => favorite.movie_id));
+          setGroup(groupData.group);
+          setUserStatus(membership);
+          setMovieIdsToLoad(groupData.group.favorites.map((favorite) => favorite.movie_id));
         }
       } catch (loadError) {
         if (!cancelled) {
+          const resolvedStatus = loadError.userStatus ?? loadError.errorState?.userStatus ?? null;
+          setUserStatus(resolvedStatus);
           setError(loadError.errorState || {
-            title: "Group could not be loaded",
+            title: loadError.errorState?.title || "Group could not be loaded",
             message: loadError.message || "Please try again later.",
+            userStatus: resolvedStatus,
           });
         }
       } finally {
@@ -116,7 +139,7 @@ function GroupDetails() {
     return () => {
       cancelled = true;
     };
-  }, [groupId]);
+  }, [groupId, user, refreshTrigger]);
 
   const closeDeleteModal = () => {
     if (deleting) return;
@@ -206,6 +229,55 @@ function GroupDetails() {
     };
   }, [movieIdsToLoad]);
 
+  const handleMembershipRequest = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/groups/join/${groupId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Join request failed");
+    }
+    setUserStatus(data.data.status);
+    }
+    catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const buttonConfig = () => {
+    if (!user) {
+      return {
+        text: "Log in to continue",
+        onClick: onLoginClick,
+        disabled: false,
+      };
+    }
+    if (userStatus === "pending") {
+      return {
+        text: "Membership pending",
+        onClick: null,
+        disabled: true,
+      };
+    }
+    if (userStatus === "rejected") {
+      return {
+        text: "Membership rejected",
+        onClick: null,
+        disabled: true,
+      };
+    }
+    return {
+      text: "Request to join group",
+      onClick: handleMembershipRequest,
+      disabled: false,
+    };
+  };
+
   if (loading) {
     return (
       <main className="group-details-page">
@@ -215,14 +287,28 @@ function GroupDetails() {
   }
 
   if (error) {
+    const {text, onClick, disabled} = buttonConfig();
     return (
       <main className="group-details-page">
         <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
           ← Back to groups
         </button>
         <section className="group-details-state group-details-state-error" role="alert">
-          <h1>{error.title}</h1>
-          <p>{error.message}</p>
+          <div>
+            <h1>{error.title}</h1>
+            <p>{error.message}</p>
+          </div>
+          <div>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={onClick}
+              disabled={disabled}
+            >
+              {text}
+            </button>
+            <p>Status: {userStatus ?? "Not requested"}</p>
+          </div>
         </section>
       </main>
     );
@@ -239,17 +325,18 @@ function GroupDetails() {
     : failedMovieIds.slice(0, Math.max(0, MAX_VISIBLE_GROUP_ITEMS - visibleMovies.length));
 
   return (
-    <main className="group-details-page">
-      <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
-        ← Back to groups
-      </button>
+    <>
+      <main className="group-details-page">
+        <button type="button" className="back-link group-details-back" onClick={() => navigate("/groups")}>
+          ← Back to groups
+        </button>
 
-      <header className="group-details-header">
-        <p className="group-details-eyebrow">Private group</p>
-        <h1>{group.group_name}</h1>
-        <p>
-          Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
-        </p>
+        <header className="group-details-header">
+          <p className="group-details-eyebrow">Private group</p>
+          <h1>{group.group_name}</h1>
+          <p>
+            Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
+          </p>
         {group.is_owner && (
           <button
             type="button"
@@ -265,82 +352,92 @@ function GroupDetails() {
           </button>
         )}
         {deleteError && <p role="alert">{deleteError}</p>}
-      </header>
+        </header>
 
-      <div className="group-details-layout">
-        <section className="group-details-section">
-          <h2>Members</h2>
-          {group.members.length > 0 ? (
-            <>
-              <ul className="group-details-members">
-                {visibleMembers.map((member) => (
-                  <li key={member.user_id}>
-                    <span>{member.user_name}</span>
-                    {member.user_id === group.owner_id && (
-                      <span className="groups-badge owner">Owner</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {group.members.length > MAX_VISIBLE_GROUP_ITEMS && (
+        <div className="group-details-layout">
+          <section className="group-details-section">
+            <div className="group-details-members-header">
+              <h2>Members</h2>
+              {user && user.user_id === group.owner_id && (
                 <button
                   type="button"
-                  className="group-details-members-toggle"
-                  onClick={() => setShowAllMembers((current) => !current)}
+                  className="btn-primary"
+                  onClick={openManage}
                 >
-                  {showAllMembers ? "Show fewer members" : "Show more members"}
-                </button>
-              )}
-            </>
-          ) : (
-            <p className="group-details-muted">No accepted members yet.</p>
-          )}
-        </section>
+                  Manage members
+                </button>)}
+            </div>
+            {group.members.length > 0 ? (
+              <>
+                <ul className="group-details-members">
+                  {visibleMembers.map((member) => (
+                    <li key={member.user_id}>
+                      <span>{member.user_name}</span>
+                      {member.user_id === group.owner_id && (
+                        <span className="groups-badge owner">Owner</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {group.members.length > MAX_VISIBLE_GROUP_ITEMS && (
+                  <button
+                    type="button"
+                    className="group-details-members-toggle"
+                    onClick={() => setShowAllMembers((current) => !current)}
+                  >
+                    {showAllMembers ? "Show fewer members" : "Show more members"}
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="group-details-muted">No accepted members yet.</p>
+            )}
+          </section>
 
-        <section className="group-details-section group-details-movies">
-          <h2>Group favorites</h2>
-          {moviesLoading ? (
-            <p className="group-details-muted">Loading group favorites...</p>
-          ) : group.favorites.length > 0 ? (
-            <>
+          <section className="group-details-section group-details-movies">
+            <h2>Group favorites</h2>
+            {moviesLoading ? (
+              <p className="group-details-muted">Loading group favorites...</p>
+            ) : group.favorites.length > 0 ? (
+              <>
               {movieActionError && (
                 <p className="favourites-action-error" role="alert">
                   {movieActionError}
                 </p>
               )}
-              {failedMovieIds.length > 0 && (
-                <p className="favourites-partial-warning">
-                  Some group movies are temporarily unavailable.
-                </p>
-              )}
-              <FavoriteMovieList
+                {failedMovieIds.length > 0 && (
+                  <p className="favourites-partial-warning">
+                    Some group movies are temporarily unavailable.
+                  </p>
+                )}
+                <FavoriteMovieList
                 movies={visibleMovies}
                 failedMovieIds={visibleFailedMovieIds}
                 onRemove={group.is_owner ? handleRemoveMovie : undefined}
                 removingMovieId={removingMovieId}
               />
-              {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
-                <button
-                  type="button"
-                  className="group-details-members-toggle"
-                  onClick={() => setShowAllMovies((current) => !current)}
-                >
-                  {showAllMovies ? "Show fewer movies" : "Show more movies"}
-                </button>
-              )}
-            </>
-          ) : (
+                {group.favorites.length > MAX_VISIBLE_GROUP_ITEMS && (
+                  <button
+                    type="button"
+                    className="group-details-members-toggle"
+                    onClick={() => setShowAllMovies((current) => !current)}
+                  >
+                    {showAllMovies ? "Show fewer movies" : "Show more movies"}
+                  </button>
+                )}
+              </>
+            ) : (
             <>
               {movieActionError && (
                 <p className="favourites-action-error" role="alert">
                   {movieActionError}
                 </p>
               )}
-              <p className="group-details-muted">No movies have been added to this group yet.</p>
+                <p className="group-details-muted">No movies have been added to this group yet.</p>
             </>
-          )}
-        </section>
-      </div>
+            )}
+          </section>
+        </div>
 
       <Modal isOpen={deleteOpen} onClose={closeDeleteModal}>
         <form className="auth-form" onSubmit={handleDeleteGroup} noValidate>
@@ -380,7 +477,16 @@ function GroupDetails() {
           </p>
         </form>
       </Modal>
-    </main>
+      </main>
+
+      <Modal isOpen={manageView !== null} onClose={closeManage}>
+        <ManageForm
+          groupId={groupId}
+          groupName={group?.group_name}
+          refresh={refresh}
+        />
+      </Modal>
+    </>
   );
 }
 
