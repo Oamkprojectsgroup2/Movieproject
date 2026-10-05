@@ -483,6 +483,7 @@ function GroupDetails({user, onLoginClick}) {
         <ManageForm
           groupId={groupId}
           groupName={group?.group_name}
+          groupOwnerId={group.owner_id}
           refresh={refresh}
         />
       </Modal>

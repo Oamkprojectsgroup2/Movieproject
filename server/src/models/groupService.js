@@ -73,12 +73,12 @@ export const membershipCheck = async (groupID, userId) => {
   return result.rows;
 };
 
-export const getPendingMembers = async (groupId, userId) => {
+export const getMemberList = async (groupId, userId) => {
   const result = await pool.query(
     `SELECT m.user_id, u.user_name, m.status FROM members m
     JOIN groups g ON m.group_id = g.group_id
     JOIN users u ON m.user_id = u.user_id
-    WHERE m.group_id = $1 AND g.owner_id = $2 AND status = 'pending'`,
+    WHERE m.group_id = $1 AND g.owner_id = $2`,
     [groupId, userId],
   );
 
@@ -88,8 +88,8 @@ export const getPendingMembers = async (groupId, userId) => {
 export const acceptMember = async (groupId, userId) => {
   const result = await pool.query(
     `UPDATE members SET status = 'accepted' 
-    WHERE group_id = $1 AND user_id = $2 AND status = 'pending'
-    RETURNING user_id, group_id`, [groupId, userId]
+    WHERE group_id = $1 AND user_id = $2
+    RETURNING user_id, group_id, status`, [groupId, userId]
   );
   return result.rows[0];
 };
@@ -97,10 +97,17 @@ export const acceptMember = async (groupId, userId) => {
 export const rejectMember = async (groupId, userId) => {
   const result = await pool.query(
     `UPDATE members SET status = 'rejected' 
-    WHERE group_id = $1 AND user_id = $2 AND status = 'pending'
-    RETURNING user_id, group_id`, [groupId, userId]
+    WHERE group_id = $1 AND user_id = $2
+    RETURNING user_id, group_id, status`, [groupId, userId]
   );
   return result.rows[0];
+};
+
+export const removeMember = async (groupId, userId) => {
+  const result = await pool.query(
+    `DELETE FROM members WHERE group_id = $1 AND user_id = $2`, [groupId, userId]
+  );
+  return { removed: true };
 };
 
 export const getGroupDetails = async (groupId, userId) => {

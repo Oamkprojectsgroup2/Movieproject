@@ -80,7 +80,7 @@ export const myStatus = async (req,res) => {
   }
 };
 
-export const pendingMembers = async (req,res) => {
+export const memberList = async (req,res) => {
   try {
     const {groupId} = req.params;
     const ownerId = req.user.user_id;
@@ -93,15 +93,15 @@ export const pendingMembers = async (req,res) => {
       return res.status(403).json({message: "Group ownership required"});
     }
 
-    const pendingMembers = await groupService.getPendingMembers(groupId, ownerId);
+    const pendingMembers = await groupService.getMemberList(groupId, ownerId);
     return res.status(200).json({
-      message: "Pending members fetch successfull",
+      message: "Member list fetch successful",
       data: pendingMembers
     })
   }
   catch (error) {
     console.error("Pending mmber fetch error:", error);
-    return res.status(500).json({ message: "Pending ember fetch error" });
+    return res.status(500).json({ message: "Member list fetch error" });
   }
 };
 
@@ -125,10 +125,10 @@ export const memberAccept = async (req,res) => {
     const acceptedMember = await groupService.acceptMember(groupId, userId);
     //Should never happen realistically, but just in case
     if (!acceptedMember) {
-      return res.status(404).json({message: "No pending request found"});
+      return res.status(404).json({message: "No member found"});
     }
     return res.status(200).json({
-      message: "Member accepted succefully",
+      message: "Member accepted successfully",
       data: acceptedMember
     });
   }
@@ -158,7 +158,7 @@ export const memberReject = async (req,res) => {
     const rejectedMember = await groupService.rejectMember(groupId, userId);
     //Should never happen realistically, but just in case
     if (!rejectedMember) {
-      return res.status(404).json({message: "No pending request found"});
+      return res.status(404).json({message: "No member found"});
     }
     return res.status(200).json({
       message: "Member rejected succefully",
@@ -168,6 +168,39 @@ export const memberReject = async (req,res) => {
   catch (error) {
     console.error("Member reject error:", error);
     return res.status(500).json({ message: "Member reject error" });
+  }
+};
+
+export const memberRemove = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const {userId} = req.params;
+    const ownerId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    if (!/^\d+$/.test(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, ownerId);
+    if (!isOwner) {
+      return res.status(403).json({message: "Group ownership required"});
+    }
+
+    const removedMember = await groupService.removeMember(groupId, userId);
+  //Should never happen realistically, but just in case
+    if (!removedMember) {
+      return res.status(404).json({message: "No member found"});
+    }
+    return res.status(200).json({
+      message: "Member removed succefully",
+      data: removedMember
+    });
+  }
+  catch (error) {
+    console.error("Member remove error:", error);
+    return res.status(500).json({ message: "Member remove error" });
   }
 };
 

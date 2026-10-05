@@ -18,7 +18,7 @@
   letter-spacing: 0.04em;
 }
 
-.members-pending-list {
+.members-status-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -26,19 +26,19 @@
   margin: 0;
   list-style: none;
 }
-.member-pending-item {
+.member-status-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--color-line);
 }
-.member-pending-item:last-child {
+.member-status-item:last-child {
   padding-bottom: 0;
   border-bottom: none;
 }
 
-.member-pending-info {
+.member-status-info {
   padding-right: 12px;
   display: flex;
   align-items: center;
@@ -49,7 +49,16 @@
   white-space: nowrap;
 }
 
-.members-pending-buttons button {
+.status-selection-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.status-selection-buttons button {
   height: 25px;
   padding: 0 12px;
   border-radius: 7px;
@@ -59,11 +68,33 @@
   border: none;
   cursor: pointer;
 }
-.members-pending-btn-accept {
+
+.status-selection-buttons button:disabled {
+  background-color: var(--color-gold);
+  border: 2px solid var(--color-gold);
+  cursor: default;
+  font-weight: bold;
+}
+
+.members-status-buttons button {
+  height: 25px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 16px;
+  margin: 4px;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+}
+.members-status-btn-accept {
   background-color: greenyellow;
 }
 
-.members-pending-btn-reject {
+.members-status-btn-remove {
+  background-color: gray;
+}
+
+.members-status-btn-reject {
   background-color: red;
 }
 
