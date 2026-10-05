@@ -150,10 +150,10 @@
 }
 
 .group-details-members-header button {
-  height: clamp(30px, 3.5vw, 40px);
-  padding: 0 clamp(12px, 1.5vw, 24px);
+  height: 30px;
+  padding: 0 16px;
   border-radius: 7px;
-  font-size: clamp(18px, 1.4vw, 22px);
+  font-size: 18px;
   margin: 0px;
 }
 
@@ -200,10 +200,10 @@
 }
 
 .group-details-state button {
-  height: clamp(30px, 3.5vw, 40px);
-  padding: 0 clamp(12px, 1.5vw, 24px);
+  height: 40px;
+  padding: 0 16px;
   border-radius: 7px;
-  font-size: clamp(18px, 1.4vw, 22px);
+  font-size: 20px;
   margin: 4px;
 }
 
