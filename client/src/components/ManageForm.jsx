@@ -69,6 +69,7 @@ export default function ManageForm({groupId,  groupName, refresh}) {
       setMembers((prevMembers) =>
         prevMembers.filter((member) => member.user_id !== userId)
       );
+      refresh();
     }
     catch (error) {
       setDecisionError(error.message);
@@ -95,20 +96,14 @@ export default function ManageForm({groupId,  groupName, refresh}) {
                 <button
                   type="primary"
                   className="members-pending-btn-accept"
-                  onClick={async () => {
-                    await handleDecision(member.user_id, groupId, "accept");
-                    refresh();
-                  }}
+                  onClick={() => {handleDecision(member.user_id, groupId, "accept")}}
                 >
                   Accept
                 </button>
                 <button
                   type="primary"
                   className="members-pending-btn-reject"
-                  onClick={async () => {
-                    await handleDecision(member.user_id, groupId, "reject");
-                    refresh();
-                  }}
+                  onClick={() => {handleDecision(member.user_id, groupId, "reject")}}
                 >
                   Reject
                 </button>

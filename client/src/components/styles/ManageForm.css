@@ -67,7 +67,7 @@
   background-color: red;
 }
 
-.modal-content {
+.modal-content:has(.members-container) {
   width: 90vw;
   max-width: 600px;
 }
