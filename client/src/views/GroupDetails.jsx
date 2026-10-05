@@ -77,6 +77,8 @@ function GroupDetails({user, onLoginClick}) {
   const [manageView, setManageView] = useState(null);
   const openManage = () => setManageView(true);
   const closeManage = () => setManageView(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(true);
+  const refresh = () => setRefreshTrigger((prev) => !prev);
   
 
   useEffect(() => {
@@ -137,7 +139,7 @@ function GroupDetails({user, onLoginClick}) {
     return () => {
       cancelled = true;
     };
-  }, [groupId, user, userStatus]);
+  }, [groupId, user, refreshTrigger]);
 
   const closeDeleteModal = () => {
     if (deleting) return;
@@ -240,7 +242,7 @@ function GroupDetails({user, onLoginClick}) {
     if (!response.ok) {
       throw new Error(data.message || "Join request failed");
     }
-    setUserStatus(data.status);
+    setUserStatus(data.data.status);
     }
     catch (err) {
       alert(err.message);
@@ -481,6 +483,7 @@ function GroupDetails({user, onLoginClick}) {
         <ManageForm
           groupId={groupId}
           groupName={group?.group_name}
+          refresh={refresh}
         />
       </Modal>
     </>

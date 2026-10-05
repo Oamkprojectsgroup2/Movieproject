@@ -28,7 +28,7 @@ const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
   }
 }
 
-export default function ManageForm({groupId,  groupName}) {
+export default function ManageForm({groupId,  groupName, refresh}) {
   const [error, setError] = useState(null);
   const [decisionError, setDecisionError] = useState(null);
   const [members, setMembers] = useState([]);
@@ -95,14 +95,20 @@ export default function ManageForm({groupId,  groupName}) {
                 <button
                   type="primary"
                   className="members-pending-btn-accept"
-                  onClick={() => handleDecision(member.user_id, groupId, "accept")}
+                  onClick={async () => {
+                    await handleDecision(member.user_id, groupId, "accept");
+                    refresh();
+                  }}
                 >
                   Accept
                 </button>
                 <button
                   type="primary"
                   className="members-pending-btn-reject"
-                  onClick={() => handleDecision(member.user_id, groupId, "reject")}
+                  onClick={async () => {
+                    await handleDecision(member.user_id, groupId, "reject");
+                    refresh();
+                  }}
                 >
                   Reject
                 </button>

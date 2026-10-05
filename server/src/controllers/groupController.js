@@ -51,6 +51,10 @@ export const joinGroup = async (req,res) => {
         if (error.code === "23505") {
             return res.status(409).json({message: "Join request already exists"});
         }
+        //Code 23503 = PostgreSQL Foreign Key Violation == group doesnt exist
+        if (error.code === "23503") {
+          return res.status(404).json({message: "Group or user not found"});
+        }
         console.error("Group joining error: ", error);
         return res.status(500).json({message: "Group joining error"});
     }
