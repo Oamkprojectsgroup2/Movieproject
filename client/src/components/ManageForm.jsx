@@ -3,7 +3,6 @@ import { BASE_URL } from "../config";
 import "./styles/ManageForm.css";
 
 const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
-  setLoading(true);
   setError(null);
   
   try {
@@ -78,9 +77,15 @@ export default function ManageForm({groupId,  groupName, groupOwnerId, refresh})
       if (!response.ok) {
         throw new Error(result.message || "Members status update failed");
       }
-      setMembers((prevMembers) =>
-        prevMembers.map((member) => member.user_id === userId ? {...member, status: decision} : member)
-      );
+      setMembers((prevMembers) => {
+        if (decision === 'remove') {
+          //removes removed members from local members also
+          return prevMembers.filter((member) => member.user_id !== userId);
+        }
+        else {
+          return prevMembers.map((member) => member.user_id === userId ? {...member, status: decision} : member)
+        }
+      });
       refresh();
     }
     catch (error) {

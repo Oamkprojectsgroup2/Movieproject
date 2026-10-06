@@ -79,13 +79,14 @@ function GroupDetails({user, onLoginClick}) {
   const closeManage = () => setManageView(null);
   const [refreshTrigger, setRefreshTrigger] = useState(true);
   const refresh = () => setRefreshTrigger((prev) => !prev);
+  const [initialLoad, setInitialLoad] = useState(true);
   
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadGroup() {
-      setLoading(true);
+      if (initialLoad) setLoading(true);
       setError(null);
 
       try {
@@ -130,7 +131,10 @@ function GroupDetails({user, onLoginClick}) {
         }
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          if (initialLoad) {
+            setLoading(false);
+            setInitialLoad(false);
+          }
         }
       }
     }
