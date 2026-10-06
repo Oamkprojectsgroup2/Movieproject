@@ -187,17 +187,17 @@ export const memberRemove = async (req,res) => {
     if (!isOwner) {
       return res.status(403).json({message: "Group ownership required"});
     }
-    if(userId === ownerId) {
-      return res.status(400),json({message: "Owner cannot remove themselves"})
+    if(Number(userId) === Number(ownerId)) {
+      return res.status(400).json({message: "Owner cannot remove themselves"});
     }
 
     const removedMember = await groupService.removeMember(groupId, userId);
   //Should never happen realistically, but just in case
-    if (!removedMember) {
+    if (!removedMember.removed) {
       return res.status(404).json({message: "No member found"});
     }
     return res.status(200).json({
-      message: "Member removed succefully",
+      message: "Member removed successfully",
       data: removedMember
     });
   }

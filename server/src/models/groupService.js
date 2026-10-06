@@ -108,7 +108,7 @@ export const removeMember = async (groupId, userId) => {
     `DELETE FROM members WHERE group_id = $1 AND user_id = $2`, [groupId, userId]
   );
   if (result.rowCount === 0) {
-    return null;
+    return {removed: false};
   }
   return { removed: true };
 };
