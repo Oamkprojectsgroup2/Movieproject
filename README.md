@@ -2,6 +2,14 @@
 
 Web application project using React, Node.js, PostgreSQL and Docker.
 
+## Documentation
+
+- [REST API reference](docs/api.md)
+- [Project architecture (includes link to Wireframe)](docs/project-architecture.md)
+- Database diagram
+- TMDB Api info
+- Working hours (personal)
+
 ## Prerequisites
 
 Make sure the following are installed:
@@ -218,4 +226,3 @@ Stop PostgreSQL from the project root:
 ```bash
 docker compose down
 ```
-
