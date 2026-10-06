@@ -2,17 +2,27 @@
   width: 100%;
   min-width: 400px;
   max-width: 900px; 
+  padding: 22px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+  font-family: var(--font-display);
+}
+
+.members-container-header {
+  width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 22px;
   border: 1px solid var(--color-line);
   border-radius: 8px;
   background: var(--color-surface-card);
 }
-
 .members-container h2 {
   margin: 0 0 16px;
   color: var(--color-gold);
-  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -24,6 +34,7 @@
   gap: 12px;
   padding: 0;
   margin: 0;
+  margin-top: 8px;
   list-style: none;
 }
 .member-status-item {
@@ -33,6 +44,7 @@
   padding-bottom: 10px;
   border-bottom: 1px solid var(--color-line);
 }
+
 .member-status-item:last-child {
   padding-bottom: 0;
   border-bottom: none;
@@ -52,28 +64,57 @@
 .status-selection-buttons {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding-bottom: 16px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--color-line);
+  gap: 12px;
+  padding-bottom:0px;
+  margin-bottom: 0px;
 }
 
 .status-selection-buttons button {
-  height: 25px;
+  position: relative;
+  height: 32px;
   padding: 0 12px;
-  border-radius: 7px;
-  font-size: 16px;
-  margin: 4px;
-  color: #000000;
-  border: none;
+  font-size: 18px;
+  letter-spacing: 0.09em;
+  margin: 0px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+
+  color: var(--color-text-secondary);
+
+  font-family: var(--font-display);
   cursor: pointer;
+}
+.status-selection-buttons button:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s ease;
+}
+
+.status-selection-buttons button:hover {
+  color: var(--color-text);
+}
+.status-selection-buttons button:hover::after {
+  transform: scaleX(1);
 }
 
 .status-selection-buttons button:disabled {
-  background-color: var(--color-gold);
-  border: 2px solid var(--color-gold);
   cursor: default;
   font-weight: bold;
+  color: var(--color-text);
+}
+
+.status-selection-buttons button:disabled::after {
+  transform: scaleX(1);
+  background: var(--color-gold);
 }
 
 .members-status-buttons button {

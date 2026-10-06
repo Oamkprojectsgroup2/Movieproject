@@ -90,32 +90,34 @@ export default function ManageForm({groupId,  groupName, groupOwnerId, refresh})
 
   return (
     <div className="members-container">
-      <h2>Manage Memberships for {groupName}</h2>
-      <div className="status-selection-buttons">
-        <button
-        type="primary"
-        className="member-select-accepted"
-        onClick={() => {setSelectedStatus('accepted')}} 
-        disabled={selectedStatus === 'accepted'}
-        >
-          Accepted
-        </button>
-        <button
-        type="primary"
-        className="member-select-pending"
-        onClick={() => {setSelectedStatus('pending')}} 
-        disabled={selectedStatus === 'pending'}
-        >
-          Pending
-        </button>
-        <button
-        type="primary"
-        className="member-select-rejected"
-        onClick={() => {setSelectedStatus('rejected')}} 
-        disabled={selectedStatus === 'rejected'}
-        >
-          Rejected
-        </button>
+      <div className="members-container-header">
+        <h2>Manage Memberships for {groupName}</h2>
+        <div className="status-selection-buttons">
+          <button
+            type="primary"
+            className="member-select-accepted"
+            onClick={() => { setSelectedStatus('accepted') }}
+            disabled={selectedStatus === 'accepted'}
+          >
+            Accepted
+          </button>
+          <button
+            type="primary"
+            className="member-select-pending"
+            onClick={() => { setSelectedStatus('pending') }}
+            disabled={selectedStatus === 'pending'}
+          >
+            Pending
+          </button>
+          <button
+            type="primary"
+            className="member-select-rejected"
+            onClick={() => { setSelectedStatus('rejected') }}
+            disabled={selectedStatus === 'rejected'}
+          >
+            Rejected
+          </button>
+        </div>
       </div>
       {loading && <p>Loading members</p>}
       {decisionError && <p className="error" role="alert">{decisionError}</p>}

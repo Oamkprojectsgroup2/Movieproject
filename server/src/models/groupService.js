@@ -107,6 +107,9 @@ export const removeMember = async (groupId, userId) => {
   const result = await pool.query(
     `DELETE FROM members WHERE group_id = $1 AND user_id = $2`, [groupId, userId]
   );
+  if (result.rowCount === 0) {
+    return null;
+  }
   return { removed: true };
 };
 
