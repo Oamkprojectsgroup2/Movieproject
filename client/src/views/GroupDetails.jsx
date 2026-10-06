@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef} from "react";
 import { useNavigate, useParams } from "react-router";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
@@ -79,13 +79,14 @@ function GroupDetails({user, onLoginClick}) {
   const closeManage = () => setManageView(null);
   const [refreshTrigger, setRefreshTrigger] = useState(true);
   const refresh = () => setRefreshTrigger((prev) => !prev);
+  const initialLoad = useRef(true);
   
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadGroup() {
-      if (group === null) setLoading(true);
+      if (initialLoad.current) setLoading(true);
       setError(null);
 
       try {
@@ -117,6 +118,7 @@ function GroupDetails({user, onLoginClick}) {
           setGroup(groupData.group);
           setUserStatus(membership);
           setMovieIdsToLoad(groupData.group.favorites.map((favorite) => favorite.movie_id));
+          initialLoad.current = false;
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -213,7 +215,7 @@ function GroupDetails({user, onLoginClick}) {
     let cancelled = false;
 
     async function loadGroupMovies() {
-      setMoviesLoading(true);
+      if (initialLoad.current) setMoviesLoading(true);
       const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {
