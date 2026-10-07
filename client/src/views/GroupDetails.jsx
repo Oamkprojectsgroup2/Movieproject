@@ -77,8 +77,10 @@ function GroupDetails({user, onLoginClick}) {
   const [leavingError, setLeavingError] = useState("");
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaveConfirmation, setLeaveConfirmation] = useState(""); 
-  const [makeOwner, setMakeOwner] = useState("");
-  const [makeOwnerError, setMakeOwnerError] = useState("");
+  const [changingOwner, setChangingOwner] = useState(false);
+  const [newOwnerError, setNewOwnerError] = useState("");
+  const [newOwner, setNewOwner] = useState("");
+  const [ownerConfirmation, setOwnerConfirmation] = useState("");
   const [userStatus, setUserStatus] = useState(null);
   const [manageView, setManageView] = useState(null);
   const openManage = () => setManageView(true);
@@ -186,10 +188,13 @@ function GroupDetails({user, onLoginClick}) {
   };
 
   const closeLeavingModal = () => {
-    if (leaving) return
+    if (leaving || changingOwner) return
     setLeaveOpen(false);
     setLeaveConfirmation("");
     setLeavingError("");
+    setNewOwner("");
+    setOwnerConfirmation("");
+    setNewOwnerError("");
   };
 
   const handleLeavingGroup = async (event) => {
@@ -215,25 +220,39 @@ function GroupDetails({user, onLoginClick}) {
     }
     catch (err) {
       setLeavingError(err.message || "Could not leave group");
+    }
+    finally {
       setLeaving(false);
     }
   };
 
-  const handleMakeOwner = async (groupId, userId) => {
+  const handleMakeOwner = async (event) => {
+    event.preventDefault();
+    if (ownerConfirmation !== "NEWOWNER" || changingOwner) return;
+
+    setChangingOwner(true);
+    setNewOwnerError("");
+
     try {
-      const response = await fetch(`${BASE_URL}/groups/makeowner/${groupId}/${userId}`, {
-        method: "POST",
+      const response = await fetch(`${BASE_URL}/groups/makeowner/${groupId}/${newOwner}`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       const data = await response.json().catch(() => ({}));
-      if (!response) {
+      if (!response.ok) {
         throw new Error(data.message || "Could not change owner");
       }
+      setOwnerConfirmation("");
+      setNewOwner("");
+      refresh();
     }
     catch (err) {
-      setMakeOwnerError(err.message || "Could not change owner");
+      setNewOwnerError(err.message || "Could not change owner");
+    }
+    finally {
+      setChangingOwner(false);
     }
   };
 
@@ -409,7 +428,7 @@ function GroupDetails({user, onLoginClick}) {
             setLeaveOpen(true);
           }}
           >
-            Leave Group
+            {user.user_id === group.owner_id ? "Change owner to leave" : "Leave Group"}
           </button>
         {group.is_owner && (
           <button
@@ -584,6 +603,52 @@ function GroupDetails({user, onLoginClick}) {
           </p>
         </form>
         }
+        {group.owner_id === user.user_id && <form className="auth-form" onSubmit={handleMakeOwner} noValidate>
+          <h2>Change owner of {group.group_name}</h2>
+          <p className="auth-lead">
+            Choose who to give ownership of group.
+          </p>
+          <select
+          id="memberSelect"
+          value={newOwner}
+          onChange={(e) => setNewOwner(e.target.value)}
+          required
+          >
+            <option value="" disabled hidden>
+              Select Member
+            </option>
+            {group?.members?.filter(
+              (member) => member.user_id !== group.owner_id).map((member) => (
+              <option key={member.user_id} value={member.user_id}>
+                {member.user_name}
+                </option>
+                ))}
+          </select>
+          <input 
+          type="text"
+          placeholder="Type NEWOWNER to confirm"
+          aria-label="Type NEWOWNER to confirm"
+          autoFocus
+          value={ownerConfirmation}
+          onChange={(event) => setOwnerConfirmation(event.target.value)}
+          />
+
+          {newOwnerError && <p className="auth-error" role="alert">{newOwnerError}</p>}
+          <button
+          type="submit"
+          className="auth-submit danger"
+          disabled={ownerConfirmation !== "NEWOWNER" || changingOwner || !newOwner}
+          >
+            {changingOwner ? "Changing Owner..." : "Change Owner"}
+          </button>
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeLeavingModal} disabled={changingOwner}>
+              Cancel
+            </button>
+          </p>
+
+          </form>}
       </Modal>
 
       <Modal isOpen={manageView !== null} onClose={closeManage}>
