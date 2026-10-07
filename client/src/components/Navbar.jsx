@@ -63,6 +63,7 @@ function Navbar({
           type="text"
           placeholder="Search"
           value={search}
+          aria-label="Search movies"
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleSearch}
         />

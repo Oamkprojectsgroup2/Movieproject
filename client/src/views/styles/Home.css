@@ -125,7 +125,7 @@
 
   padding: 0 clamp(15px, 1.5vw, 25px);
 
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: 40px;
 
   background: var(--color-surface-input);

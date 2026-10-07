@@ -55,7 +55,7 @@
   padding: 0 12px;
 
   background: var(--color-surface-input);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: 32px;
 
   color: var(--color-text);

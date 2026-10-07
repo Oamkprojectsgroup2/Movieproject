@@ -103,7 +103,7 @@
   border: none;
   background: none;
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: inherit;
   text-decoration: underline;
 

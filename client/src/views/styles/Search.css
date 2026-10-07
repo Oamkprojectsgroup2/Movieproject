@@ -221,7 +221,7 @@
 
   background: var(--color-surface-input);
 
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 
   font-size: clamp(13px, 1vw, 17px);
 }
@@ -393,7 +393,7 @@
 }
 
 .load-more-hint {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;

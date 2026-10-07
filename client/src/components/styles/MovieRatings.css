@@ -6,5 +6,5 @@
 
 .rating-empty-text { 
   font-size: 0.85em; 
-  color: var(--color-text-muted); 
+  color: var(--color-text-secondary); 
 }
