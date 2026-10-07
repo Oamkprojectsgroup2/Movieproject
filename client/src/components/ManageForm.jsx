@@ -6,7 +6,7 @@ const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
   setError(null);
   
   try {
-    const response = await fetch(`${BASE_URL}/groups/memberList/${groupId}`, {
+    const response = await fetch(`${BASE_URL}/groups/memberlist/${groupId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
