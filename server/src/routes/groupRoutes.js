@@ -9,6 +9,8 @@ router.get("/:groupId", authenticate, groupController.getGroupDetails);
 router.post("/", authenticate, groupController.createGroup);
 router.get("/membership/:groupId", authenticate, groupController.myStatus);
 router.post("/join/:groupId", authenticate, groupController.joinGroup);
+router.delete("/leave/:groupId", authenticate, groupController.leaveGroup);
+router.put("/makeowner/:groupId/:userId", authenticate, groupController.makeOwner);
 router.get("/memberList/:groupId", authenticate, groupController.memberList);
 router.put("/accept/:groupId/:userId", authenticate, groupController.memberAccept);
 router.put("/reject/:groupId/:userId", authenticate, groupController.memberReject);

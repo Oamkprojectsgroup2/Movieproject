@@ -47,7 +47,7 @@ export const joinGroup = async (req,res) => {
     return res.status(201).json({message: "Join request successful", data: member});
   }
   catch (error){
-        //Code 23505 = PostgreSQL Unique Constraint Violation == join reques already exists
+        //Code 23505 = PostgreSQL Unique Constraint Violation == join request already exists
         if (error.code === "23505") {
             return res.status(409).json({message: "Join request already exists"});
         }
@@ -58,6 +58,31 @@ export const joinGroup = async (req,res) => {
         console.error("Group joining error: ", error);
         return res.status(500).json({message: "Group joining error"});
     }
+};
+
+export const leaveGroup = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const userId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, userId);
+    if (isOwner) {
+      return res.status(403).json({message: "Owner cannot leave group"});
+    }
+    const memberLeft = await groupService.removeMember(groupId, userId);
+    //Should never happen realistically, but just in case
+    if (!memberLeft.removed) {
+      return res.status(404).json({message: "No member found"});
+    }
+    return res.status(200).json({message: "Member left successfully"});
+  }
+  catch {
+    console.error("Group leaving error: ", error);
+    return res.status(500).json({message: "Group leaving error"});
+  }
 };
 
 export const myStatus = async (req,res) => {
@@ -192,7 +217,7 @@ export const memberRemove = async (req,res) => {
     }
 
     const removedMember = await groupService.removeMember(groupId, userId);
-  //Should never happen realistically, but just in case
+    //Should never happen realistically, but just in case
     if (!removedMember.removed) {
       return res.status(404).json({message: "No member found"});
     }
@@ -204,6 +229,35 @@ export const memberRemove = async (req,res) => {
   catch (error) {
     console.error("Member remove error:", error);
     return res.status(500).json({ message: "Member remove error" });
+  }
+};
+
+export const makeOwner = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const {userId} = req.params;
+    const ownerId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    if (!/^\d+$/.test(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, ownerId);
+    if (!isOwner) {
+      return res.status(403).json({message: "Group ownership required"});
+    }
+
+    const newOwner = await groupService.makeOwner(groupId, userId);
+    if (!newOwner) {
+      return res.status(400).json({message: "Owner change error"});
+    }
+    return res.status(200).json({message: "Owner change successful", data: newOwner});
+  }
+  catch {
+    console.error("Owner change error:", error);
+    return res.status(500).json({ message: "Owner change error" });
   }
 };
 

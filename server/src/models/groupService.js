@@ -113,6 +113,14 @@ export const removeMember = async (groupId, userId) => {
   return { removed: true };
 };
 
+export const makeOwner = async (groupId, userId) => {
+  const result = await pool.query(
+    `UPDATE groups SET owner_id = $1 WHERE group_id = $2
+    RETURNING group_id, owner_id`,[userId, groupId]
+  );
+  return result.rows[0];
+};
+
 export const getGroupDetails = async (groupId, userId) => {
   const groupResult = await pool.query(
     `SELECT g.group_id, g.group_name, g.owner_id, owner.user_name AS owner_name,

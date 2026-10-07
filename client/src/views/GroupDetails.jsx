@@ -73,6 +73,12 @@ function GroupDetails({user, onLoginClick}) {
   const [deleteError, setDeleteError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [leaving, setLeaving] = useState(false);
+  const [leavingError, setLeavingError] = useState("");
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaveConfirmation, setLeaveConfirmation] = useState(""); 
+  const [makeOwner, setMakeOwner] = useState("");
+  const [makeOwnerError, setMakeOwnerError] = useState("");
   const [userStatus, setUserStatus] = useState(null);
   const [manageView, setManageView] = useState(null);
   const openManage = () => setManageView(true);
@@ -176,6 +182,58 @@ function GroupDetails({user, onLoginClick}) {
     } catch (err) {
       setDeleteError(err.message || "Could not delete group");
       setDeleting(false);
+    }
+  };
+
+  const closeLeavingModal = () => {
+    if (leaving) return
+    setLeaveOpen(false);
+    setLeaveConfirmation("");
+    setLeavingError("");
+  };
+
+  const handleLeavingGroup = async (event) => {
+    event.preventDefault();
+    if (leaveConfirmation !== "LEAVE" || leaving) return;
+
+    setLeaving(true);
+    setLeavingError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/leave/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not leave group");
+      }
+      navigate("/groups", { replace: true });
+    }
+    catch (err) {
+      setLeavingError(err.message || "Could not leave group");
+      setLeaving(false);
+    }
+  };
+
+  const handleMakeOwner = async (groupId, userId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/groups/makeowner/${groupId}/${userId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response) {
+        throw new Error(data.message || "Could not change owner");
+      }
+    }
+    catch (err) {
+      setMakeOwnerError(err.message || "Could not change owner");
     }
   };
 
@@ -341,7 +399,18 @@ function GroupDetails({user, onLoginClick}) {
           <h1>{group.group_name}</h1>
           <p>
             Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
-          </p>
+          </p>       
+          <button
+          type="button"
+          className="group-details-leave"
+          onClick={() => {
+            setLeavingError("");
+            setLeaveConfirmation("");
+            setLeaveOpen(true);
+          }}
+          >
+            Leave Group
+          </button>
         {group.is_owner && (
           <button
             type="button"
@@ -483,6 +552,39 @@ function GroupDetails({user, onLoginClick}) {
         </form>
       </Modal>
       </main>
+
+      <Modal isOpen={leaveOpen} onClose={closeLeavingModal}>
+        {group.owner_id !== user.user_id && <form className="auth-form" onSubmit={handleLeavingGroup}  noValidate>
+          <h2>LEAVE GROUP</h2>
+          <p className="auth-lead">
+            This removes you from this group and its group data.
+          </p>
+          <input 
+          type="text"
+          placeholder="Type LEAVE to confirm"
+          aria-label="Type LEAVE to confirm"
+          autoFocus
+          value={leaveConfirmation}
+          onChange={(event) => setLeaveConfirmation(event.target.value)}
+          />
+
+          {leavingError && <p className="auth-error" role="alert">{leavingError}</p>}
+          <button
+          type="submit"
+          className="auth-submit danger"
+          disabled={leaveConfirmation !== "LEAVE" || leaving}
+          >
+            {leaving ? "Leaving..." : "Leave Group"}
+          </button>
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeLeavingModal} disabled={leaving}>
+              Cancel
+            </button>
+          </p>
+        </form>
+        }
+      </Modal>
 
       <Modal isOpen={manageView !== null} onClose={closeManage}>
         <ManageForm
