@@ -399,8 +399,12 @@
   }
 
   .movie-meta {
-    grid-template-columns: max-content max-content;
-    justify-content: center;
+    grid-template-columns: max-content minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .movie-meta dd {
+    overflow-wrap: anywhere;
   }
 
   .movie-actions{

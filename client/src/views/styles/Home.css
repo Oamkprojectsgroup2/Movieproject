@@ -388,6 +388,8 @@ a.movie-poster {
     grid-template-columns: 1fr;
 
     gap: 15px;
+    margin-bottom: 24px;
+    margin-top: 20px;
   }
 
 
@@ -402,13 +404,18 @@ a.movie-poster {
   .recommended-movie {
     width: 100%;
     height: auto;
-    gap: 10px;
+
+    display: grid;
+    grid-template-columns: 25px 1fr 25px;
+    grid-template-areas: "prev poster next" "prev info next";
+    align-items: center;
+    gap: 12px 10px;
   }
 
 
   .movie-poster {
-    width: 100px;
-    height: 145px;
+    width: auto;
+    height: auto;
   }
 
 
@@ -417,18 +424,29 @@ a.movie-poster {
   }
 
   .movie-poster img {
-    width: 120px;
+    width: 140px;
     height: auto;
     max-height: none;
   }
 
   
   .movie-info { 
-    max-height: none; 
+    grid-area: info;
+    width: auto;
+    max-height: none;
+    text-align: center; 
   }
 
   .carousel-arrow {
     width: 25px;
+    margin: 0;
+  }
+
+  .carousel-arrow:first-child { grid-area: prev; }
+  .carousel-arrow:last-child  { grid-area: next; }
+
+  .carousel-dots {
+  flex-wrap: wrap;
   }
 
 }
