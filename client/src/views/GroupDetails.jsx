@@ -79,14 +79,16 @@ function GroupDetails({user, onLoginClick}) {
   const closeManage = () => setManageView(null);
   const [refreshTrigger, setRefreshTrigger] = useState(true);
   const refresh = () => setRefreshTrigger((prev) => !prev);
-  const initialLoad = useRef(true);
+  const loadedGroupRef = useRef(null);
+  
   
 
   useEffect(() => {
     let cancelled = false;
+    const initialLoad = loadedGroupRef.current !== groupId;
 
     async function loadGroup() {
-      if (initialLoad.current) setLoading(true);
+      if (initialLoad) setLoading(true);
       setError(null);
 
       try {
@@ -118,7 +120,7 @@ function GroupDetails({user, onLoginClick}) {
           setGroup(groupData.group);
           setUserStatus(membership);
           setMovieIdsToLoad(groupData.group.favorites.map((favorite) => favorite.movie_id));
-          initialLoad.current = false;
+          loadedGroupRef.current = groupId;
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -211,11 +213,12 @@ function GroupDetails({user, onLoginClick}) {
 
   useEffect(() => {
     if (!movieIdsToLoad) return undefined;
+    const initialMovieLoad = loadedGroupRef.current !== groupId;
 
     let cancelled = false;
 
     async function loadGroupMovies() {
-      if (initialLoad.current) setMoviesLoading(true);
+      if (initialMovieLoad) setMoviesLoading(true);
       const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {

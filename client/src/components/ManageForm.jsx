@@ -44,7 +44,6 @@ export default function ManageForm({groupId,  groupName, groupOwnerId, refresh})
     setDecisionError(null);
     try {
       let response;
-      console.log(decision);
       if (decision === "accepted") {
         response = await fetch(`${BASE_URL}/groups/accept/${groupId}/${userId}`, {
           method: "PUT",
@@ -73,7 +72,6 @@ export default function ManageForm({groupId,  groupName, groupOwnerId, refresh})
         });
       }
       const result = await response.json();
-      console.log(result);
       if (!response.ok) {
         throw new Error(result.message || "Members status update failed");
       }
