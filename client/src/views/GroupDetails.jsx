@@ -309,7 +309,7 @@ function GroupDetails({user, onLoginClick}) {
     return () => {
       cancelled = true;
     };
-  }, [movieIdsToLoad]);
+  }, [movieIdsToLoad, groupId]);  //groupId here because ESLInt thinks missing it is an issue
 
   const handleMembershipRequest = async () => {
     try {
