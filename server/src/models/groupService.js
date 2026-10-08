@@ -70,7 +70,7 @@ export const membershipCheck = async (groupID, userId) => {
   const result = await pool.query(
     `SELECT status FROM members WHERE group_id = $1 AND user_id = $2`, [groupID, userId]
   );
-  return result.rows;
+  return result.rows[0] || null;
 };
 
 export const getMemberList = async (groupId, userId) => {

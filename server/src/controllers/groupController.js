@@ -79,7 +79,7 @@ export const leaveGroup = async (req,res) => {
     }
     return res.status(200).json({message: "Member left successfully"});
   }
-  catch {
+  catch (error){
     console.error("Group leaving error: ", error);
     return res.status(500).json({message: "Group leaving error"});
   }
@@ -94,10 +94,10 @@ export const myStatus = async (req,res) => {
       return res.status(400).json({ message: "Invalid group id"});
     }
     const membership = await groupService.membershipCheck(groupId, userId);
-    if (membership.length === 0) {
+    if (!membership) {
       return res.status(200).json({message: "No membership found", status: null});
     }
-    return res.status(200).json({message: "Membership check successful", status: membership[0].status});
+    return res.status(200).json({message: "Membership check successful", status: membership.status});
   }
   catch (error) {
     console.error("Membership check error:", error);
@@ -248,6 +248,10 @@ export const makeOwner = async (req,res) => {
     if (!isOwner) {
       return res.status(403).json({message: "Group ownership required"});
     }
+    const isMember = await groupService.membershipCheck(groupId, ownerId);
+    if (isMember !== 'accepted') {
+      return res.status(403).json({message: "Must be accepted group member"});
+    }
 
     const newOwner = await groupService.makeOwner(groupId, userId);
     if (!newOwner) {
@@ -255,7 +259,7 @@ export const makeOwner = async (req,res) => {
     }
     return res.status(200).json({message: "Owner change successful", data: newOwner});
   }
-  catch {
+  catch (error){
     console.error("Owner change error:", error);
     return res.status(500).json({ message: "Owner change error" });
   }

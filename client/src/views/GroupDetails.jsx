@@ -611,6 +611,7 @@ function GroupDetails({user, onLoginClick}) {
           <select
           id="memberSelect"
           value={newOwner}
+          aria-label="New owner"
           onChange={(e) => setNewOwner(e.target.value)}
           required
           >
