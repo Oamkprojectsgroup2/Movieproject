@@ -249,7 +249,7 @@ export const makeOwner = async (req,res) => {
       return res.status(403).json({message: "Group ownership required"});
     }
     const isMember = await groupService.membershipCheck(groupId, userId);
-    if (isMember !== 'accepted') {
+    if (isMember?.status !== 'accepted' || Number(userId) === Number(ownerId)) {
       return res.status(403).json({message: "Must be accepted group member"});
     }
 
