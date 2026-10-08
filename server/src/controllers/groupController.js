@@ -46,7 +46,7 @@ export const joinGroup = async (req,res) => {
     const member = await groupService.joinGroup(groupId, userId);
     return res.status(201).json({message: "Join request successful", data: member});
   }
-  catch (error){
+  catch (error) {
         //Code 23505 = PostgreSQL Unique Constraint Violation == join request already exists
         if (error.code === "23505") {
             return res.status(409).json({message: "Join request already exists"});
@@ -79,7 +79,7 @@ export const leaveGroup = async (req,res) => {
     }
     return res.status(200).json({message: "Member left successfully"});
   }
-  catch (error){
+  catch (error) {
     console.error("Group leaving error: ", error);
     return res.status(500).json({message: "Group leaving error"});
   }
@@ -248,7 +248,7 @@ export const makeOwner = async (req,res) => {
     if (!isOwner) {
       return res.status(403).json({message: "Group ownership required"});
     }
-    const isMember = await groupService.membershipCheck(groupId, ownerId);
+    const isMember = await groupService.membershipCheck(groupId, userId);
     if (isMember !== 'accepted') {
       return res.status(403).json({message: "Must be accepted group member"});
     }
@@ -259,7 +259,7 @@ export const makeOwner = async (req,res) => {
     }
     return res.status(200).json({message: "Owner change successful", data: newOwner});
   }
-  catch (error){
+  catch (error) {
     console.error("Owner change error:", error);
     return res.status(500).json({ message: "Owner change error" });
   }
