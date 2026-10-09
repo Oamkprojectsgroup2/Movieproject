@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef} from "react";
 import { useNavigate, useParams } from "react-router";
 import FavoriteMovieList from "../components/FavoriteMovieList";
 import { BASE_URL } from "../config";
@@ -73,19 +73,30 @@ function GroupDetails({user, onLoginClick}) {
   const [deleteError, setDeleteError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [leaving, setLeaving] = useState(false);
+  const [leavingError, setLeavingError] = useState("");
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaveConfirmation, setLeaveConfirmation] = useState(""); 
+  const [changingOwner, setChangingOwner] = useState(false);
+  const [newOwnerError, setNewOwnerError] = useState("");
+  const [newOwner, setNewOwner] = useState("");
+  const [ownerConfirmation, setOwnerConfirmation] = useState("");
   const [userStatus, setUserStatus] = useState(null);
   const [manageView, setManageView] = useState(null);
   const openManage = () => setManageView(true);
   const closeManage = () => setManageView(null);
   const [refreshTrigger, setRefreshTrigger] = useState(true);
   const refresh = () => setRefreshTrigger((prev) => !prev);
+  const loadedGroupRef = useRef(null);
+  
   
 
   useEffect(() => {
     let cancelled = false;
+    const initialLoad = loadedGroupRef.current !== groupId;
 
     async function loadGroup() {
-      setLoading(true);
+      if (initialLoad) setLoading(true);
       setError(null);
 
       try {
@@ -117,6 +128,7 @@ function GroupDetails({user, onLoginClick}) {
           setGroup(groupData.group);
           setUserStatus(membership);
           setMovieIdsToLoad(groupData.group.favorites.map((favorite) => favorite.movie_id));
+          loadedGroupRef.current = groupId;
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -130,7 +142,7 @@ function GroupDetails({user, onLoginClick}) {
         }
       } finally {
         if (!cancelled) {
-          setLoading(false);
+            setLoading(false);
         }
       }
     }
@@ -175,6 +187,75 @@ function GroupDetails({user, onLoginClick}) {
     }
   };
 
+  const closeLeavingModal = () => {
+    if (leaving || changingOwner) return
+    setLeaveOpen(false);
+    setLeaveConfirmation("");
+    setLeavingError("");
+    setNewOwner("");
+    setOwnerConfirmation("");
+    setNewOwnerError("");
+  };
+
+  const handleLeavingGroup = async (event) => {
+    event.preventDefault();
+    if (leaveConfirmation !== "LEAVE" || leaving) return;
+
+    setLeaving(true);
+    setLeavingError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/leave/${groupId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not leave group");
+      }
+      navigate("/groups", { replace: true });
+    }
+    catch (err) {
+      setLeavingError(err.message || "Could not leave group");
+    }
+    finally {
+      setLeaving(false);
+    }
+  };
+
+  const handleMakeOwner = async (event) => {
+    event.preventDefault();
+    if (ownerConfirmation !== "NEWOWNER" || changingOwner) return;
+
+    setChangingOwner(true);
+    setNewOwnerError("");
+
+    try {
+      const response = await fetch(`${BASE_URL}/groups/makeowner/${groupId}/${newOwner}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || "Could not change owner");
+      }
+      setOwnerConfirmation("");
+      setNewOwner("");
+      refresh();
+    }
+    catch (err) {
+      setNewOwnerError(err.message || "Could not change owner");
+    }
+    finally {
+      setChangingOwner(false);
+    }
+  };
+
   const handleRemoveMovie = async (movieId) => {
     if (!group.is_owner || removingMovieId !== null) return;
 
@@ -209,11 +290,12 @@ function GroupDetails({user, onLoginClick}) {
 
   useEffect(() => {
     if (!movieIdsToLoad) return undefined;
+    const initialMovieLoad = loadedGroupRef.current !== groupId;
 
     let cancelled = false;
 
     async function loadGroupMovies() {
-      setMoviesLoading(true);
+      if (initialMovieLoad) setMoviesLoading(true);
       const details = await loadMovieDetails(movieIdsToLoad);
 
       if (!cancelled) {
@@ -227,7 +309,7 @@ function GroupDetails({user, onLoginClick}) {
     return () => {
       cancelled = true;
     };
-  }, [movieIdsToLoad]);
+  }, [movieIdsToLoad, groupId]);  //groupId here because ESLInt thinks missing it is an issue
 
   const handleMembershipRequest = async () => {
     try {
@@ -336,7 +418,18 @@ function GroupDetails({user, onLoginClick}) {
           <h1>{group.group_name}</h1>
           <p>
             Created by {group.owner_name} · {group.member_count} {group.member_count === 1 ? "member" : "members"}
-          </p>
+          </p>       
+          <button
+          type="button"
+          className="group-details-leave"
+          onClick={() => {
+            setLeavingError("");
+            setLeaveConfirmation("");
+            setLeaveOpen(true);
+          }}
+          >
+            {user.user_id === group.owner_id ? "Change owner to leave" : "Leave Group"}
+          </button>
         {group.is_owner && (
           <button
             type="button"
@@ -479,10 +572,91 @@ function GroupDetails({user, onLoginClick}) {
       </Modal>
       </main>
 
+      <Modal isOpen={leaveOpen} onClose={closeLeavingModal}>
+        {group.owner_id !== user.user_id && <form className="auth-form" onSubmit={handleLeavingGroup}  noValidate>
+          <h2>LEAVE GROUP</h2>
+          <p className="auth-lead">
+            This removes you from this group and its group data.
+          </p>
+          <input 
+          type="text"
+          placeholder="Type LEAVE to confirm"
+          aria-label="Type LEAVE to confirm"
+          autoFocus
+          value={leaveConfirmation}
+          onChange={(event) => setLeaveConfirmation(event.target.value)}
+          />
+
+          {leavingError && <p className="auth-error" role="alert">{leavingError}</p>}
+          <button
+          type="submit"
+          className="auth-submit danger"
+          disabled={leaveConfirmation !== "LEAVE" || leaving}
+          >
+            {leaving ? "Leaving..." : "Leave Group"}
+          </button>
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeLeavingModal} disabled={leaving}>
+              Cancel
+            </button>
+          </p>
+        </form>
+        }
+        {group.owner_id === user.user_id && <form className="auth-form" onSubmit={handleMakeOwner} noValidate>
+          <h2>Change owner of {group.group_name}</h2>
+          <p className="auth-lead">
+            Choose who to give ownership of group.
+          </p>
+          <select
+          id="memberSelect"
+          value={newOwner}
+          aria-label="New owner"
+          onChange={(e) => setNewOwner(e.target.value)}
+          required
+          >
+            <option value="" disabled hidden>
+              Select Member
+            </option>
+            {group?.members?.filter(
+              (member) => member.user_id !== group.owner_id).map((member) => (
+              <option key={member.user_id} value={member.user_id}>
+                {member.user_name}
+                </option>
+                ))}
+          </select>
+          <input 
+          type="text"
+          placeholder="Type NEWOWNER to confirm"
+          aria-label="Type NEWOWNER to confirm"
+          autoFocus
+          value={ownerConfirmation}
+          onChange={(event) => setOwnerConfirmation(event.target.value)}
+          />
+
+          {newOwnerError && <p className="auth-error" role="alert">{newOwnerError}</p>}
+          <button
+          type="submit"
+          className="auth-submit danger"
+          disabled={ownerConfirmation !== "NEWOWNER" || changingOwner || !newOwner}
+          >
+            {changingOwner ? "Changing Owner..." : "Change Owner"}
+          </button>
+          <p className="auth-switch">
+            Changed your mind?{" "}
+            <button type="button" onClick={closeLeavingModal} disabled={changingOwner}>
+              Cancel
+            </button>
+          </p>
+
+          </form>}
+      </Modal>
+
       <Modal isOpen={manageView !== null} onClose={closeManage}>
         <ManageForm
           groupId={groupId}
           groupName={group?.group_name}
+          groupOwnerId={group.owner_id}
           refresh={refresh}
         />
       </Modal>

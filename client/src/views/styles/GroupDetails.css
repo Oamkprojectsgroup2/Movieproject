@@ -217,8 +217,9 @@
   }
 }
 
-.group-details-delete {
+.group-details-header button {
   margin-top: 1rem;
+  margin-right: 1rem;
   padding: 0.6rem 1rem;
   border: 1px solid var(--color-error);
   border-radius: 6px;
@@ -227,7 +228,7 @@
   cursor: pointer;
 }
 
-.group-details-delete:disabled {
+.group-details-header:disabled {
   cursor: wait;
   opacity: 0.6;
 }

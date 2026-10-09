@@ -1,17 +1,27 @@
 .members-container {
   width: 100%;
   max-width: 900px; 
-  box-sizing: border-box;
   padding: 22px;
   border: 1px solid var(--color-line);
   border-radius: 8px;
   background: var(--color-surface-card);
+  font-family: var(--font-display);
 }
 
+.members-container-header {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface-card);
+}
 .members-container h2 {
   margin: 0 0 16px;
   color: var(--color-gold);
-  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 0.04em;
@@ -19,27 +29,29 @@
   padding-right: 32px;
 }
 
-.members-pending-list {
+.members-status-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 0;
   margin: 0;
+  margin-top: 8px;
   list-style: none;
 }
-.member-pending-item {
+.member-status-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--color-line);
 }
-.member-pending-item:last-child {
+
+.member-status-item:last-child {
   padding-bottom: 0;
   border-bottom: none;
 }
 
-.member-pending-info {
+.member-status-info {
   padding-right: 12px;
   display: flex;
   align-items: center;
@@ -50,7 +62,63 @@
   white-space: nowrap;
 }
 
-.members-pending-buttons button {
+.status-selection-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom:0px;
+  margin-bottom: 0px;
+}
+
+.status-selection-buttons button {
+  position: relative;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 18px;
+  letter-spacing: 0.09em;
+  margin: 0px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+
+  color: var(--color-text-secondary);
+
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+.status-selection-buttons button:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s ease;
+}
+
+.status-selection-buttons button:hover {
+  color: var(--color-text);
+}
+.status-selection-buttons button:hover::after {
+  transform: scaleX(1);
+}
+
+.status-selection-buttons button:disabled {
+  cursor: default;
+  font-weight: bold;
+  color: var(--color-text);
+}
+
+.status-selection-buttons button:disabled::after {
+  transform: scaleX(1);
+  background: var(--color-gold);
+}
+
+.members-status-buttons button {
   height: 25px;
   padding: 0 12px;
   border-radius: 7px;
@@ -60,11 +128,15 @@
   border: none;
   cursor: pointer;
 }
-.members-pending-btn-accept {
+.members-status-btn-accept {
   background-color: greenyellow;
 }
 
-.members-pending-btn-reject {
+.members-status-btn-remove {
+  background-color: gray;
+}
+
+.members-status-btn-reject {
   background-color: red;
 }
 
