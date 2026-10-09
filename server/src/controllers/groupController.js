@@ -46,8 +46,8 @@ export const joinGroup = async (req,res) => {
     const member = await groupService.joinGroup(groupId, userId);
     return res.status(201).json({message: "Join request successful", data: member});
   }
-  catch (error){
-        //Code 23505 = PostgreSQL Unique Constraint Violation == join reques already exists
+  catch (error) {
+        //Code 23505 = PostgreSQL Unique Constraint Violation == join request already exists
         if (error.code === "23505") {
             return res.status(409).json({message: "Join request already exists"});
         }
@@ -60,6 +60,31 @@ export const joinGroup = async (req,res) => {
     }
 };
 
+export const leaveGroup = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const userId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, userId);
+    if (isOwner) {
+      return res.status(403).json({message: "Owner cannot leave group"});
+    }
+    const memberLeft = await groupService.removeMember(groupId, userId);
+    //Should never happen realistically, but just in case
+    if (!memberLeft.removed) {
+      return res.status(404).json({message: "No member found"});
+    }
+    return res.status(200).json({message: "Member left successfully"});
+  }
+  catch (error) {
+    console.error("Group leaving error: ", error);
+    return res.status(500).json({message: "Group leaving error"});
+  }
+};
+
 export const myStatus = async (req,res) => {
   try {
     const {groupId} = req.params;
@@ -69,10 +94,10 @@ export const myStatus = async (req,res) => {
       return res.status(400).json({ message: "Invalid group id"});
     }
     const membership = await groupService.membershipCheck(groupId, userId);
-    if (membership.length === 0) {
+    if (!membership) {
       return res.status(200).json({message: "No membership found", status: null});
     }
-    return res.status(200).json({message: "Membership check successful", status: membership[0].status});
+    return res.status(200).json({message: "Membership check successful", status: membership.status});
   }
   catch (error) {
     console.error("Membership check error:", error);
@@ -80,7 +105,7 @@ export const myStatus = async (req,res) => {
   }
 };
 
-export const pendingMembers = async (req,res) => {
+export const memberList = async (req,res) => {
   try {
     const {groupId} = req.params;
     const ownerId = req.user.user_id;
@@ -93,15 +118,15 @@ export const pendingMembers = async (req,res) => {
       return res.status(403).json({message: "Group ownership required"});
     }
 
-    const pendingMembers = await groupService.getPendingMembers(groupId, ownerId);
+    const pendingMembers = await groupService.getMemberList(groupId, ownerId);
     return res.status(200).json({
-      message: "Pending members fetch successfull",
+      message: "Member list fetch successful",
       data: pendingMembers
     })
   }
   catch (error) {
     console.error("Pending mmber fetch error:", error);
-    return res.status(500).json({ message: "Pending ember fetch error" });
+    return res.status(500).json({ message: "Member list fetch error" });
   }
 };
 
@@ -125,10 +150,10 @@ export const memberAccept = async (req,res) => {
     const acceptedMember = await groupService.acceptMember(groupId, userId);
     //Should never happen realistically, but just in case
     if (!acceptedMember) {
-      return res.status(404).json({message: "No pending request found"});
+      return res.status(404).json({message: "No member found"});
     }
     return res.status(200).json({
-      message: "Member accepted succefully",
+      message: "Member accepted successfully",
       data: acceptedMember
     });
   }
@@ -158,7 +183,7 @@ export const memberReject = async (req,res) => {
     const rejectedMember = await groupService.rejectMember(groupId, userId);
     //Should never happen realistically, but just in case
     if (!rejectedMember) {
-      return res.status(404).json({message: "No pending request found"});
+      return res.status(404).json({message: "No member found"});
     }
     return res.status(200).json({
       message: "Member rejected succefully",
@@ -168,6 +193,75 @@ export const memberReject = async (req,res) => {
   catch (error) {
     console.error("Member reject error:", error);
     return res.status(500).json({ message: "Member reject error" });
+  }
+};
+
+export const memberRemove = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const {userId} = req.params;
+    const ownerId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    if (!/^\d+$/.test(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, ownerId);
+    if (!isOwner) {
+      return res.status(403).json({message: "Group ownership required"});
+    }
+    if(Number(userId) === Number(ownerId)) {
+      return res.status(400).json({message: "Owner cannot remove themselves"});
+    }
+
+    const removedMember = await groupService.removeMember(groupId, userId);
+    //Should never happen realistically, but just in case
+    if (!removedMember.removed) {
+      return res.status(404).json({message: "No member found"});
+    }
+    return res.status(200).json({
+      message: "Member removed successfully",
+      data: removedMember
+    });
+  }
+  catch (error) {
+    console.error("Member remove error:", error);
+    return res.status(500).json({ message: "Member remove error" });
+  }
+};
+
+export const makeOwner = async (req,res) => {
+  try {
+    const {groupId} = req.params;
+    const {userId} = req.params;
+    const ownerId = req.user.user_id;
+
+    if (!/^\d+$/.test(groupId)) {
+      return res.status(400).json({ message: "Invalid group id" });
+    }
+    if (!/^\d+$/.test(userId)) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
+    const isOwner = await groupService.ownerCheck(groupId, ownerId);
+    if (!isOwner) {
+      return res.status(403).json({message: "Group ownership required"});
+    }
+    const isMember = await groupService.membershipCheck(groupId, userId);
+    if (isMember?.status !== 'accepted' || Number(userId) === Number(ownerId)) {
+      return res.status(403).json({message: "Must be accepted group member"});
+    }
+
+    const newOwner = await groupService.makeOwner(groupId, userId);
+    if (!newOwner) {
+      return res.status(400).json({message: "Owner change error"});
+    }
+    return res.status(200).json({message: "Owner change successful", data: newOwner});
+  }
+  catch (error) {
+    console.error("Owner change error:", error);
+    return res.status(500).json({ message: "Owner change error" });
   }
 };
 

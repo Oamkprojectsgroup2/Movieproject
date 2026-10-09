@@ -3,11 +3,10 @@ import { BASE_URL } from "../config";
 import "./styles/ManageForm.css";
 
 const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
-  setLoading(true);
   setError(null);
   
   try {
-    const response = await fetch(`${BASE_URL}/groups/pending/${groupId}`, {
+    const response = await fetch(`${BASE_URL}/groups/memberlist/${groupId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -28,11 +27,12 @@ const loadMembers  = async (groupId, setMembers, setError, setLoading) => {
   }
 }
 
-export default function ManageForm({groupId,  groupName, refresh}) {
+export default function ManageForm({groupId,  groupName, groupOwnerId, refresh}) {
   const [error, setError] = useState(null);
   const [decisionError, setDecisionError] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState('pending');
 
   useEffect(() => {
     if (groupId) {
@@ -44,7 +44,7 @@ export default function ManageForm({groupId,  groupName, refresh}) {
     setDecisionError(null);
     try {
       let response;
-      if (decision === "accept") {
+      if (decision === "accepted") {
         response = await fetch(`${BASE_URL}/groups/accept/${groupId}/${userId}`, {
           method: "PUT",
           headers: {
@@ -53,9 +53,18 @@ export default function ManageForm({groupId,  groupName, refresh}) {
           },
         });
       }
-      if (decision === "reject") {
+      if (decision === "rejected") {
         response = await fetch(`${BASE_URL}/groups/reject/${groupId}/${userId}`, {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+      }
+      if (decision === 'remove') {
+         response = await fetch(`${BASE_URL}/groups/remove/${groupId}/${userId}`, {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -66,9 +75,15 @@ export default function ManageForm({groupId,  groupName, refresh}) {
       if (!response.ok) {
         throw new Error(result.message || "Members status update failed");
       }
-      setMembers((prevMembers) =>
-        prevMembers.filter((member) => member.user_id !== userId)
-      );
+      setMembers((prevMembers) => {
+        if (decision === 'remove') {
+          //removes removed members from local members also
+          return prevMembers.filter((member) => member.user_id !== userId);
+        }
+        else {
+          return prevMembers.map((member) => member.user_id === userId ? {...member, status: decision} : member)
+        }
+      });
       refresh();
     }
     catch (error) {
@@ -78,35 +93,70 @@ export default function ManageForm({groupId,  groupName, refresh}) {
 
   return (
     <div className="members-container">
-      <h2>Manage Memberships for {groupName}</h2>
+      <div className="members-container-header">
+        <h2>Manage Memberships for {groupName}</h2>
+        <div className="status-selection-buttons">
+          <button
+            type="primary"
+            className="member-select-accepted"
+            onClick={() => { setSelectedStatus('accepted') }}
+            disabled={selectedStatus === 'accepted'}
+          >
+            Accepted
+          </button>
+          <button
+            type="primary"
+            className="member-select-pending"
+            onClick={() => { setSelectedStatus('pending') }}
+            disabled={selectedStatus === 'pending'}
+          >
+            Pending
+          </button>
+          <button
+            type="primary"
+            className="member-select-rejected"
+            onClick={() => { setSelectedStatus('rejected') }}
+            disabled={selectedStatus === 'rejected'}
+          >
+            Rejected
+          </button>
+        </div>
+      </div>
       {loading && <p>Loading members</p>}
       {decisionError && <p className="error" role="alert">{decisionError}</p>}
       {error && <p className="error" role="alert">{error}</p>}
-      {!loading && !error && members.length === 0 && <p>No pending members</p>}
+      {!loading && !error && members.filter(member => (member.user_id !== groupOwnerId && member.status === selectedStatus)).length === 0 && <p>No {selectedStatus} members</p>}
       {!loading && !error && members.length > 0 && (
-        <ul className="members-pending-list">
-          {members.map((member) => (
-            <li key={member.user_id} className="member-pending-item">
-              <div className="member-pending-info">
+        <ul className="members-status-list">
+          {members.filter((member) => (member.user_id !== groupOwnerId && member.status === selectedStatus)).map((member) => (
+            <li key={member.user_id} className="member-status-item">
+              <div className="member-status-info">
                 <span className="member-name">{member.user_name}</span>
                 <span className="member-status">{member.status}</span>
               </div>
 
-              <div className="members-pending-buttons">
-                <button
+              <div className="members-status-buttons">
+                {selectedStatus !== 'accepted' && <button
                   type="primary"
-                  className="members-pending-btn-accept"
-                  onClick={() => {handleDecision(member.user_id, groupId, "accept")}}
+                  className="members-status-btn-accept"
+                  onClick={() => {handleDecision(member.user_id, groupId, "accepted")}}
                 >
                   Accept
-                </button>
+                </button>}
                 <button
                   type="primary"
-                  className="members-pending-btn-reject"
-                  onClick={() => {handleDecision(member.user_id, groupId, "reject")}}
+                  className="members-status-btn-remove"
+                  onClick={() => {handleDecision(member.user_id, groupId, "remove")}}
+                >
+                  Remove
+                </button>
+                {selectedStatus !== 'rejected' && <button
+                  type="primary"
+                  className="members-status-btn-reject"
+                  onClick={() => {handleDecision(member.user_id, groupId, "rejected")}}
                 >
                   Reject
-                </button>
+                </button>}
               </div>
             </li>
           ))}
