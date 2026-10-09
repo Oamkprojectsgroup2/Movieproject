@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-surface-input);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   text-align: center;
 }
 
@@ -182,12 +182,6 @@ a.favourites-poster {
   }
 }
 
-@media (max-width: 380px) {
-  .favourites-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .share-favorites-btn {
   margin-top: 18px;
   padding: 10px 18px;
@@ -225,4 +219,9 @@ a.favourites-poster {
   outline: none;
   border-color: var(--color-gold);
   box-shadow: 0 0 0 1px rgba(255, 214, 102, 0.2);
+}
+
+@media (max-width: 600px) {
+  .favourites-movie-info h2 { font-size: 15px; min-height: 0; }
+  .favourites-movie-info p  { font-size: 12px; }
 }

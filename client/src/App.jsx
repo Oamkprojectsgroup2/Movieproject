@@ -34,7 +34,7 @@ function App() {
   const [year, setYear] = useState("");
   const [language, setLanguage] = useState("");
   const [searchTrigger, setSearchTrigger] = useState(0);
-  const [siteLanguage, setSiteLanguage] = useState("en-US");
+  const siteLanguage = "en-US";
   const [authView, setAuthView] = useState(null);
   const [authNotice, setAuthNotice] = useState(null);
   const navigate = useNavigate();
@@ -141,8 +141,6 @@ function App() {
         search={search}
         setSearch={setSearch}
         setSearchTrigger={setSearchTrigger}
-        siteLanguage={siteLanguage}
-        setSiteLanguage={setSiteLanguage}
         onLoginClick={() => setAuthView("login")}
         user={user}
       />

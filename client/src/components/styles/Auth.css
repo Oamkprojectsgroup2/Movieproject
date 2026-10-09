@@ -42,12 +42,13 @@
     border-radius: 9999px;
     
     background: var(--color-surface-input);
-    color: var(--color-text);
+    color: var(--color-text-secondary);
 
     font-size: 16px;
 
     outline: none;
 }
+
 
 .auth-form input::placeholder {
     color: var(--color-text-secondary);
@@ -119,7 +120,7 @@
   border: none;
   background: none;
 
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: inherit;
   text-decoration: underline;
 

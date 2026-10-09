@@ -1,6 +1,5 @@
 .members-container {
   width: 100%;
-  min-width: 400px;
   max-width: 900px; 
   padding: 22px;
   border: 1px solid var(--color-line);
@@ -26,6 +25,8 @@
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  padding-right: 32px;
 }
 
 .members-status-list {
@@ -142,4 +143,36 @@
 .modal-content:has(.members-container) {
   width: 90vw;
   max-width: 600px;
+}
+
+@media (max-width: 600px) {
+  .modal-content:has(.members-container) {
+    padding: 16px;
+  }
+
+  .members-container {
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .member-pending-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .members-pending-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .members-pending-buttons button {
+    margin: 0;
+    height: 32px;
+  }
+}
+
+.member-pending-info {
+  flex: 1 0 auto;
+  padding-right: 0;
 }

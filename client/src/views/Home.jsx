@@ -145,6 +145,7 @@ function Home({
           <input
             type="text"
             placeholder="Search Movies"
+            aria-label="Search movies"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -256,7 +257,7 @@ function Home({
                   {currentMovie.poster_path ? (
                     <img
                       src={`https://image.tmdb.org/t/p/w500${currentMovie.poster_path}`}
-                      alt={currentMovie.title || "Movie poster"}
+                      alt=""
                     />
                   ) : (
                     <span>

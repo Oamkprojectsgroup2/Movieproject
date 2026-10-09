@@ -40,7 +40,7 @@
 
 .group-details-eyebrow {
   margin: 0 0 10px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -196,12 +196,12 @@
 }
 
 .group-details-state p {
-  margin: 4px;
+  margin: 4px 0;
 }
 
 .group-details-state button {
-  height: 40px;
-  padding: 0 16px;
+  min-height: 40px;
+  padding: 6px 16px;
   border-radius: 7px;
   font-size: 20px;
   margin: 4px;
@@ -221,14 +221,33 @@
   margin-top: 1rem;
   margin-right: 1rem;
   padding: 0.6rem 1rem;
-  border: 1px solid #b42318;
+  border: 1px solid var(--color-error);
   border-radius: 6px;
   background: transparent;
-  color: #b42318;
+  color: var(--color-error);
   cursor: pointer;
 }
 
 .group-details-header:disabled {
   cursor: wait;
   opacity: 0.6;
+}
+
+.group-details-movies .favourites-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.group-details-section {
+  padding: 14px;   /* kortin sisälle enemmän tilaa */
+}
+
+.group-details-state {
+  flex-direction: column;   /* nappi otsikon ja tekstin alle */
+  gap: 20px;
+  padding: 20px;
+}
+
+.group-details-state button {
+  margin: 0 0 8px;
 }
