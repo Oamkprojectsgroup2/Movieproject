@@ -558,7 +558,7 @@ membership request already exists; `500` on a storage error.
 
 ### `DELETE /api/groups/leave/:groupId` — Authentication required
 
-Removes member from group. Owner cannot leave from group.
+Removes logged-in user from group. Owner cannot leave from group.
 
 | Path parameter | Description |
 |---|---|
@@ -582,7 +582,7 @@ not the owner; `500` on a storage error.
 
 ### `PUT /api/groups/accept/:groupId/:userId` — Authentication required
 
-Changes members status to `accepted`. Only the group owner can accept requests.
+Changes member's status to `accepted`. Only the group owner can accept requests.
 
 | Path parameter | Description |
 |---|---|
@@ -615,7 +615,7 @@ Removes member from group. Only the group owner can remove members.
 | `groupId` | Numeric group ID |
 | `userId` | Numeric ID of the target member |
 
-Returns `200` with successful removal; `400` for an invalid ID; `401` if
+Returns `200` with successful removal; `400` for an invalid ID or owner tries to remove themselves; `401` if
 authentication fails; `403` if the caller is not the owner; `404` if there is
 no member found; `500` on a storage error.
 
@@ -629,7 +629,7 @@ Makes a member with `accepted` status new owner. Only the group owner can make n
 | `userId` | Numeric ID of the target member |
 
 Returns `200` with new owner in `data` (`user_id`, `group_id`); `400` for an invalid ID; `401` if
-authentication fails; `403` if the caller is not the owner or new member is not `accepted` member of group; `404` if there is no member found; `500` on a storage error.
+authentication fails; `403` if the caller is not the owner or new member is not `accepted` member of group; `500` on a storage error.
 
 ### `POST /api/groups/:groupId/favorites` — Authentication required
 
