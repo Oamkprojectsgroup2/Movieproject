@@ -125,7 +125,7 @@ export const memberList = async (req,res) => {
     })
   }
   catch (error) {
-    console.error("Pending mmber fetch error:", error);
+    console.error("Pending member fetch error:", error);
     return res.status(500).json({ message: "Member list fetch error" });
   }
 };

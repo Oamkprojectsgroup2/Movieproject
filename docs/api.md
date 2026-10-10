@@ -556,43 +556,80 @@ membership request already exists; `500` on a storage error.
 {"message":"Join request successful","data":{"user_id":13,"group_id":3,"status":"pending"}}
 ```
 
-### `GET /api/groups/pending/:groupId` — Authentication required
+### `DELETE /api/groups/leave/:groupId` — Authentication required
 
-Lists pending join requests. Only the group owner can use this endpoint.
+Removes logged-in user from group. Owner cannot leave from group.
 
 | Path parameter | Description |
 |---|---|
 | `groupId` | Numeric group ID |
 
-Returns `200` with pending users in `data` (`user_id`, `user_name`, `status`);
+Returns `200` when leaving successfully; `400` for an invalid ID; `401` if
+authentication fails; `403` if the caller is the owner; `404` if there is
+no member found; `500` on a storage error.
+
+### `GET /api/groups/memberlist/:groupId` — Authentication required
+
+Lists group's members and their statuses. Only the group owner can use this endpoint.
+
+| Path parameter | Description |
+|---|---|
+| `groupId` | Numeric group ID |
+
+Returns `200` with users in `data` (`user_id`, `user_name`, `status`);
 `400` for an invalid ID; `401` if authentication fails; `403` if the caller is
 not the owner; `500` on a storage error.
 
 ### `PUT /api/groups/accept/:groupId/:userId` — Authentication required
 
-Accepts a pending member. Only the group owner can accept requests.
+Changes member's status to `accepted`. Only the group owner can accept requests.
 
 | Path parameter | Description |
 |---|---|
 | `groupId` | Numeric group ID |
-| `userId` | Numeric ID of the pending member |
+| `userId` | Numeric ID of the target member |
 
 Returns `200` with the accepted membership; `400` for an invalid ID; `401` if
 authentication fails; `403` if the caller is not the owner; `404` if there is
-no pending request; `500` on a storage error.
+no member found; `500` on a storage error.
 
 ### `PUT /api/groups/reject/:groupId/:userId` — Authentication required
 
-Rejects a pending member. Only the group owner can reject requests.
+Changes member's status to `rejected`. Only the group owner can reject requests.
 
 | Path parameter | Description |
 |---|---|
 | `groupId` | Numeric group ID |
-| `userId` | Numeric ID of the pending member |
+| `userId` | Numeric ID of the target member |
 
 Returns `200` with the rejected membership; `400` for an invalid ID; `401` if
 authentication fails; `403` if the caller is not the owner; `404` if there is
-no pending request; `500` on a storage error.
+no member found; `500` on a storage error.
+
+### `DELETE /api/groups/remove/:groupId/:userId` — Authentication required
+
+Removes member from group. Only the group owner can remove members.
+
+| Path parameter | Description |
+|---|---|
+| `groupId` | Numeric group ID |
+| `userId` | Numeric ID of the target member |
+
+Returns `200` with successful removal; `400` for an invalid ID or owner tries to remove themselves; `401` if
+authentication fails; `403` if the caller is not the owner; `404` if there is
+no member found; `500` on a storage error.
+
+### `PUT /api/groups/makeowner/:groupId/:userId` — Authentication required
+
+Makes a member with `accepted` status new owner. Only the group owner can make new owner.
+
+| Path parameter | Description |
+|---|---|
+| `groupId` | Numeric group ID |
+| `userId` | Numeric ID of the target member |
+
+Returns `200` with new owner in `data` (`user_id`, `group_id`); `400` for an invalid ID; `401` if
+authentication fails; `403` if the caller is not the owner or new member is not `accepted` member of group; `500` on a storage error.
 
 ### `POST /api/groups/:groupId/favorites` — Authentication required
 
